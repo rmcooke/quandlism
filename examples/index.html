@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>Quandlism Test</title>
+
+</head>
+<body id="index" onload="">
+  
+  <div id='chart'></div>
+
+  <script src="../lib/d3.v2.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../quandlism.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+  var data = [10, 9, 4, 3 , 1, 8, 3, 8];
+   d3.select('#chart').call(function(div) {
+     div.append('div').attr('class', 'axis');
+     
+     div.selectAll('.horizon')
+       .data(data)
+       .enter().append('div')
+       .attr('class', 'horizon')
+       .call(function(a) {
+         console.log(a);
+       });
+   });
+  </script>
+</body>
+</html>

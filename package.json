@@ -1,0 +1,36 @@
+{
+  "name": "quandlism",
+  "description": "Canvas wrapper for time series charts on D3",
+  "version": "0.1.0",
+  "homepage": "https://github.com/jbyck/quandlism",
+  "author": {
+    "name": "Jason Byck",
+    "email": "jbyck@quandl.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Quandl/quandlism.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Quandl/quandlism/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Quandl/quandlism/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "quandlism",
+  "engines": {
+    "node": ">= 0.6.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt": "~0.3.16",
+    "grunt-wrap" : "~0.1.1"
+  },
+  "keywords": []
+}
+
