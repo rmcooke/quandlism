@@ -22,7 +22,7 @@
   var context = quandlism.context().width(1000).frequency('daily').trans('rdiff');
   
 
-  d3.csv('/data/uhero.csv', function(data) {
+  d3.csv('/data/boj.csv', function(data) {
     color.domain(d3.keys(data[0]).filter(function(key) { return key != 'Date' }));
       
     // Parse the data  
