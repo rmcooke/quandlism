@@ -9,21 +9,48 @@
   
   <div id='chart'></div>
 
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.1/underscore-min.js" type="text/javascript" charset="utf-8"></script>
   <script src="../lib/d3.v2.js" type="text/javascript" charset="utf-8"></script>
   <script src="../quandlism.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-  var data = [10, 9, 4, 3 , 1, 8, 3, 8];
-   d3.select('#chart').call(function(div) {
-     div.append('div').attr('class', 'axis');
-     
-     div.selectAll('.horizon')
-       .data(data)
-       .enter().append('div')
-       .attr('class', 'horizon')
-       .call(function(a) {
-         console.log(a);
-       });
-   });
-  </script>
+  
+  var color = d3.scale.category10();
+
+  var parseDate = d3.time.format('%Y-%m-%d').parse;
+
+  var context = quandlism.context().width(1000).frequency('daily').trans('rdiff');
+  
+
+  d3.csv('/data/uhero.csv', function(data) {
+    color.domain(d3.keys(data[0]).filter(function(key) { return key != 'Date' }));
+      
+    // Parse the data  
+    data.forEach(function(d) {
+      d.Date = parseDate(d.Date);
+
+    });
+    
+    var metrics = color.domain().map(function(name) {
+      return {
+        name: name,
+        values: data.map(function(d) {
+          return {date: d.Date, num: +d[name]};
+        })
+      }
+    });
+        
+    var columns = _.map(metrics, function(met, i) {
+      return context.line(met);
+    });      
+        
+    
+    
+    d3.select('#chart').datum(columns).call(context.stage());
+
+  });
+    
+ 
+    </script>
 </body>
 </html>

@@ -18,18 +18,29 @@ QuandlismContext_.stage = function() {
        
     var canvas = selection.select('canvas');
     canvas = canvas.node().getContext('2d');
+    
+    exes = _.map(lines, function(line, j) {
+      return line.extent();
+    });  
+    
+    max = d3.max(exes, function(m) { return m[1]; });
+    min = d3.min(exes, function(m) { return m[0]; });
 
+    console.log(max + ' ' + min);
+    
     _.each(lines, function(line, j) {
+
 
       var extent = line.extent();
       
-      yScale.domain([0, extent[1]]); 
+      yScale.domain([min, max]); 
       yScale.range([height, 0 ]);
       xScale.domain([0, line.length()]);
       xScale.range([0, width]);
       
       canvas.beginPath();
       canvas.moveTo(xScale(0), yScale(line.valueAt(0)));
+      console.log(line);
       for (i = 1; i < line.length(); i++) {
         canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
       }
