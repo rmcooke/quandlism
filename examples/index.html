@@ -3,7 +3,11 @@
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>Quandlism Test</title>
-
+  <style type="text/css" media="screen">
+  body {
+    background: #EDEDED;
+  }
+  </style>
 </head>
 <body id="index" onload="">
   
@@ -17,9 +21,9 @@
   
   var color = d3.scale.category10();
 
-  var context = quandlism.context().width(1500).frequency('daily').trans('none');
+  var context = quandlism.context().width(1000).height(500).frequency('daily').trans('none');
   
-  d3.csv('/data/apple.csv', function(data) {
+  d3.csv('/data/pesos.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
 
@@ -46,7 +50,7 @@
     });      
          
     
-    d3.select('#chart').datum(columns).call(context.stage());
+    d3.select('#chart').datum(columns).call(context.stage()).call(context.brush());
 
   });
     

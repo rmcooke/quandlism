@@ -23,6 +23,10 @@ QuandlismContext_.utility = function() {
     }
     return d3.time.format(dateString).parse;
   }
+  
+  /**
+   * Write this
+   */
   utility.dateColumn = function(d) {
     if (typeof(d.Year) != 'undefined') {
       return 'Year';
@@ -31,6 +35,28 @@ QuandlismContext_.utility = function() {
       return 'Date';
     }
     throw('Error - Unknown date column');
+  }
+  
+  /**
+   * Draws the canvas path on the focus or brush chart
+   *
+   * line   - The quanlism.line object
+   * color  - The hex color code of the line
+   * canvas - The HTML canavs element to draw on
+   * xScale - The D3 scale for the xAxis
+   * yScale - The D3 scale for the yAxis
+   *
+   * Return nil
+   */
+  utility.drawPath = function(line, color, canvas, xScale, yScale) {
+    canvas.beginPath();
+    canvas.moveTo(xScale(0), yScale(line.valueAt(0)));
+    for (i = 0; i < line.length(); i++) {
+      canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
+    }  
+    canvas.strokeStyle = color;
+    canvas.stroke();
+    canvas.closePath();
   }
   
   
