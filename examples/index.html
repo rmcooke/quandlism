@@ -17,10 +17,9 @@
   
   var color = d3.scale.category10();
 
-  var parseDate = d3.time.format('%Y-%m-%d').parse;
-  var context = quandlism.context().width(1000).frequency('daily').trans('none');
+  var context = quandlism.context().width(1500).frequency('daily').trans('none');
   
-  d3.csv('/data/timmins.csv', function(data) {
+  d3.csv('/data/apple.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
 

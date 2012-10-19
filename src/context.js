@@ -16,7 +16,7 @@ quandlism.context = function() {
   function update() {
     return context;
   }
-
+  
    
   /**
    * The width of the plot
