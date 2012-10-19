@@ -18,33 +18,34 @@
   var color = d3.scale.category10();
 
   var parseDate = d3.time.format('%Y-%m-%d').parse;
-
-  var context = quandlism.context().width(1000).frequency('daily').trans('rdiff');
+  var context = quandlism.context().width(1000).frequency('daily').trans('none');
   
-
-  d3.csv('/data/boj.csv', function(data) {
-    color.domain(d3.keys(data[0]).filter(function(key) { return key != 'Date' }));
-      
-    // Parse the data  
-    data.forEach(function(d) {
-      d.Date = parseDate(d.Date);
-
-    });
+  d3.csv('/data/timmins.csv', function(data) {
     
+    dateColumn = context.utility().dateColumn(data[0]);
+
+    color.domain(d3.keys(data[0]).filter(function(key) { return key != dateColumn }));
+    // Parse the data  
+    
+    
+    data.forEach(function(d) {
+      d[dateColumn] = context.utility().parseDate(d[dateColumn]);
+    });
+            
     var metrics = color.domain().map(function(name) {
       return {
         name: name,
         values: data.map(function(d) {
-          return {date: d.Date, num: +d[name]};
+          return {date: d[dateColumn], num: +d[name]};
         })
       }
     });
-        
-    var columns = _.map(metrics, function(met, i) {
-      return context.line(met);
-    });      
-        
     
+        
+    var columns = _.map(metrics, function(m, i) {
+      return context.line(m);
+    });      
+         
     
     d3.select('#chart').datum(columns).call(context.stage());
 

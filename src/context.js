@@ -13,6 +13,10 @@ quandlism.context = function() {
   /**
    * Expose attributes with getter/setters
    */
+  function update() {
+    return context;
+  }
+
    
   /**
    * The width of the plot
@@ -22,7 +26,7 @@ quandlism.context = function() {
       return width;
     }
     width = _;
-    return context;
+    return update();
   }
   
   /**
@@ -33,7 +37,7 @@ quandlism.context = function() {
       return height;
     }
     height = _;
-    return context;
+    return update();
   }
   
   /**
@@ -44,7 +48,7 @@ quandlism.context = function() {
       return trans;
     }
     trans = _;
-    return context;
+    return update();
   }
   
   context.frequency = function(_) {
@@ -52,8 +56,9 @@ quandlism.context = function() {
       return frequency;
     }
     frequency = _;
-    return context;
+    return update();
   }  
+  
   
   return context;
 }
