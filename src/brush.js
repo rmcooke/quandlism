@@ -9,7 +9,8 @@ QuandlismContext_.brush = function() {
   canvas = null,
   canvasContext = null,
   lines = [],
-  extent = [];
+  extent = [],
+  start = 0, end = 0;
   
   
   function brush(selection) {
@@ -22,6 +23,9 @@ QuandlismContext_.brush = function() {
     canvas = selection.select('.brush');
     canvasContext = canvas.node().getContext('2d');
     
+    end = lines[0].length();
+    start = Math.floor(lines[0].length()*.75)
+    
     exes = _.map(lines, function(line, j) {
       return line.extent();
     });  
@@ -29,28 +33,27 @@ QuandlismContext_.brush = function() {
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
 
 
-
+    
     draw();
     
     function draw() {
       
       // Draw viewer box
-      rectX = Math.floor(width*0.75);
-      rectY = 0;
-    
-      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      canvasContext.fillRect(rectX, 0, width - rectX, height);
-    
-      
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([brushHeight, 0 ]);
     
       xScale.domain([0, lines[0].length()]);
       xScale.range([0, width]);
+    
+      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      canvasContext.fillRect(xScale(start), 0, xScale(end) - xScale(start), brushHeight);
+    
+      
+  
       
       // Draw lines
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale);
+        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, 0, lines[0].length());
       });
     
       

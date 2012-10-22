@@ -12,13 +12,20 @@ QuandlismLine_.valueAt = function() {
   return NaN;
 }
 
-QuandlismLine_.extent = function() {
+QuandlismLine_.extent = function(start, end) {
   var i = 0, 
   n = this.length(), 
   min = Infinity, 
   max = -Infinity,
   val;
+  if (start != null) {
+    i = start;
+  }
+  if (end != null) {
+    n = end;
+  }
   while (++i < n) {
+
     val = this.valueAt(i);
     if (val < min) {
       min = val;
@@ -29,8 +36,6 @@ QuandlismLine_.extent = function() {
   }
   return [min, max];
 }
-
-
 
 QuandlismContext_.line = function(data) {
   var context = this,

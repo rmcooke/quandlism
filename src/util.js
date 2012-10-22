@@ -45,13 +45,15 @@ QuandlismContext_.utility = function() {
    * canvas - The HTML canavs element to draw on
    * xScale - The D3 scale for the xAxis
    * yScale - The D3 scale for the yAxis
+   * start - The first x-index to draw
+   * end - The last x-index to draw
    *
    * Return nil
    */
-  utility.drawPath = function(line, color, canvas, xScale, yScale) {
+  utility.drawPath = function(line, color, canvas, xScale, yScale, start, end) {
     canvas.beginPath();
     canvas.moveTo(xScale(0), yScale(line.valueAt(0)));
-    for (i = 0; i < line.length(); i++) {
+    for (i = start; i <= end; i++) {
       canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
     }  
     canvas.strokeStyle = color;

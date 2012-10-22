@@ -5,15 +5,15 @@
   <title>Quandlism Test</title>
   <style type="text/css" media="screen">
   body {
-    background: #EDEDED;
-    width: 100%;
-    height: 100%;
+    float: left;
+    width: 80%;
   }
 
   #chart {
+    float: left;
     position: relative;
     width: 100%;
-    height: 500px;
+    height: 600px;
   }
   </style>
 </head>
@@ -32,7 +32,7 @@
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
   
-  d3.csv('/data/pesos.csv', function(data) {
+  d3.csv('/data/uhero.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
 

@@ -9,6 +9,8 @@ quandlism.context = function() {
   width0 = null,
   height0 = null,
   el,
+  end = width,
+  start = Math.floor(width*.75),
   event = d3.dispatch('respond'),
   timeout;    
   /**
@@ -71,6 +73,21 @@ quandlism.context = function() {
     return update();
   }
   
+  context.start = function(_) {
+    if (!arguments.length) {
+      return start;
+    }
+    start = _;
+    return update();
+  }
+  
+  context.end = function(_) {
+    if (!arguments.length) {
+      return end;
+    }
+    end = _;
+    return update();
+  }
   
   // Add and remove listeners
 

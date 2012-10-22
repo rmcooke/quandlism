@@ -14,6 +14,8 @@ quandlism.context = function() {
   width0 = null,
   height0 = null,
   el,
+  end = width,
+  start = Math.floor(width*.75),
   event = d3.dispatch('respond'),
   timeout;    
   /**
@@ -76,6 +78,21 @@ quandlism.context = function() {
     return update();
   }
   
+  context.start = function(_) {
+    if (!arguments.length) {
+      return start;
+    }
+    start = _;
+    return update();
+  }
+  
+  context.end = function(_) {
+    if (!arguments.length) {
+      return end;
+    }
+    end = _;
+    return update();
+  }
   
   // Add and remove listeners
 
@@ -129,13 +146,20 @@ QuandlismLine_.valueAt = function() {
   return NaN;
 }
 
-QuandlismLine_.extent = function() {
+QuandlismLine_.extent = function(start, end) {
   var i = 0, 
   n = this.length(), 
   min = Infinity, 
   max = -Infinity,
   val;
+  if (start != null) {
+    i = start;
+  }
+  if (end != null) {
+    n = end;
+  }
   while (++i < n) {
+
     val = this.valueAt(i);
     if (val < min) {
       min = val;
@@ -146,8 +170,6 @@ QuandlismLine_.extent = function() {
   }
   return [min, max];
 }
-
-
 
 QuandlismContext_.line = function(data) {
   var context = this,
@@ -221,6 +243,7 @@ QuandlismContext_.stage = function() {
   extent = null,
   canvas = null,
   canvasContext = null,
+  start = 0, end = 0,
   format = d3.format('.2s'),
   colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"];
   
@@ -233,10 +256,15 @@ QuandlismContext_.stage = function() {
     canvas = selection.select('.stage');
     canvasContext = canvas.node().getContext('2d');
     
+    
+    end = lines[0].length();
+    start = Math.floor(lines[0].length()*.75);
+    
     exes = _.map(lines, function(line, j) {
-      return line.extent();
+      return line.extent(start, end);
     });  
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
+
     
     draw();
     
@@ -245,11 +273,12 @@ QuandlismContext_.stage = function() {
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
     
-      xScale.domain([0, lines[0].length()]);
+      xScale.domain([start, end]);
       xScale.range([0, width]);
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale);
+        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, start, end);
       });
+      
     }
     
     context.on('respond.stage', function(width_, height_) {
@@ -259,7 +288,6 @@ QuandlismContext_.stage = function() {
       width = width_, height = height_, stageHeight = height * 0.8;
       
       draw();
-
 
     });
       
@@ -286,7 +314,8 @@ QuandlismContext_.brush = function() {
   canvas = null,
   canvasContext = null,
   lines = [],
-  extent = [];
+  extent = [],
+  start = 0, end = 0;
   
   
   function brush(selection) {
@@ -299,6 +328,9 @@ QuandlismContext_.brush = function() {
     canvas = selection.select('.brush');
     canvasContext = canvas.node().getContext('2d');
     
+    end = lines[0].length();
+    start = Math.floor(lines[0].length()*.75)
+    
     exes = _.map(lines, function(line, j) {
       return line.extent();
     });  
@@ -306,28 +338,27 @@ QuandlismContext_.brush = function() {
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
 
 
-
+    
     draw();
     
     function draw() {
       
       // Draw viewer box
-      rectX = Math.floor(width*0.75);
-      rectY = 0;
-    
-      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      canvasContext.fillRect(rectX, 0, width - rectX, height);
-    
-      
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([brushHeight, 0 ]);
     
       xScale.domain([0, lines[0].length()]);
       xScale.range([0, width]);
+    
+      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      canvasContext.fillRect(xScale(start), 0, xScale(end) - xScale(start), brushHeight);
+    
+      
+  
       
       // Draw lines
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale);
+        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, 0, lines[0].length());
       });
     
       
@@ -398,13 +429,15 @@ QuandlismContext_.utility = function() {
    * canvas - The HTML canavs element to draw on
    * xScale - The D3 scale for the xAxis
    * yScale - The D3 scale for the yAxis
+   * start - The first x-index to draw
+   * end - The last x-index to draw
    *
    * Return nil
    */
-  utility.drawPath = function(line, color, canvas, xScale, yScale) {
+  utility.drawPath = function(line, color, canvas, xScale, yScale, start, end) {
     canvas.beginPath();
     canvas.moveTo(xScale(0), yScale(line.valueAt(0)));
-    for (i = 0; i < line.length(); i++) {
+    for (i = start; i <= end; i++) {
       canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
     }  
     canvas.strokeStyle = color;
