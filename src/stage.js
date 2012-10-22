@@ -2,7 +2,7 @@ QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
   buffer = document.createElement('canvas'),
-  width = buffer.width = context.width(), height = buffer.height = context.height(),
+  width = context.width(), height = context.height(),
   stageHeight = height * 0.8,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
@@ -26,15 +26,28 @@ QuandlismContext_.stage = function() {
     max = d3.max(exes, function(m) { return m[1]; });
     min = d3.min(exes, function(m) { return m[0]; });
     
-    // Set domain and range for x scale and y scale for focus and brush
-    yScale.domain([min, max]); 
-    yScale.range([stageHeight, 0 ]);
+    draw();
     
-    xScale.domain([0, lines[0].length()]);
-    xScale.range([0, width]);
+    function draw() {
+      
+      yScale.domain([min, max]); 
+      yScale.range([stageHeight, 0 ]);
     
-    _.each(lines, function(line, j) {
-      context.utility().drawPath(line, colors[j], canvas, xScale, yScale);
+      xScale.domain([0, lines[0].length()]);
+      xScale.range([0, width]);
+      _.each(lines, function(line, j) {
+        context.utility().drawPath(line, colors[j], canvas, xScale, yScale);
+      });
+    }
+    
+    context.on('respond', function(width_, height_) {
+      
+      canvas.clearRect(0, 0, width, height);
+      width = width_, height = height_, stageHeight = height * 0.8;
+      
+      draw();
+
+
     });
       
   }

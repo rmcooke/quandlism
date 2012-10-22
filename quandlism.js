@@ -7,44 +7,24 @@ var quandlism_id = 0;
 
 quandlism.context = function() {
   var context = new QuandlismContext(),
-  width = 500,
-  height = 500,
-  step = 100,
   frequency = 'daily',
-  trans = 'none'
-  event = d3.dispatch('prepare'),
-  scale = context.scale = d3.time.scale().range([0, width]);
-  
+  trans = 'none',
+  width,
+  height,
+  width0 = null,
+  height0 = null,
+  el,
+  event = d3.dispatch('respond'),
+  timeout;    
   /**
    * Expose attributes with getter/setters
    */
   function update() {
+    width = width0 = $(el).width();
+    height = height0 = $(el).height();
     return context;
   }
-  
-   
-  /**
-   * The width of the plot
-   */ 
-  context.width = function(_) {
-    if (!arguments.length) {
-      return width;
-    }
-    width = _;
-    return update();
-  }
-  
-  /**
-   * The height of the plot
-   */  
-  context.height = function(_) {
-    if (!arguments.length) {
-      return height;
-    }
-    height = _;
-    return update();
-  }
-  
+    
   /**
    * The transformation of the dataset
    */
@@ -64,8 +44,71 @@ quandlism.context = function() {
     return update();
   }  
   
+  context.el = function(_) {
+    if (!arguments.length) {
+      return el;
+    }
+    el = _;
+    return update();
+  }
   
-  return context;
+  context.height = function(_) {
+    if (!arguments.length) {
+      return height;
+    }
+    height = _;
+    return update();
+  }
+  
+  context.width = function(_) {
+    if (!arguments.length) {
+      return width;
+    }
+    width = _;
+    return update();
+  }  
+  
+  context.el = function(_) {
+    if (!arguments.length) {
+      return el;
+    }
+    el = _;
+    return update();
+  }
+  
+  // Add and remove listeners
+
+  context.respond = _.throttle(function() {
+    event.respond.call(context, width, height);
+  }, 500);
+  
+  context.on = function(type, listener) {
+    if (arguments.length < 2) {
+      return event.on(type);
+    }
+    
+    event.on(type, listener);
+    
+    if (listener != null) {
+      if (type == 'change') {
+        listener.call(context, width, height);
+      }
+    }
+    
+    return context;
+  }
+  
+  d3.select(window).on('resize', function() {
+    d3.event.preventDefault();
+    h = $(el).height(), w = $(el).width();
+    if (h != height || w != width) {
+      width = w, height = h;
+      context.respond();
+    }
+  });
+
+  
+  return update();
 }
 
 function QuandlismContext() {}
@@ -170,7 +213,7 @@ QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
   buffer = document.createElement('canvas'),
-  width = buffer.width = context.width(), height = buffer.height = context.height(),
+  width = context.width(), height = context.height(),
   stageHeight = height * 0.8,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
@@ -194,15 +237,28 @@ QuandlismContext_.stage = function() {
     max = d3.max(exes, function(m) { return m[1]; });
     min = d3.min(exes, function(m) { return m[0]; });
     
-    // Set domain and range for x scale and y scale for focus and brush
-    yScale.domain([min, max]); 
-    yScale.range([stageHeight, 0 ]);
+    draw();
     
-    xScale.domain([0, lines[0].length()]);
-    xScale.range([0, width]);
+    function draw() {
+      
+      yScale.domain([min, max]); 
+      yScale.range([stageHeight, 0 ]);
     
-    _.each(lines, function(line, j) {
-      context.utility().drawPath(line, colors[j], canvas, xScale, yScale);
+      xScale.domain([0, lines[0].length()]);
+      xScale.range([0, width]);
+      _.each(lines, function(line, j) {
+        context.utility().drawPath(line, colors[j], canvas, xScale, yScale);
+      });
+    }
+    
+    context.on('respond', function(width_, height_) {
+      
+      canvas.clearRect(0, 0, width, height);
+      width = width_, height = height_, stageHeight = height * 0.8;
+      
+      draw();
+
+
     });
       
   }
@@ -223,6 +279,7 @@ QuandlismContext_.brush = function() {
   height = context.height(), width = context.width(), brushHeight = height * 0.2
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
+  dragging = false,
   colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"];
   
   function brush(selection) {
@@ -260,7 +317,6 @@ QuandlismContext_.brush = function() {
     
     canvas.fillStyle = 'rgba(0, 0, 0, 0.25)';
     canvas.fillRect(rectX, 0, width - rectX, height);
-    
     
       
   }

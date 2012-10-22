@@ -2,44 +2,24 @@
 
 quandlism.context = function() {
   var context = new QuandlismContext(),
-  width = 500,
-  height = 500,
-  step = 100,
   frequency = 'daily',
-  trans = 'none'
-  event = d3.dispatch('prepare'),
-  scale = context.scale = d3.time.scale().range([0, width]);
-  
+  trans = 'none',
+  width,
+  height,
+  width0 = null,
+  height0 = null,
+  el,
+  event = d3.dispatch('respond'),
+  timeout;    
   /**
    * Expose attributes with getter/setters
    */
   function update() {
+    width = width0 = $(el).width();
+    height = height0 = $(el).height();
     return context;
   }
-  
-   
-  /**
-   * The width of the plot
-   */ 
-  context.width = function(_) {
-    if (!arguments.length) {
-      return width;
-    }
-    width = _;
-    return update();
-  }
-  
-  /**
-   * The height of the plot
-   */  
-  context.height = function(_) {
-    if (!arguments.length) {
-      return height;
-    }
-    height = _;
-    return update();
-  }
-  
+    
   /**
    * The transformation of the dataset
    */
@@ -59,8 +39,71 @@ quandlism.context = function() {
     return update();
   }  
   
+  context.el = function(_) {
+    if (!arguments.length) {
+      return el;
+    }
+    el = _;
+    return update();
+  }
   
-  return context;
+  context.height = function(_) {
+    if (!arguments.length) {
+      return height;
+    }
+    height = _;
+    return update();
+  }
+  
+  context.width = function(_) {
+    if (!arguments.length) {
+      return width;
+    }
+    width = _;
+    return update();
+  }  
+  
+  context.el = function(_) {
+    if (!arguments.length) {
+      return el;
+    }
+    el = _;
+    return update();
+  }
+  
+  // Add and remove listeners
+
+  context.respond = _.throttle(function() {
+    event.respond.call(context, width, height);
+  }, 500);
+  
+  context.on = function(type, listener) {
+    if (arguments.length < 2) {
+      return event.on(type);
+    }
+    
+    event.on(type, listener);
+    
+    if (listener != null) {
+      if (type == 'change') {
+        listener.call(context, width, height);
+      }
+    }
+    
+    return context;
+  }
+  
+  d3.select(window).on('resize', function() {
+    d3.event.preventDefault();
+    h = $(el).height(), w = $(el).width();
+    if (h != height || w != width) {
+      width = w, height = h;
+      context.respond();
+    }
+  });
+
+  
+  return update();
 }
 
 function QuandlismContext() {}
