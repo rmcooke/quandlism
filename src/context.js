@@ -71,6 +71,7 @@ quandlism.context = function() {
     return update();
   }
   
+  
   // Add and remove listeners
 
   context.respond = _.throttle(function() {
@@ -85,7 +86,7 @@ quandlism.context = function() {
     event.on(type, listener);
     
     if (listener != null) {
-      if (type == 'change') {
+      if (/^respond(\.|$)/.test(type)) {
         listener.call(context, width, height);
       }
     }
