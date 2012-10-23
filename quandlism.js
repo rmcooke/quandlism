@@ -15,8 +15,9 @@ quandlism.context = function() {
   height0 = null,
   el,
   end = width,
+  x1 = x2 = 0,
   start = Math.floor(width*.75),
-  event = d3.dispatch('respond'),
+  event = d3.dispatch('respond', 'adjust'),
   timeout;    
   /**
    * Expose attributes with getter/setters
@@ -100,17 +101,26 @@ quandlism.context = function() {
     event.respond.call(context, width, height);
   }, 500);
   
+  context.adjust = function(x1, x2) {
+    event.adjust.call(context, x1, x2);
+  }
+  
+  
   context.on = function(type, listener) {
     if (arguments.length < 2) {
       return event.on(type);
     }
     
     event.on(type, listener);
-    
+        
     if (listener != null) {
       if (/^respond(\.|$)/.test(type)) {
         listener.call(context, width, height);
       }
+      if (/^adjust(\.|$)/.test(type)) {
+        listener.call(context, x1, x2);
+      }
+
     }
     
     return context;
@@ -260,26 +270,30 @@ QuandlismContext_.stage = function() {
     end = lines[0].length();
     start = Math.floor(lines[0].length()*.75);
     
-    exes = _.map(lines, function(line, j) {
-      return line.extent(start, end);
-    });  
-    extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
 
-    
     draw();
     
     function draw() {
+      
+      exes = _.map(lines, function(line, j) {
+        return line.extent(start, end);
+      });  
+      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
       
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
     
       xScale.domain([start, end]);
       xScale.range([0, width]);
+      
+      canvasContext.clearRect(0, 0, width, height);
+      
       _.each(lines, function(line, j) {
         context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, start, end);
       });
       
     }
+    
     
     context.on('respond.stage', function(width_, height_) {
       
@@ -290,8 +304,15 @@ QuandlismContext_.stage = function() {
       draw();
 
     });
+    
+    context.on('adjust.stage', function(x1, x2) {
+      start = x1, end = x2;
+      draw();
+    });
+
       
   }
+
   
   stage.lines = function(_) {
     if (!arguments.length) {
@@ -314,9 +335,11 @@ QuandlismContext_.brush = function() {
   canvas = null,
   canvasContext = null,
   lines = [],
+  event = d3.dispatch('doBrush'),
   extent = [],
   dragging = false,
-  dragX = 0;
+  dragX = 0,
+  x1 = x2 = 0;
   
   
   function brush(selection) {
@@ -366,6 +389,8 @@ QuandlismContext_.brush = function() {
       drawBrush();
     }
     
+    
+    
     /**
      * Clear the context
      */ 
@@ -391,7 +416,8 @@ QuandlismContext_.brush = function() {
       canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
       canvasContext.fillRect(start, 0, brushWidth, height);
     }
-  
+      
+    
     
     /**
      * Binding
@@ -432,13 +458,24 @@ QuandlismContext_.brush = function() {
       if (dragging) {
         dragDiff = e.x - dragX;
         start = start0 + dragDiff;
+        
+        x1 = xScale.invert(start);
+        x2 = xScale.invert(start + brushWidth);
+        
+        context.adjust(Math.ceil(x1), Math.ceil(x2));
       }
     });
+    
+    
     
 
     setInterval(update, 50);
       
   }
+  
+
+  
+
   
   
   return brush;

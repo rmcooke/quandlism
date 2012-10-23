@@ -10,8 +10,9 @@ quandlism.context = function() {
   height0 = null,
   el,
   end = width,
+  x1 = x2 = 0,
   start = Math.floor(width*.75),
-  event = d3.dispatch('respond'),
+  event = d3.dispatch('respond', 'adjust'),
   timeout;    
   /**
    * Expose attributes with getter/setters
@@ -95,17 +96,26 @@ quandlism.context = function() {
     event.respond.call(context, width, height);
   }, 500);
   
+  context.adjust = function(x1, x2) {
+    event.adjust.call(context, x1, x2);
+  }
+  
+  
   context.on = function(type, listener) {
     if (arguments.length < 2) {
       return event.on(type);
     }
     
     event.on(type, listener);
-    
+        
     if (listener != null) {
       if (/^respond(\.|$)/.test(type)) {
         listener.call(context, width, height);
       }
+      if (/^adjust(\.|$)/.test(type)) {
+        listener.call(context, x1, x2);
+      }
+
     }
     
     return context;

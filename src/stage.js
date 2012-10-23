@@ -26,26 +26,30 @@ QuandlismContext_.stage = function() {
     end = lines[0].length();
     start = Math.floor(lines[0].length()*.75);
     
-    exes = _.map(lines, function(line, j) {
-      return line.extent(start, end);
-    });  
-    extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
 
-    
     draw();
     
     function draw() {
+      
+      exes = _.map(lines, function(line, j) {
+        return line.extent(start, end);
+      });  
+      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
       
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
     
       xScale.domain([start, end]);
       xScale.range([0, width]);
+      
+      canvasContext.clearRect(0, 0, width, height);
+      
       _.each(lines, function(line, j) {
         context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, start, end);
       });
       
     }
+    
     
     context.on('respond.stage', function(width_, height_) {
       
@@ -56,8 +60,15 @@ QuandlismContext_.stage = function() {
       draw();
 
     });
+    
+    context.on('adjust.stage', function(x1, x2) {
+      start = x1, end = x2;
+      draw();
+    });
+
       
   }
+
   
   stage.lines = function(_) {
     if (!arguments.length) {

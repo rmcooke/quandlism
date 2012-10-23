@@ -9,9 +9,11 @@ QuandlismContext_.brush = function() {
   canvas = null,
   canvasContext = null,
   lines = [],
+  event = d3.dispatch('doBrush'),
   extent = [],
   dragging = false,
-  dragX = 0;
+  dragX = 0,
+  x1 = x2 = 0;
   
   
   function brush(selection) {
@@ -61,6 +63,8 @@ QuandlismContext_.brush = function() {
       drawBrush();
     }
     
+    
+    
     /**
      * Clear the context
      */ 
@@ -86,7 +90,8 @@ QuandlismContext_.brush = function() {
       canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
       canvasContext.fillRect(start, 0, brushWidth, height);
     }
-  
+      
+    
     
     /**
      * Binding
@@ -127,13 +132,24 @@ QuandlismContext_.brush = function() {
       if (dragging) {
         dragDiff = e.x - dragX;
         start = start0 + dragDiff;
+        
+        x1 = xScale.invert(start);
+        x2 = xScale.invert(start + brushWidth);
+        
+        context.adjust(Math.ceil(x1), Math.ceil(x2));
       }
     });
+    
+    
     
 
     setInterval(update, 50);
       
   }
+  
+
+  
+
   
   
   return brush;
