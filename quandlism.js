@@ -14,9 +14,6 @@ quandlism.context = function() {
   width0 = null,
   height0 = null,
   el,
-  end = width,
-  x1 = x2 = 0,
-  start = Math.floor(width*.75),
   event = d3.dispatch('respond', 'adjust'),
   timeout;    
   /**
@@ -79,23 +76,9 @@ quandlism.context = function() {
     return update();
   }
   
-  context.start = function(_) {
-    if (!arguments.length) {
-      return start;
-    }
-    start = _;
-    return update();
-  }
+
   
-  context.end = function(_) {
-    if (!arguments.length) {
-      return end;
-    }
-    end = _;
-    return update();
-  }
-  
-  // Add and remove listeners
+  // Event listeners
 
   context.respond = _.throttle(function() {
     event.respond.call(context, width, height);
@@ -112,16 +95,6 @@ quandlism.context = function() {
     }
     
     event.on(type, listener);
-        
-    if (listener != null) {
-      if (/^respond(\.|$)/.test(type)) {
-        listener.call(context, width, height);
-      }
-      if (/^adjust(\.|$)/.test(type)) {
-        listener.call(context, x1, x2);
-      }
-
-    }
     
     return context;
   }
