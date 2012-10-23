@@ -402,6 +402,7 @@ QuandlismContext_.brush = function() {
       height = height_ * 0.2, width = width_;
       brushWidth = Math.ceil(width*.2);
       start = start/width0*width;
+      start0 = start0/width0*width;
       setScales();
       
     });
@@ -430,8 +431,6 @@ QuandlismContext_.brush = function() {
     canvas.node().addEventListener('mousemove', function(e) {
       if (dragging) {
         dragDiff = e.x - dragX;
-        console.log(dragDiff);
-        console.log(start + ' ' + (start + dragDiff));
         start = start0 + dragDiff;
       }
     });
