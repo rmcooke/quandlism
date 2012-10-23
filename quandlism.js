@@ -306,7 +306,7 @@ QuandlismContext_.stage = function() {
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = context.height(), width = context.width(), brushHeight = height * 0.2
+  height = height0 = context.height() * 0.2, width = width0 = context.width(), brushWidth = Math.ceil(width * 0.2),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   dragging = false,
@@ -315,7 +315,9 @@ QuandlismContext_.brush = function() {
   canvasContext = null,
   lines = [],
   extent = [],
-  start = 0, end = 0;
+  start = 0,
+  dragging = false,
+  dragX = 0;
   
   
   function brush(selection) {
@@ -323,62 +325,122 @@ QuandlismContext_.brush = function() {
     var self = this;
     lines = selection.datum();
     
-    selection.append('canvas').attr('width', width).attr('height', brushHeight).attr('class', 'brush');
+    selection.append('canvas').attr('width', width).attr('height', height).attr('id', 'brush');
     
-    canvas = selection.select('.brush');
+    canvas = selection.select('#brush');
     canvasContext = canvas.node().getContext('2d');
     
-    end = lines[0].length();
-    start = Math.floor(lines[0].length()*.75)
-    
+  
     exes = _.map(lines, function(line, j) {
       return line.extent();
     });  
     
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
+       
 
-
+    setScales();
     
-    draw();
+    start = xScale(Math.floor(lines[0].length()*.75));
     
-    function draw() {
-      
-      // Draw viewer box
+    update();
+    
+    
+    /**
+     * Set scale functions for brush
+     */
+    function setScales() {
+      // Scales should only be set on construction and resize   
       yScale.domain([extent[0], extent[1]]); 
-      yScale.range([brushHeight, 0 ]);
+      yScale.range([height, 0 ]);
     
       xScale.domain([0, lines[0].length()]);
       xScale.range([0, width]);
+    }
     
-      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      canvasContext.fillRect(xScale(start), 0, xScale(end) - xScale(start), brushHeight);
+    /**
+     * Timeout function. Responds to drags!
+     */
+    function update() {
+      // Canvas clear
+      clearCanvas();
+      // Draw
+      
+      draw();
+      drawBrush();
+    }
     
-      
-  
-      
+    /**
+     * Clear the context
+     */ 
+    function clearCanvas() {
+      canvas.attr('width', width).attr('height', height);
+      canvasContext.clearRect(0, 0, width0, height0);
+    }
+    
+    /**
+     * Draw the lines 
+     */
+    function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
         context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, 0, lines[0].length());
       });
-    
-      
     }
     
+    /**
+     * Draw the brush
+     */
+    function drawBrush() {
+      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      canvasContext.fillRect(start, 0, brushWidth, height);
+    }
+  
+    
+    /**
+     * Binding
+     */
     context.on('respond.brush', function(width_, height_) {
-      canvas.attr('width', width_).attr('height', height_);
-      canvasContext.clearRect(0, 0, width, height);
-      width = width_, height = height_, brushHeight = height * 0.2;
       
-      draw();
+      height0 = height, width0 = width;
+      height = height_ * 0.2, width = width_;
+      setScales();
       
     });
+    
+    /**
+     * Check if mouse click occured on the brush
+     */
+    canvas.node().addEventListener('mousedown', function(e) {
+      if (e.x <= (brushWidth - start) && e.x >= start) {
+        dragging = true;
+        dragX = e.x;
+      }
+    });
+    
+    /**
+     * Stop dragging
+     */
+    canvas.node().addEventListener('mouseup', function(e) {
+      dragging = false;
+    });
+    
+    /**
+     * Calculate the movement
+     */
+    canvas.node().addEventListener('mousemove', function(e) {
+      if (dragging) {
+        console.log(e.x - dragX);
+      }
+    });
+    
+
+    setInterval(update, 50);
       
   }
   
   
-  return brush
-  
-  
+  return brush;
+
   
 }
 
