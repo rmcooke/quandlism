@@ -1,7 +1,7 @@
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.height() * 0.2, width = width0 = context.width(), brushWidth = Math.ceil(width * 0.2),
+  height = height0 = context.height() * 0.2, width = width0 = context.width(), brushWidth = Math.ceil(width * 0.2), start = start0 = Math.ceil(width*0.7),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   dragging = false,
@@ -10,7 +10,6 @@ QuandlismContext_.brush = function() {
   canvasContext = null,
   lines = [],
   extent = [],
-  start = 0,
   dragging = false,
   dragX = 0;
   
@@ -34,9 +33,7 @@ QuandlismContext_.brush = function() {
        
 
     setScales();
-    
-    start = xScale(Math.floor(lines[0].length()*.75));
-    
+        
     update();
     
     
@@ -98,6 +95,8 @@ QuandlismContext_.brush = function() {
       
       height0 = height, width0 = width;
       height = height_ * 0.2, width = width_;
+      brushWidth = Math.ceil(width*.2);
+      start = start/width0*width;
       setScales();
       
     });
@@ -106,7 +105,7 @@ QuandlismContext_.brush = function() {
      * Check if mouse click occured on the brush
      */
     canvas.node().addEventListener('mousedown', function(e) {
-      if (e.x <= (brushWidth - start) && e.x >= start) {
+      if (e.x <= (brushWidth + start) && e.x >= start) {
         dragging = true;
         dragX = e.x;
       }
@@ -117,6 +116,7 @@ QuandlismContext_.brush = function() {
      */
     canvas.node().addEventListener('mouseup', function(e) {
       dragging = false;
+      start0 = start;
     });
     
     /**
@@ -124,7 +124,10 @@ QuandlismContext_.brush = function() {
      */
     canvas.node().addEventListener('mousemove', function(e) {
       if (dragging) {
-        console.log(e.x - dragX);
+        dragDiff = e.x - dragX;
+        console.log(dragDiff);
+        console.log(start + ' ' + (start + dragDiff));
+        start = start0 + dragDiff;
       }
     });
     
