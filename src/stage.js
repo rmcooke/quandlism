@@ -3,7 +3,7 @@ QuandlismContext_.stage = function() {
   lines = [],
   buffer = document.createElement('canvas'),
   width = context.width(), height = context.height(),
-  stageHeight = height * 0.8,
+  stageHeight = height * 0.9,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,

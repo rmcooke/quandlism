@@ -220,7 +220,7 @@ QuandlismContext_.stage = function() {
   lines = [],
   buffer = document.createElement('canvas'),
   width = context.width(), height = context.height(),
-  stageHeight = height * 0.8,
+  stageHeight = height * 0.9,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
@@ -300,8 +300,8 @@ QuandlismContext_.stage = function() {
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.height() * 0.2, 
-  width = width0 = context.width(), brushWidth = Math.ceil(width * 0.2), 
+  height = height0 = context.height() * 0.1, 
+  width = width0 = context.width(), brushWidth = brushWidth0 = Math.ceil(width * 0.2), 
   start = start0 = Math.ceil(width*0.7),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -312,6 +312,8 @@ QuandlismContext_.brush = function() {
   lines = [],
   extent = [],
   dragging = false,
+  stretching = false,
+  stretchingHandle = '',
   dragX = 0;
   
   
@@ -386,8 +388,14 @@ QuandlismContext_.brush = function() {
      * Draw the brush
      */
     function drawBrush() {
+         
       canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
       canvasContext.fillRect(start, 0, brushWidth, height);
+      
+      context.fillStyle = '#000';
+      canvasContext.fillRect(start, 0, 10, height);
+      canvasContext.fillRect(start + brushWidth - 10, 0, 10, height);      
+   
     }
       
     
@@ -398,8 +406,8 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function(width_, height_) {
       
       height0 = height, width0 = width;
-      height = height_ * 0.2, width = width_;
-      brushWidth = Math.ceil(width*.2);
+      height = height_ * 0.1, width = width_;
+      brushWidth = brushWidth/width0*width;
       start = start/width0*width;
       start0 = start0/width0*width;
       setScales();
@@ -410,7 +418,20 @@ QuandlismContext_.brush = function() {
      * Check if mouse click occured on the brush
      */
     canvas.node().addEventListener('mousedown', function(e) {
-      if (e.x <= (brushWidth + start) && e.x >= start) {
+      // Check if click was within handles
+      // Left handl
+      if (e.x <= start + 20 && e.x >= start) {
+        stretching = true;
+        stretchingHandle = 'left';
+        this.className = 'resize';
+        dragX = e.x;
+      } else if (e.x >= (start + brushWidth - 20) && e.x <= (start + brushWidth)) {
+        stretching = true;
+        stretchingHandle = 'right';
+        this.className = 'resize';
+        dragX = e.x;
+      } else if (e.x <= (brushWidth + start) && e.x >= start) {
+        this.className = 'dragging';
         dragging = true;
         dragX = e.x;
       }
@@ -420,17 +441,39 @@ QuandlismContext_.brush = function() {
      * Stop dragging
      */
     canvas.node().addEventListener('mouseup', function(e) {
+      this.className = '';
       dragging = false;
+      stretching = false;
+      stretchingDir = 0;
       start0 = start;
+      brushWidth0 = brushWidth;
     });
     
     /**
      * Calculate the movement
      */
     canvas.node().addEventListener('mousemove', function(e) {
-      if (dragging) {
-        dragDiff = e.x - dragX;
-        start = start0 + dragDiff;
+      
+      if (dragging || stretching) {
+      
+        if (dragging) {
+          dragDiff = e.x - dragX;
+          start = start0 + dragDiff;
+        }
+
+        else if (stretching) {
+          
+          dragDiff = e.x - dragX;
+          
+          if (stretchingHandle == 'left') {
+            start = start0 + dragDiff;
+            brushWidth = brushWidth0 - dragDiff;
+          } else if (stretchingHandle == 'right') {
+            brushWidth = brushWidth0 + dragDiff;
+          } else {
+            throw('Error');
+          }
+        }
         
         x1 = xScale.invert(start);
         x2 = xScale.invert(start + brushWidth);
@@ -439,9 +482,6 @@ QuandlismContext_.brush = function() {
       }
     });
     
-    
-    
-
     setInterval(update, 50);
       
   }
