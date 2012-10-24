@@ -48,49 +48,47 @@
   <script src="../lib/d3.v2.js" type="text/javascript" charset="utf-8"></script>
   <script src="../quandlism.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-  
-  var color = d3.scale.category10();
+
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
+    
   
-  d3.csv('/data/oil.csv', function(data) {
+  d3.csv('/data/apple.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
-
-    color.domain(d3.keys(data[0]).filter(function(key) { return key != dateColumn }));
-    // Parse the data  
     
-    data.forEach(function(d) {
-      d[dateColumn] = context.utility().parseDate(d[dateColumn]);
+    dates = _.map(data, function(d) { return d[dateColumn] });
+    
+    keys = d3.keys(data[0]).filter(function(k) {
+      return k != dateColumn;
     });
-            
-    var metrics = color.domain().map(function(name) {
+    
+    columns = _.map(keys, function(key) {
       return {
-        name: name,
-        values: data.map(function(d) {
-          return {date: d[dateColumn], num: +d[name]};
+        name: key,
+        values: _.map(data, function(d) {
+          return { date: d[dateColumn], num: +d[key] }
         })
       }
     });
     
-        
-    var columns = _.map(metrics, function(m, i) {
-      return context.line(m);
-    });      
-  
-    d3.select('#chart').call(function(div) {
-      div.append('div').datum(metrics).attr('class', 'axis').call(context.axis().orient('top'));
-
-      div.append('div').datum(columns).call(context.stage()).call(context.brush());
-      div.append('div').datum(metrics).attr('class', 'axis').call(context.axis().orient('top'));
+    start = d3.first(columns[0].values).date;
+    end = d3.last(columns[0].values).date;
+    
+    
+    lines = _.map(columns, function(c, i) {
+      return context.line(c);
     });
     
-    
-  
+    d3.select('#chart').call(function(div) {
+      div.append('div').datum(dates).attr('class', 'axis').call(context.axis().active(true));
+      div.append('div').datum(lines).call(context.stage()).call(context.brush());
+      div.append('div').datum(dates).attr('class', 'axis').call(context.axis());
+    });
 
+  
   });
-    
- 
+
     </script>
 </body>
 </html>
