@@ -300,7 +300,9 @@ QuandlismContext_.stage = function() {
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.height() * 0.2, width = width0 = context.width(), brushWidth = Math.ceil(width * 0.2), start = start0 = Math.ceil(width*0.7),
+  height = height0 = context.height() * 0.2, 
+  width = width0 = context.width(), brushWidth = Math.ceil(width * 0.2), 
+  start = start0 = Math.ceil(width*0.7),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   dragging = false,
@@ -308,11 +310,9 @@ QuandlismContext_.brush = function() {
   canvas = null,
   canvasContext = null,
   lines = [],
-  event = d3.dispatch('doBrush'),
   extent = [],
   dragging = false,
-  dragX = 0,
-  x1 = x2 = 0;
+  dragX = 0;
   
   
   function brush(selection) {
