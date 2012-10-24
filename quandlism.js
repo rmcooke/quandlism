@@ -392,10 +392,10 @@ QuandlismContext_.brush = function() {
      */
     function drawBrush() {
          
-      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      canvasContext.fillStyle = 'rgba(207, 207, 207, 0.55)';
       canvasContext.fillRect(start, 0, brushWidth, height);
       
-      context.fillStyle = '#000';
+      canvasContext.fillStyle = '#CFCFCF';
       canvasContext.fillRect(start, 0, 10, height);
       canvasContext.fillRect(start + brushWidth - 10, 0, 10, height);      
    
