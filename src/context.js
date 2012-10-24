@@ -10,13 +10,16 @@ quandlism.context = function() {
   height0 = null,
   el,
   event = d3.dispatch('respond', 'adjust'),
-  timeout;    
+  scale,
+  timeout;
+  
   /**
    * Expose attributes with getter/setters
    */
   function update() {
     width = width0 = $(el).width();
     height = height0 = $(el).height();
+    scale = context.scale = d3.time.scale([0, width])
     return context;
   }
     

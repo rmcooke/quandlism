@@ -15,12 +15,25 @@
     width: 100%;
     height: 600px;
   }
+  #chart #brush {
+    margin-top: 50px;
+  }
   #chart #brush.dragging {
     cursor: move;
   }
 
   #chart #brush.resize {
     cursor: col-resize;
+  }
+  
+  svg {
+    font: 10px sans-serif;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
   }
   </style>
 </head>
@@ -39,13 +52,12 @@
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
   
-  d3.csv('/data/oil.csv', function(data) {
+  d3.csv('/data/apple.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
 
     color.domain(d3.keys(data[0]).filter(function(key) { return key != dateColumn }));
     // Parse the data  
-    
     
     data.forEach(function(d) {
       d[dateColumn] = context.utility().parseDate(d[dateColumn]);
@@ -64,9 +76,14 @@
     var columns = _.map(metrics, function(m, i) {
       return context.line(m);
     });      
-         
+  
+    d3.select('#chart').call(function(div) {
+      div.append('div').datum(columns).call(context.stage()).call(context.brush());
+      div.append('div').datum(metrics).attr('class', 'axis').call(context.axis().orient('top'));
+    });
     
-    d3.select('#chart').datum(columns).call(context.stage()).call(context.brush());
+    
+  
 
   });
     
