@@ -13,6 +13,7 @@
     float: left;
     position: relative;
     width: 100%;
+    padding: 50px;
     height: 300px;
   }
   #chart #brush {
@@ -51,7 +52,7 @@
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
   
-  d3.csv('/data/apple.csv', function(data) {
+  d3.csv('/data/oil.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     
@@ -73,14 +74,12 @@
     lines = _.map(columns, function(c, i) {
       return context.line(c);
     });
-    
-    var id = 0;
-    
+        
     d3.select('#chart').call(function(div) {
       div.append('div').datum(lines).call(context.stage());
-      div.append('div').attr('id', 'axis-'+(id++)).datum(dates).attr('class', 'axis').call(context.axis().active(true));
+      div.append('div').attr('id', 'axis-stage-x').datum(dates).attr('class', 'axis').call(context.axis().active(true));
       div.append('div').datum(lines).call(context.brush());
-      div.append('div').attr('id', 'axis-'+(id++)).datum(dates).attr('class', 'axis').call(context.axis());
+      div.append('div').attr('id', 'axis-brush-x').datum(dates).attr('class', 'axis').call(context.axis());
     });
 
   
