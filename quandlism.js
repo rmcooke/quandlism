@@ -243,7 +243,7 @@ QuandlismContext_.stage = function() {
     
     
     end = lines[0].length();
-    start = Math.floor(lines[0].length()*.75);
+    start = Math.floor(lines[0].length()*.80);
     
 
     draw();
@@ -306,7 +306,7 @@ QuandlismContext_.brush = function() {
   var context = this,
   height = height0 = context.height() * 0.1, 
   width = width0 = context.width(), brushWidth = brushWidth0 = Math.ceil(width * 0.2), 
-  start = start0 = Math.ceil(width*0.7),
+  start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   dragging = false,

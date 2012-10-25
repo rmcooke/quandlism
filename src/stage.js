@@ -24,7 +24,7 @@ QuandlismContext_.stage = function() {
     
     
     end = lines[0].length();
-    start = Math.floor(lines[0].length()*.75);
+    start = Math.floor(lines[0].length()*.80);
     
 
     draw();
