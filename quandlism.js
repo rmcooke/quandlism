@@ -491,11 +491,6 @@ QuandlismContext_.brush = function() {
       
   }
   
-
-  
-
-  
-  
   return brush;
 
   
@@ -536,10 +531,26 @@ QuandlismContext_.axis = function() {
     
     // Listen for resize
     context.on('respond.axis-'+id, function() {
+    
       axis.remove();
+    
+      axis_.ticks(Math.floor(context.width() / 150), 0, 0);
+    
       scale.range([0, context.width()]);
       update();
     });
+    
+    // If the axis is active, it should respond to the brush event to update its access
+    if (active) {
+      
+      context.on('adjust.axis-'+id, function(x1, x2) {
+        console.log(x1, x2);
+      });
+    }
+    
+
+    
+  
         
 
         

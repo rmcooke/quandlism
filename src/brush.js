@@ -187,11 +187,6 @@ QuandlismContext_.brush = function() {
       
   }
   
-
-  
-
-  
-  
   return brush;
 
   
