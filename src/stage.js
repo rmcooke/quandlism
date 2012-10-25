@@ -51,11 +51,14 @@ QuandlismContext_.stage = function() {
     }
     
     
-    context.on('respond.stage', function(width_, height_) {
+    context.on('respond.stage', function() {
       
-      canvas.attr('width', width_).attr('height', height_);
-      canvasContext.clearRect(0, 0, width, height);
-      width = width_, height = height_, stageHeight = height * 0.8;
+      canvasContext.clearRect(0, 0, width, stageHeight);
+      
+      width = context.width(), height = context.height(), stageHeight = height * 0.9;
+      
+      canvas.attr('width', width).attr('height', stageHeight);
+      
       
       draw();
 

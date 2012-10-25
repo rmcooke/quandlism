@@ -104,10 +104,10 @@ QuandlismContext_.brush = function() {
     /**
      * Binding
      */
-    context.on('respond.brush', function(width_, height_) {
+    context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = height_ * 0.1, width = width_;
+      height = context.height() * 0.1, width = context.width();
       brushWidth = brushWidth/width0*width;
       start = start/width0*width;
       start0 = start0/width0*width;

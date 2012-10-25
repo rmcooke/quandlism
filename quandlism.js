@@ -11,8 +11,6 @@ quandlism.context = function() {
   trans = 'none',
   width,
   height,
-  width0 = null,
-  height0 = null,
   el,
   event = d3.dispatch('respond', 'adjust'),
   scale,
@@ -22,8 +20,8 @@ quandlism.context = function() {
    * Expose attributes with getter/setters
    */
   function update() {
-    width = width0 = $(el).width();
-    height = height0 = $(el).height();
+    width =  $(el).width();
+    height =  $(el).height();
     scale = context.scale = d3.time.scale([0, width])
     return context;
   }
@@ -84,7 +82,7 @@ quandlism.context = function() {
   // Event listeners
 
   context.respond = _.throttle(function() {
-    event.respond.call(context, width, height);
+    event.respond.call(context);
   }, 500);
   
   context.adjust = function(x1, x2) {
@@ -271,11 +269,14 @@ QuandlismContext_.stage = function() {
     }
     
     
-    context.on('respond.stage', function(width_, height_) {
+    context.on('respond.stage', function() {
       
-      canvas.attr('width', width_).attr('height', height_);
-      canvasContext.clearRect(0, 0, width, height);
-      width = width_, height = height_, stageHeight = height * 0.8;
+      canvasContext.clearRect(0, 0, width, stageHeight);
+      
+      width = context.width(), height = context.height(), stageHeight = height * 0.9;
+      
+      canvas.attr('width', width).attr('height', stageHeight);
+      
       
       draw();
 
@@ -406,10 +407,10 @@ QuandlismContext_.brush = function() {
     /**
      * Binding
      */
-    context.on('respond.brush', function(width_, height_) {
+    context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = height_ * 0.1, width = width_;
+      height = context.height() * 0.1, width = context.width();
       brushWidth = brushWidth/width0*width;
       start = start/width0*width;
       start0 = start0/width0*width;
@@ -519,13 +520,31 @@ QuandlismContext_.axis = function() {
     axis_.tickFormat(d3.time.format('%b %d, %Y'));
    
     axis_.ticks(6, 2, 2);
+    scale.range([0, context.width()]);
+    
+    function update() {
+      var g = selection.append('svg')
+          .attr('width', context.width())
+          .attr('height', 100)
+        .append('g')
+          .attr('transform', 'translate(0,27)')
+          .call(axis_);
+    }
+    
+    update();
+    
+    // Listen for resize
+    context.on('respond.axis', function() {
+      scale.range([0, context.width()]);
+      update();
+    });
         
-    var g = selection.append('svg')
-        .attr('width', context.width())
-        .attr('height', 100)
-      .append('g')
-        .attr('transform', 'translate(0,27)')
-        .call(axis_);
+
+        
+  }
+  
+  axis.remove = function(selection) {
+    selection.selectAll("svg").remove();
   }
   
   axis.active = function(_) {

@@ -6,8 +6,6 @@ quandlism.context = function() {
   trans = 'none',
   width,
   height,
-  width0 = null,
-  height0 = null,
   el,
   event = d3.dispatch('respond', 'adjust'),
   scale,
@@ -17,8 +15,8 @@ quandlism.context = function() {
    * Expose attributes with getter/setters
    */
   function update() {
-    width = width0 = $(el).width();
-    height = height0 = $(el).height();
+    width =  $(el).width();
+    height =  $(el).height();
     scale = context.scale = d3.time.scale([0, width])
     return context;
   }
@@ -79,7 +77,7 @@ quandlism.context = function() {
   // Event listeners
 
   context.respond = _.throttle(function() {
-    event.respond.call(context, width, height);
+    event.respond.call(context);
   }, 500);
   
   context.adjust = function(x1, x2) {
