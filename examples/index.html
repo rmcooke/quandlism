@@ -16,7 +16,7 @@
     height: 300px;
   }
   #chart #brush {
-    margin-top: 50px; 
+    margin-top: 10px; 
   }
   #chart #brush.dragging {
     cursor: move;
@@ -50,9 +50,8 @@
 
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
-    
   
-  d3.csv('/data/oil.csv', function(data) {
+  d3.csv('/data/apple.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     
@@ -69,21 +68,19 @@
           return { date: d[dateColumn], num: +d[key] }
         })
       }
-    });
-    
-    start = d3.first(columns[0].values).date;
-    end = d3.last(columns[0].values).date;
-    
+    });    
     
     lines = _.map(columns, function(c, i) {
       return context.line(c);
     });
     
+    var id = 0;
+    
     d3.select('#chart').call(function(div) {
       div.append('div').datum(lines).call(context.stage());
-      div.append('div').datum(dates).attr('class', 'axis').call(context.axis().active(true));
+      div.append('div').attr('id', 'axis-'+(id++)).datum(dates).attr('class', 'axis').call(context.axis().active(true));
       div.append('div').datum(lines).call(context.brush());
-      div.append('div').datum(dates).attr('class', 'axis').call(context.axis());
+      div.append('div').attr('id', 'axis-'+(id++)).datum(dates).attr('class', 'axis').call(context.axis());
     });
 
   

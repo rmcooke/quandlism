@@ -3,11 +3,11 @@ QuandlismContext_.axis = function() {
   scale = d3.time.scale().domain([0, length]).range([0, context.width()]),
   axis_ = d3.svg.axis().scale(scale),
   active = false,
-  data;
+  data,
+  id;
   
   function axis(selection) {
-    var tick;
-        
+    id = selection.attr('id');      
     data = selection.datum();
     
     extent = [d3.first(data), d3.last(data)];
@@ -18,7 +18,7 @@ QuandlismContext_.axis = function() {
    
     axis_.tickFormat(d3.time.format('%b %d, %Y'));
    
-    axis_.ticks(6, 2, 2);
+    axis_.ticks(Math.floor(context.width() / 150), 0, 0);
     scale.range([0, context.width()]);
     
     function update() {
@@ -33,7 +33,8 @@ QuandlismContext_.axis = function() {
     update();
     
     // Listen for resize
-    context.on('respond.axis', function() {
+    context.on('respond.axis-'+id, function() {
+      axis.remove();
       scale.range([0, context.width()]);
       update();
     });
@@ -42,8 +43,8 @@ QuandlismContext_.axis = function() {
         
   }
   
-  axis.remove = function(selection) {
-    selection.selectAll("svg").remove();
+  axis.remove = function() {
+    d3.select('#' + id).selectAll("svg").remove();
   }
   
   axis.active = function(_) {
