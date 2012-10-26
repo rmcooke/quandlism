@@ -283,7 +283,8 @@ QuandlismContext_.stage = function() {
     });
     
     context.on('adjust.stage', function(x1, x2) {
-      start = x1, end = x2;
+      start = (x1 > 0) ? x1 : 0;
+      end = (x2 < lines[0].length()) ? x2 : lines[0].length();
       draw();
     });
 
