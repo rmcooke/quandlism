@@ -52,7 +52,7 @@
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
   
-  d3.csv('/data/oil.csv', function(data) {
+  d3.csv('/data/uhero.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     
