@@ -1,8 +1,8 @@
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.height() * 0.1, 
-  width = width0 = context.width(), brushWidth = brushWidth0 = Math.ceil(width * 0.2), 
+  height = height0 = context.height() * 0.2, 
+  width = width0 = context.width(), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -14,7 +14,7 @@ QuandlismContext_.brush = function() {
   extent = [],
   dragging = false,
   stretching = false,
-  stretchingHandle = '',
+  stretchingHandle = 0,
   dragX = 0;
   
   
@@ -35,7 +35,6 @@ QuandlismContext_.brush = function() {
     
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
        
-
     setScales();
         
     update();
@@ -58,9 +57,7 @@ QuandlismContext_.brush = function() {
      */
     function update() {
       // Canvas clear
-      clearCanvas();
-      // Draw
-      
+      clearCanvas();      
       draw();
       drawBrush();
     }
@@ -71,8 +68,9 @@ QuandlismContext_.brush = function() {
      * Clear the context
      */ 
     function clearCanvas() {
-      canvas.attr('width', width).attr('height', height);
       canvasContext.clearRect(0, 0, width0, height0);
+      
+      canvas.attr('width', width).attr('height', height);
     }
     
     /**
@@ -90,12 +88,23 @@ QuandlismContext_.brush = function() {
      */
     function drawBrush() {
          
-      canvasContext.fillStyle = 'rgba(207, 207, 207, 0.55)';
-      canvasContext.fillRect(start, 0, brushWidth, height);
+      //canvasContext.strokeStyle = 'rgba(207, 207, 207, 0.55)';
+      canvasContext.beginPath();
+      canvasContext.fillStyle = 'rgba(207, 207, 207, 0.55)'
+
+      canvasContext.fillRect(start, 0, brushWidth, height)
+      canvasContext.lineWidth = 1;
+      canvasContext.lineTo(start, height);
+      canvasContext.closePath();
       
-      canvasContext.fillStyle = '#CFCFCF';
-      canvasContext.fillRect(start, 0, 10, height);
-      canvasContext.fillRect(start + brushWidth - 10, 0, 10, height);      
+      canvasContext.beginPath();
+      canvasContext.lineWidth = handleWidth;
+      canvasContext.strokeStyle = '#CFCFCF';
+      canvasContext.strokeRect(start, 0, brushWidth, height);
+      canvasContext.closePath();
+      
+      // canvasContext.fillRect(start, 0, 10, height);
+      //      canvasContext.fillRect(start + brushWidth - 10, 0, 10, height);      
    
     }
       
@@ -107,10 +116,10 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = context.height() * 0.1, width = context.width();
-      brushWidth = brushWidth/width0*width;
-      start = start/width0*width;
-      start0 = start0/width0*width;
+      height = context.height() * 0.2, width = context.width();
+      brushWidth = Math.ceil(brushWidth/width0*width);
+      start = Math.ceil(start/width0*width);
+      start0 = Math.ceil(start0/width0*width);
       setScales();
       
     });
@@ -119,22 +128,22 @@ QuandlismContext_.brush = function() {
      * Check if mouse click occured on the brush
      */
     canvas.node().addEventListener('mousedown', function(e) {
-      // Check if click was within handles
-      // Left handl
-      if (e.x <= start + 20 && e.x >= start) {
+      click = context.utility().getClickLocation(e, canvas.node());
+      xPoint = click.x;
+      if (xPoint >= start && xPoint <= start + handleWidth) {
         stretching = true;
-        stretchingHandle = 'left';
+        stretchingHandle = -1;
         this.className = 'resize';
-        dragX = e.x;
-      } else if (e.x >= (start + brushWidth - 20) && e.x <= (start + brushWidth)) {
+        dragX = xPoint;
+      } else if (xPoint >= (start + brushWidth) && xPoint <= (start + brushWidth + handleWidth)) {
         stretching = true;
-        stretchingHandle = 'right';
+        stretchingHandle = 1;
         this.className = 'resize';
-        dragX = e.x;
-      } else if (e.x <= (brushWidth + start) && e.x >= start) {
-        this.className = 'dragging';
+        dragX = xPoint;
+      }
+      else if (xPoint <= (brushWidth + start) && xPoint >= start) {
         dragging = true;
-        dragX = e.x;
+        dragX = xPoint;
       }
     });
     
@@ -155,24 +164,27 @@ QuandlismContext_.brush = function() {
      */
     canvas.node().addEventListener('mousemove', function(e) {
       
+      click = context.utility().getClickLocation(e, canvas.node())
+      xPoint = click.x;
+      
       if (dragging || stretching) {
       
         if (dragging) {
-          dragDiff = e.x - dragX;
+          dragDiff = xPoint - dragX;
           start = start0 + dragDiff;
         }
 
         else if (stretching) {
           
-          dragDiff = e.x - dragX;
+          dragDiff = xPoint - dragX;
           
-          if (stretchingHandle == 'left') {
+          if (stretchingHandle == -1) {
             start = start0 + dragDiff;
             brushWidth = brushWidth0 - dragDiff;
-          } else if (stretchingHandle == 'right') {
+          } else if (stretchingHandle == 1) {
             brushWidth = brushWidth0 + dragDiff;
           } else {
-            throw('Error');
+            throw('Error: Which direction?');
           }
         }
         

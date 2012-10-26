@@ -61,6 +61,20 @@ QuandlismContext_.utility = function() {
     canvas.closePath();
   }
   
+  utility.getClickLocation = function(e, c) {
+    var x, y;
+    if (e.pageX || e.pageY) {
+      x = e.pageX, y = e.pageY;
+    } else {
+      x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+      y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+    x -= c.offsetLeft;
+    y -= c.offsetTop;
+    return {x: x, y: y};
+    
+  }
+  
   
   return utility;
 }
