@@ -1,14 +1,13 @@
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  buffer = document.createElement('canvas'),
   width = context.width(), height = context.height(),
   stageHeight = height * 0.9,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
   canvas = null,
-  canvasContext = null,
+  ctx = null,
   start = 0, end = 0,
   format = d3.format('.2s'),
   colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"];
@@ -20,7 +19,7 @@ QuandlismContext_.stage = function() {
     lines = selection.datum();
     selection.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
     canvas = selection.select('.stage');
-    canvasContext = canvas.node().getContext('2d');
+    ctx = canvas.node().getContext('2d');
     
     
     end = lines[0].length();
@@ -42,10 +41,10 @@ QuandlismContext_.stage = function() {
       xScale.domain([start, end]);
       xScale.range([0, width]);
       
-      canvasContext.clearRect(0, 0, width, height);
+      ctx.clearRect(0, 0, width, height);
       
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, start, end);
+        context.utility().drawPath(line, colors[j], ctx, xScale, yScale, start, end);
       });
       
     }
@@ -53,7 +52,7 @@ QuandlismContext_.stage = function() {
     
     context.on('respond.stage', function() {
       
-      canvasContext.clearRect(0, 0, width, stageHeight);
+      ctx.clearRect(0, 0, width, stageHeight);
       
       width = context.width(), height = context.height(), stageHeight = height * 0.9;
       

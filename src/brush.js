@@ -6,10 +6,9 @@ QuandlismContext_.brush = function() {
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
-  dragging = false,
   colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"],
   canvas = null,
-  canvasContext = null,
+  ctx = null,
   lines = [],
   extent = [],
   dragging = false,
@@ -26,7 +25,7 @@ QuandlismContext_.brush = function() {
     selection.append('canvas').attr('width', width).attr('height', height).attr('id', 'brush');
     
     canvas = selection.select('#brush');
-    canvasContext = canvas.node().getContext('2d');
+    ctx = canvas.node().getContext('2d');
     
   
     exes = _.map(lines, function(line, j) {
@@ -68,7 +67,7 @@ QuandlismContext_.brush = function() {
      * Clear the context
      */ 
     function clearCanvas() {
-      canvasContext.clearRect(0, 0, width0, height0);
+      ctx.clearRect(0, 0, width0, height0);
       
       canvas.attr('width', width).attr('height', height);
     }
@@ -79,7 +78,7 @@ QuandlismContext_.brush = function() {
     function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], canvasContext, xScale, yScale, 0, lines[0].length());
+        context.utility().drawPath(line, colors[j], ctx, xScale, yScale, 0, lines[0].length());
       });
     }
     
@@ -88,23 +87,23 @@ QuandlismContext_.brush = function() {
      */
     function drawBrush() {
          
-      //canvasContext.strokeStyle = 'rgba(207, 207, 207, 0.55)';
-      canvasContext.beginPath();
-      canvasContext.fillStyle = 'rgba(207, 207, 207, 0.55)'
+      //ctx.strokeStyle = 'rgba(207, 207, 207, 0.55)';
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(207, 207, 207, 0.55)'
 
-      canvasContext.fillRect(start, 0, brushWidth, height)
-      canvasContext.lineWidth = 1;
-      canvasContext.lineTo(start, height);
-      canvasContext.closePath();
+      ctx.fillRect(start, 0, brushWidth, height)
+      ctx.lineWidth = 1;
+      ctx.lineTo(start, height);
+      ctx.closePath();
       
-      canvasContext.beginPath();
-      canvasContext.lineWidth = handleWidth;
-      canvasContext.strokeStyle = '#CFCFCF';
-      canvasContext.strokeRect(start, 0, brushWidth, height);
-      canvasContext.closePath();
+      ctx.beginPath();
+      ctx.lineWidth = handleWidth;
+      ctx.strokeStyle = '#CFCFCF';
+      ctx.strokeRect(start, 0, brushWidth, height);
+      ctx.closePath();
       
-      // canvasContext.fillRect(start, 0, 10, height);
-      //      canvasContext.fillRect(start + brushWidth - 10, 0, 10, height);      
+      // ctx.fillRect(start, 0, 10, height);
+      //      ctx.fillRect(start + brushWidth - 10, 0, 10, height);      
    
     }
     
