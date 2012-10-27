@@ -10,8 +10,8 @@ QuandlismContext_.axis = function() {
     id = selection.attr('id');      
     data = selection.datum();
     
-    extent = [d3.first(data), d3.last(data)];
-    
+    extent = [data[0], data[(data.length-1)]];
+        
     parseDate = context.utility().parseDate();
         
     scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
@@ -37,7 +37,6 @@ QuandlismContext_.axis = function() {
     context.on('respond.axis-'+id, function() {
     
       axis_.ticks(Math.floor(context.width() / 150), 0, 0);
-    
       scale.range([0, context.width()]);
       update();
       
@@ -46,7 +45,9 @@ QuandlismContext_.axis = function() {
     // If the axis is active, it should respond to the brush event to update its access
     if (active) {
       context.on('adjust.axis-'+id, function(x1, x2) {
-        extent = [data[x2], data[x1]];
+        x2 = (x2 > (data.length-1)) ? (data.length-1) : x2;
+        x1 = (x1 < 0) ? 0 : x1;
+        extent = [data[x1], data[x2]];
         scale.domain([parseDate(extent[0]), parseDate(extent[1])])
         update();
       });

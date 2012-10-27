@@ -107,6 +107,15 @@ QuandlismContext_.brush = function() {
       //      canvasContext.fillRect(start + brushWidth - 10, 0, 10, height);      
    
     }
+    
+    function invertAdjust() {
+      x1 = xScale.invert(start);
+      x2 = xScale.invert(start + brushWidth);
+        
+      context.adjust(Math.floor(x1), Math.floor(x2));
+    }
+  
+    invertAdjust();
       
     
     
@@ -188,10 +197,8 @@ QuandlismContext_.brush = function() {
           }
         }
         
-        x1 = xScale.invert(start);
-        x2 = xScale.invert(start + brushWidth);
-        
-        context.adjust(Math.ceil(x1), Math.ceil(x2));
+        invertAdjust();
+
       }
     });
     

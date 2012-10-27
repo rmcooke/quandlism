@@ -52,11 +52,12 @@
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
   
-  d3.csv('/data/uhero.csv', function(data) {
+  d3.csv('/data/oil.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     
     dates = _.map(data, function(d) { return d[dateColumn] });
+    dates = dates.reverse();
     
     keys = d3.keys(data[0]).filter(function(k) {
       return k != dateColumn;
