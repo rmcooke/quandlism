@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>Quandlism Test</title>
+  <style type="text/css" media="screen">
+  body {
+    float: left;
+    width: 80%;
+  }
+
+  #chart {
+    float: left;
+    position: relative;
+    width: 100%;
+    padding: 50px;
+    height: 300px;
+  }
+  #chart #brush {
+    margin-top: 10px; 
+  }
+  #chart #brush.dragging {
+    cursor: move;
+  }
+
+  #chart #brush.resize {
+    cursor: col-resize;
+  }
+  
+  svg {
+    font: 10px sans-serif;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+  }
+  </style>
+</head>
+<body id="index" onload="">
+  
+  <div id='chart'></div>
+
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.1/underscore-min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../lib/d3.v2.js" type="text/javascript" charset="utf-8"></script>
+  <script src="../quandlism.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" charset="utf-8">
+
+
+  var context = quandlism.context().el('#chart').frequency('annual').trans('none');
+  
+  d3.csv('/data/timmins.csv', function(data) {
+    
+    dateColumn = context.utility().dateColumn(data[0]);
+    
+    dates = _.map(data, function(d) { return d[dateColumn] });
+    dates = dates.reverse();
+    
+    keys = d3.keys(data[0]).filter(function(k) {
+      return k != dateColumn;
+    });
+    
+    columns = _.map(keys, function(key) {
+      return {
+        name: key,
+        values: _.map(data, function(d) {
+          return { date: d[dateColumn], num: +d[key] }
+        })
+      }
+    });    
+    
+    lines = _.map(columns, function(c, i) {
+      return context.line(c);
+    });
+        
+    d3.select('#chart').call(function(div) {
+      div.append('div').datum(lines).call(context.stage());
+      div.append('div').attr('id', 'axis-stage-x').datum(dates).attr('class', 'axis').call(context.axis().active(true));
+      div.append('div').datum(lines).call(context.brush());
+      div.append('div').attr('id', 'axis-brush-x').datum(dates).attr('class', 'axis').call(context.axis());
+    });
+
+  
+  });
+
+    </script>
+</body>
+</html>

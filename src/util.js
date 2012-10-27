@@ -6,6 +6,22 @@ QuandlismContext_.utility = function() {
     
   }
   
+  utility.dateFormat = function() {
+    dateString = '';
+    switch(context.frequency()) {
+      case 'daily':
+        dateString = '%Y-%m-%d';
+        break;
+      case 'annual':
+        dateString = '%Y';
+        break;
+      default:
+        throw('Error error');
+    }
+    return dateString;
+
+  }
+  
   /**
    * Parses the input date into a readable format for D3
    * String format is a function of the datasets frequency parameter
@@ -13,14 +29,7 @@ QuandlismContext_.utility = function() {
    * Return a time formatter
    */
   utility.parseDate = function() {   
-    dateString = '';
-    switch(context.frequency()) {
-      case 'daily':
-        dateString = '%Y-%m-%d';
-        break;
-      default:
-        throw('Error error');
-    }
+    dateString = this.dateFormat();
     return d3.time.format(dateString).parse;
   }
   
