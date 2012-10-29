@@ -342,9 +342,6 @@ QuandlismContext_.brush = function() {
         
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
       
-    console.log(exes);
-    console.log(extent);
-      
     setScales();
         
     update();
