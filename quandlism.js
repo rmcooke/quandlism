@@ -133,7 +133,7 @@ QuandlismLine_.valueAt = function() {
 
 QuandlismLine_.extent = function(start, end) {
   var i = 0, 
-  n = this.length(), 
+  n = this.length() -1, 
   min = Infinity, 
   max = -Infinity,
   val;
@@ -143,15 +143,19 @@ QuandlismLine_.extent = function(start, end) {
   if (end != null) {
     n = end;
   }
-  while (++i < n) {
-
+  while (i <= n) {
     val = this.valueAt(i);
+    if (typeof(val) == 'undefined') {
+      i++;
+      continue;
+    }
     if (val < min) {
       min = val;
     }
     if (val > max) {
       max = val;
     }
+    i++;
   }
   return [min, max];
 }
@@ -253,6 +257,7 @@ QuandlismContext_.stage = function() {
         return line.extent(start, end);
       });  
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
+    
       
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
@@ -283,7 +288,7 @@ QuandlismContext_.stage = function() {
     
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
-      end = (x2 < lines[0].length()) ? x2 : lines[0].length();
+      end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       draw();
     });
 
@@ -334,9 +339,12 @@ QuandlismContext_.brush = function() {
     exes = _.map(lines, function(line, j) {
       return line.extent();
     });  
-    
+        
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
-       
+      
+    console.log(exes);
+    console.log(extent);
+      
     setScales();
         
     update();
@@ -350,7 +358,7 @@ QuandlismContext_.brush = function() {
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([height, 0 ]);
     
-      xScale.domain([0, lines[0].length()]);
+      xScale.domain([0, (lines[0].length() -1)]);
       xScale.range([0, width]);
     }
     
@@ -413,8 +421,7 @@ QuandlismContext_.brush = function() {
     function invertAdjust() {
       x1 = xScale.invert(start);
       x2 = xScale.invert(start + brushWidth);
-        
-      context.adjust(Math.floor(x1), Math.floor(x2));
+      context.adjust(Math.ceil(x1), Math.ceil(x2));
     }
   
     invertAdjust();
@@ -646,14 +653,23 @@ QuandlismContext_.utility = function() {
    */
   utility.drawPath = function(line, color, canvas, xScale, yScale, start, end) {
     canvas.beginPath();
-    canvas.moveTo(xScale(0), yScale(line.valueAt(0)));
-    for (i = start; i <= end; i++) {
-      canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
-    }  
-    canvas.strokeStyle = color;
-    canvas.stroke();
+    
+    // If only one point, draw circle, otherwise, draw path
+    if (start != end) {
+      for (i = start; i <= end; i++) {
+        canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
+      }  
+      canvas.strokeStyle = color;
+      canvas.stroke();
+    } else {
+      canvas.arc(xScale(start), yScale(line.valueAt(start)), 10, 0, Math.PI*2, true);
+      canvas.fillStyle = color;
+      canvas.fill();
+    }
+
     canvas.closePath();
   }
+  
   
   utility.getClickLocation = function(e, c) {
     var x, y;

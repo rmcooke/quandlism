@@ -61,14 +61,23 @@ QuandlismContext_.utility = function() {
    */
   utility.drawPath = function(line, color, canvas, xScale, yScale, start, end) {
     canvas.beginPath();
-    canvas.moveTo(xScale(0), yScale(line.valueAt(0)));
-    for (i = start; i <= end; i++) {
-      canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
-    }  
-    canvas.strokeStyle = color;
-    canvas.stroke();
+    
+    // If only one point, draw circle, otherwise, draw path
+    if (start != end) {
+      for (i = start; i <= end; i++) {
+        canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
+      }  
+      canvas.strokeStyle = color;
+      canvas.stroke();
+    } else {
+      canvas.arc(xScale(start), yScale(line.valueAt(start)), 10, 0, Math.PI*2, true);
+      canvas.fillStyle = color;
+      canvas.fill();
+    }
+
     canvas.closePath();
   }
+  
   
   utility.getClickLocation = function(e, c) {
     var x, y;

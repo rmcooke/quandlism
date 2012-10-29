@@ -14,7 +14,7 @@ QuandlismLine_.valueAt = function() {
 
 QuandlismLine_.extent = function(start, end) {
   var i = 0, 
-  n = this.length(), 
+  n = this.length() -1, 
   min = Infinity, 
   max = -Infinity,
   val;
@@ -24,15 +24,19 @@ QuandlismLine_.extent = function(start, end) {
   if (end != null) {
     n = end;
   }
-  while (++i < n) {
-
+  while (i <= n) {
     val = this.valueAt(i);
+    if (typeof(val) == 'undefined') {
+      i++;
+      continue;
+    }
     if (val < min) {
       min = val;
     }
     if (val > max) {
       max = val;
     }
+    i++;
   }
   return [min, max];
 }

@@ -34,6 +34,7 @@ QuandlismContext_.stage = function() {
         return line.extent(start, end);
       });  
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
+    
       
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
@@ -64,7 +65,7 @@ QuandlismContext_.stage = function() {
     
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
-      end = (x2 < lines[0].length()) ? x2 : lines[0].length();
+      end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       draw();
     });
 

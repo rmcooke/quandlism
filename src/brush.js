@@ -34,6 +34,9 @@ QuandlismContext_.brush = function() {
         
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
       
+    console.log(exes);
+    console.log(extent);
+      
     setScales();
         
     update();
@@ -110,8 +113,7 @@ QuandlismContext_.brush = function() {
     function invertAdjust() {
       x1 = xScale.invert(start);
       x2 = xScale.invert(start + brushWidth);
-        
-      context.adjust(Math.floor(x1), Math.ceil(x2));
+      context.adjust(Math.ceil(x1), Math.ceil(x2));
     }
   
     invertAdjust();
