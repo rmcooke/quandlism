@@ -56,6 +56,47 @@ QuandlismContext_.line = function(data) {
     
   }
   
+  /**
+   * Draws a single point on the focus stage.
+   *
+   * color - The fill color of the circle
+   * ctx - The HTML canvas elmenet to draw on
+   * xS - Scale function for x axis
+   * yS - Scale function for y axis
+   * index - The data index for the point
+   */
+  line.drawPoint = function(color, ctx, xS, yS, index) {
+    ctx.beginPath();
+    ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+  }
+  
+  /**
+   * Draws the canvas path on the focus or brush chart
+   *
+   * color  - The hex color code of the line
+   * ctx - The HTML canavs element to draw on
+   * xS - The D3 scale for the xAxis
+   * yS - The D3 scale for the yAxis
+   * start - The first x-index to draw
+   * end - The last x-index to draw
+   *
+   * Return nil
+   */
+  line.drawPath = function(color, ctx, xS, yS, start, end) {
+
+    ctx.beginPath();
+    for (i = start; i <= end; i++) {
+      ctx.lineTo(xS(i), yS(this.valueAt(i)));
+    }  
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    
+    ctx.closePath();
+  }
+  
   line.startDate = function() {
     return values[0].date;
   }

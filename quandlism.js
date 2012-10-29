@@ -175,6 +175,47 @@ QuandlismContext_.line = function(data) {
     
   }
   
+  /**
+   * Draws a single point on the focus stage.
+   *
+   * color - The fill color of the circle
+   * ctx - The HTML canvas elmenet to draw on
+   * xS - Scale function for x axis
+   * yS - Scale function for y axis
+   * index - The data index for the point
+   */
+  line.drawPoint = function(color, ctx, xS, yS, index) {
+    ctx.beginPath();
+    ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+  }
+  
+  /**
+   * Draws the canvas path on the focus or brush chart
+   *
+   * color  - The hex color code of the line
+   * ctx - The HTML canavs element to draw on
+   * xS - The D3 scale for the xAxis
+   * yS - The D3 scale for the yAxis
+   * start - The first x-index to draw
+   * end - The last x-index to draw
+   *
+   * Return nil
+   */
+  line.drawPath = function(color, ctx, xS, yS, start, end) {
+
+    ctx.beginPath();
+    for (i = start; i <= end; i++) {
+      ctx.lineTo(xS(i), yS(this.valueAt(i)));
+    }  
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    
+    ctx.closePath();
+  }
+  
   line.startDate = function() {
     return values[0].date;
   }
@@ -258,17 +299,26 @@ QuandlismContext_.stage = function() {
       });  
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
     
-      
+      // For single points, edit extent so circle is not drawn at the corner
+      xStart = 0;
+      if (start == end) {
+        extent = [0, extent[0]*1.25];
+        xStart = Math.floor(width/2);
+      }
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
     
       xScale.domain([start, end]);
-      xScale.range([0, width]);
+      xScale.range([xStart, width]);
       
       ctx.clearRect(0, 0, width, height);
       
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], ctx, xScale, yScale, start, end);
+        if (start == end) {
+          line.drawPoint(colors[j], ctx, xScale, yScale, start);
+        } else {
+          line.drawPath(colors[j], ctx, xScale, yScale, start, end);
+        }
       });
       
     }
@@ -386,7 +436,7 @@ QuandlismContext_.brush = function() {
     function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], ctx, xScale, yScale, 0, lines[0].length());
+        line.drawPath(colors[j], ctx, xScale, yScale, 0, lines[0].length());
       });
     }
     
@@ -635,39 +685,15 @@ QuandlismContext_.utility = function() {
     throw('Error - Unknown date column');
   }
   
-  /**
-   * Draws the canvas path on the focus or brush chart
-   *
-   * line   - The quanlism.line object
-   * color  - The hex color code of the line
-   * canvas - The HTML canavs element to draw on
-   * xScale - The D3 scale for the xAxis
-   * yScale - The D3 scale for the yAxis
-   * start - The first x-index to draw
-   * end - The last x-index to draw
-   *
-   * Return nil
-   */
-  utility.drawPath = function(line, color, canvas, xScale, yScale, start, end) {
-    canvas.beginPath();
-    
-    // If only one point, draw circle, otherwise, draw path
-    if (start != end) {
-      for (i = start; i <= end; i++) {
-        canvas.lineTo(xScale(i), yScale(line.valueAt(i)));
-      }  
-      canvas.strokeStyle = color;
-      canvas.stroke();
-    } else {
-      canvas.arc(xScale(start), yScale(line.valueAt(start)), 10, 0, Math.PI*2, true);
-      canvas.fillStyle = color;
-      canvas.fill();
-    }
 
-    canvas.closePath();
-  }
-  
-  
+  /**
+   * Get co-ordinates in the context of the canvas element, of the user click.
+   * 
+   * e - Browser mouse click event
+   * c - The canvas element
+   *
+   * Returns an object with keys, x and y.
+   */
   utility.getClickLocation = function(e, c) {
     var x, y;
     if (e.pageX || e.pageY) {

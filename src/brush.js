@@ -78,7 +78,7 @@ QuandlismContext_.brush = function() {
     function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], ctx, xScale, yScale, 0, lines[0].length());
+        line.drawPath(colors[j], ctx, xScale, yScale, 0, lines[0].length());
       });
     }
     

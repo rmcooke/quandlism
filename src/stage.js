@@ -35,17 +35,26 @@ QuandlismContext_.stage = function() {
       });  
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
     
-      
+      // For single points, edit extent so circle is not drawn at the corner
+      xStart = 0;
+      if (start == end) {
+        extent = [0, extent[0]*1.25];
+        xStart = Math.floor(width/2);
+      }
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([stageHeight, 0 ]);
     
       xScale.domain([start, end]);
-      xScale.range([0, width]);
+      xScale.range([xStart, width]);
       
       ctx.clearRect(0, 0, width, height);
       
       _.each(lines, function(line, j) {
-        context.utility().drawPath(line, colors[j], ctx, xScale, yScale, start, end);
+        if (start == end) {
+          line.drawPoint(colors[j], ctx, xScale, yScale, start);
+        } else {
+          line.drawPath(colors[j], ctx, xScale, yScale, start, end);
+        }
       });
       
     }
