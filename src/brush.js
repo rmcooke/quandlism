@@ -31,9 +31,9 @@ QuandlismContext_.brush = function() {
     exes = _.map(lines, function(line, j) {
       return line.extent();
     });  
-    
+        
     extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
-       
+      
     setScales();
         
     update();
@@ -47,7 +47,7 @@ QuandlismContext_.brush = function() {
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([height, 0 ]);
     
-      xScale.domain([0, lines[0].length()]);
+      xScale.domain([0, (lines[0].length() -1)]);
       xScale.range([0, width]);
     }
     
@@ -111,7 +111,7 @@ QuandlismContext_.brush = function() {
       x1 = xScale.invert(start);
       x2 = xScale.invert(start + brushWidth);
         
-      context.adjust(Math.floor(x1), Math.floor(x2));
+      context.adjust(Math.floor(x1), Math.ceil(x2));
     }
   
     invertAdjust();
