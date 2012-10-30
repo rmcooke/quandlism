@@ -56,9 +56,6 @@
     
     dateColumn = context.utility().dateColumn(data[0]);
     
-    dates = _.map(data, function(d) { return d[dateColumn] });
-    dates = dates.reverse();
-    
     keys = d3.keys(data[0]).filter(function(k) {
       return k != dateColumn;
     });
@@ -75,12 +72,10 @@
     lines = _.map(columns, function(c, i) {
       return context.line(c);
     });
-        
+              
     d3.select('#chart').call(function(div) {
-      div.append('div').datum(lines).call(context.stage());
-      div.append('div').attr('id', 'axis-stage-x').datum(dates).attr('class', 'axis').call(context.axis().active(true));
-      div.append('div').datum(lines).call(context.brush());
-      div.append('div').attr('id', 'axis-brush-x').datum(dates).attr('class', 'axis').call(context.axis());
+      div.append('div').attr('id', 'stage').datum(lines).call(context.stage());
+      div.append('div').attr('id', 'brush').datum(lines).call(context.brush());
     });
 
   

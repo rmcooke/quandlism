@@ -24,6 +24,8 @@ QuandlismContext_.brush = function() {
     
     selection.append('canvas').attr('width', width).attr('height', height).attr('id', 'brush');
     
+    selection.append('div').attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis().lines(lines));
+    
     canvas = selection.select('#brush');
     ctx = canvas.node().getContext('2d');
     

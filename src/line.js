@@ -2,13 +2,17 @@
  * Quandlism Line
  */
 function QuandlismLine(context) {
-  this.context = context;
+  this.context = context;  
 }
-var QuandlismLine_ = QuandlismLine.prototype;
 
+var QuandlismLine_ = QuandlismLine.prototype;
 quandlism.line = QuandlismLine;
 
 QuandlismLine_.valueAt = function() {
+  return NaN;
+}
+
+QuandlismLine_.dateAt = function() {
   return NaN;
 }
 
@@ -110,6 +114,14 @@ QuandlismContext_.line = function(data) {
       return null;
     } else {
       return values[i].num;
+    }
+  }
+  
+  line.dateAt = function(i) {
+    if (typeof(values[i]) === 'undefined') {
+      return null;
+    } else {
+      return values[i].date;
     }
   }
   

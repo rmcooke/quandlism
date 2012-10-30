@@ -121,13 +121,17 @@ var quandlism_axis = 0;
  * Quandlism Line
  */
 function QuandlismLine(context) {
-  this.context = context;
+  this.context = context;  
 }
-var QuandlismLine_ = QuandlismLine.prototype;
 
+var QuandlismLine_ = QuandlismLine.prototype;
 quandlism.line = QuandlismLine;
 
 QuandlismLine_.valueAt = function() {
+  return NaN;
+}
+
+QuandlismLine_.dateAt = function() {
   return NaN;
 }
 
@@ -232,6 +236,14 @@ QuandlismContext_.line = function(data) {
     }
   }
   
+  line.dateAt = function(i) {
+    if (typeof(values[i]) === 'undefined') {
+      return null;
+    } else {
+      return values[i].date;
+    }
+  }
+  
   line.values = function() {
     return values;
   }
@@ -271,6 +283,7 @@ QuandlismContext_.stage = function() {
   yScale = d3.scale.linear(),
   extent = null,
   canvas = null,
+  axis = null,
   ctx = null,
   start = 0, end = 0,
   format = d3.format('.2s'),
@@ -279,16 +292,21 @@ QuandlismContext_.stage = function() {
   
   function stage(selection) {
     
+    // Setup
     var self = this;
     lines = selection.datum();
+    
     selection.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    
+    // Create the time-series (x) axis
+    selection.append('div').attr('class', 'axis').attr('id', 'x-axis-stage').call(context.axis().lines(lines).active(true));    
+    
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
-    
+    // Determine start and end poitns
     end = lines[0].length();
     start = Math.floor(lines[0].length()*.80);
-    
 
     draw();
     
@@ -381,6 +399,8 @@ QuandlismContext_.brush = function() {
     lines = selection.datum();
     
     selection.append('canvas').attr('width', width).attr('height', height).attr('id', 'brush');
+    
+    selection.append('div').attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis().lines(lines));
     
     canvas = selection.select('#brush');
     ctx = canvas.node().getContext('2d');
@@ -571,21 +591,22 @@ QuandlismContext_.axis = function() {
   scale = d3.time.scale().domain([0, length]).range([0, context.width()]),
   axis_ = d3.svg.axis().scale(scale),
   active = false,
+  lines = null,
   data,
   id;
   
   function axis(selection) {
-    id = selection.attr('id');      
-    data = selection.datum();
     
-    extent = [data[0], data[(data.length-1)]];
+    id = selection.attr('id');      
+    
+    extent = [lines[0].dateAt(0), lines[0].dateAt((lines[0].length() -1))];
         
     parseDate = context.utility().parseDate();
         
     scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
-   
+       
     axis_.tickFormat(d3.time.format('%b %d, %Y'));
-   
+       
     axis_.ticks(Math.floor(context.width() / 150), 0, 0);
     scale.range([0, context.width()]);
         
@@ -603,7 +624,6 @@ QuandlismContext_.axis = function() {
     
     // Listen for resize
     context.on('respond.axis-'+id, function() {
-    
       axis_.ticks(Math.floor(context.width() / 150), 0, 0);
       scale.range([0, context.width()]);
       update();
@@ -613,9 +633,9 @@ QuandlismContext_.axis = function() {
     // If the axis is active, it should respond to the brush event to update its access
     if (active) {
       context.on('adjust.axis-'+id, function(x1, x2) {
-        x2 = (x2 > (data.length-1)) ? (data.length-1) : x2;
+        x2 = (x2 > (lines[0].length() -1)) ? lines[0].length()-1 : x2;
         x1 = (x1 < 0) ? 0 : x1;
-        extent = [data[x1], data[x2]];
+        extent = [lines[0].dateAt(x1), lines[0].dateAt(x2)];
         scale.domain([parseDate(extent[0]), parseDate(extent[1])])
         update();
       });
@@ -632,6 +652,22 @@ QuandlismContext_.axis = function() {
       return active;
     }
     active = _;
+    return axis;
+  }
+  
+  axis.data = function(_) {
+    if (!arguments.length) {
+      return data;
+    }
+    data = _;
+    return axis;
+  }
+  
+  axis.lines = function(_) {
+    if (!arguments.length) {
+      return lines;
+    }
+    lines = _;
     return axis;
   }
   

@@ -7,6 +7,7 @@ QuandlismContext_.stage = function() {
   yScale = d3.scale.linear(),
   extent = null,
   canvas = null,
+  axis = null,
   ctx = null,
   start = 0, end = 0,
   format = d3.format('.2s'),
@@ -15,16 +16,21 @@ QuandlismContext_.stage = function() {
   
   function stage(selection) {
     
+    // Setup
     var self = this;
     lines = selection.datum();
+    
     selection.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    
+    // Create the time-series (x) axis
+    selection.append('div').attr('class', 'axis').attr('id', 'x-axis-stage').call(context.axis().lines(lines).active(true));    
+    
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
-    
+    // Determine start and end poitns
     end = lines[0].length();
     start = Math.floor(lines[0].length()*.80);
-    
 
     draw();
     
