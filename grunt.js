@@ -8,7 +8,7 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['src/index.js', 'src/context.js', 'src/id.js', 'src/line.js', 'src/stage.js', 'src/brush.js', 'src/axis.js', 'src/util.js'],
+        src: ['src/index.js', 'src/context.js', 'src/id.js', 'src/line.js', 'src/stage.js', 'src/brush.js', 'src/axis.js', 'src/yaxis.js', 'src/util.js'],
         dest: 'quandlism.js'
       }
     },

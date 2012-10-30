@@ -150,6 +150,14 @@ QuandlismContext_.line = function(data) {
     return line;
   }
   
+  line.name = function(_) {
+    if (!arguments.length) {
+      return name;
+    }
+    name = _;
+    return line;
+  }
+  
   return line;
 }
 

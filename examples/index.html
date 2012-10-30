@@ -6,13 +6,11 @@
   <style type="text/css" media="screen">
   body {
     float: left;
-    width: 80%;
   }
 
   #chart {
-    float: left;
     position: relative;
-    width: 100%;
+    width:  1200px;
     padding: 50px;
     height: 300px;
   }
@@ -52,7 +50,7 @@
 
   var context = quandlism.context().el('#chart').frequency('daily').trans('none');
   
-  d3.csv('/data/oil.csv', function(data) {
+  d3.csv('/data/apple.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     

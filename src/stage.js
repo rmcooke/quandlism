@@ -20,6 +20,9 @@ QuandlismContext_.stage = function() {
     var self = this;
     lines = selection.datum();
     
+    
+    selection.append('div').attr('id', 'y-axis-stage').call(context.yaxis().lines(lines).active(true).orient('left'));
+    
     selection.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
     
     // Create the time-series (x) axis
