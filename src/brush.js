@@ -1,8 +1,8 @@
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.height() * 0.2, 
-  width = width0 = context.width(), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  height = height0 = context.bH() * 0.2, 
+  width = width0 = context.bW() * quandlism_content_width, brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -21,12 +21,14 @@ QuandlismContext_.brush = function() {
 
     var self = this;
     lines = selection.datum();
+      
     
-    selection.append('canvas').attr('width', width).attr('height', height).attr('id', 'brush');
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');
     
-    selection.append('div').attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis().lines(lines));
+    selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
     
-    canvas = selection.select('#brush');
+    canvas = selection.select('.brush');
+    
     ctx = canvas.node().getContext('2d');
     
   
@@ -70,7 +72,6 @@ QuandlismContext_.brush = function() {
      */ 
     function clearCanvas() {
       ctx.clearRect(0, 0, width0, height0);
-      
       canvas.attr('width', width).attr('height', height);
     }
     
@@ -125,7 +126,7 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = context.height() * 0.2, width = context.width();
+      height = context.bH() * 0.2, width = context.bW() * quandlism_content_width;
       brushWidth = Math.ceil(brushWidth/width0*width);
       start = Math.ceil(start/width0*width);
       start0 = Math.ceil(start0/width0*width);

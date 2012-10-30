@@ -1,6 +1,6 @@
 QuandlismContext_.yaxis = function() {
   var context = this,
-  scale = d3.scale.linear().range([context.width(), 0]),
+  scale = d3.scale.linear().range([context.sH(), 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
   extent = null,
@@ -12,13 +12,12 @@ QuandlismContext_.yaxis = function() {
         
     end = lines[0].length() - 1;
     start = Math.floor(lines[0].length()*.80);
-  
+
     axis_.ticks(5, 0, 0);
-    scale.range([context.height(), 0]);
+    scale.range([context.sH(), 0]);
         
     function update() {   
-      
-      
+          
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
       });  
@@ -26,9 +25,10 @@ QuandlismContext_.yaxis = function() {
       scale.domain([extent[0], extent[1]]);
          
       axis.remove();
+      
       var g = selection.append('svg')
         .append('g')
-        .attr('transform', 'translate(20, 0)')
+        .attr('transform', 'translate(90, 0)')
         .attr('class', 'y axis')
         .call(axis_)
         .append("text")
@@ -45,7 +45,7 @@ QuandlismContext_.yaxis = function() {
     context.on('respond.y-axis-'+id, function() {
     
       axis_.ticks(10, 0, 0);
-      scale.range([context.height(), 0]);
+      scale.range([context.sH(), 0]);
       update();
       
     });

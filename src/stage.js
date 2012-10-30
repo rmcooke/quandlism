@@ -1,8 +1,7 @@
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = context.width(), height = context.height(),
-  stageHeight = height * 0.9,
+  width = context.sW() * quandlism_content_width, height = context.sH(), stageHeight = height *.9,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
@@ -21,12 +20,16 @@ QuandlismContext_.stage = function() {
     lines = selection.datum();
     
     
-    selection.append('div').attr('id', 'y-axis-stage').call(context.yaxis().lines(lines).active(true).orient('left'));
+    // Append div to hold y-axis
+    // selection.append('div').attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().lines(lines).active(true).orient('left'));
     
-    selection.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    // Append div to hold stage canvas and x-axis
+    div = selection.append('div').attr('class', 'stage-holder');
     
-    // Create the time-series (x) axis
-    selection.append('div').attr('class', 'axis').attr('id', 'x-axis-stage').call(context.axis().lines(lines).active(true));    
+    
+    // x-axis and canvas
+    div.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
@@ -38,7 +41,6 @@ QuandlismContext_.stage = function() {
     draw();
     
     function draw() {
-      
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
       });  
@@ -73,7 +75,7 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, stageHeight);
       
-      width = context.width(), height = context.height(), stageHeight = height * 0.9;
+      width = context.sW() * quandlism_content_width, height = context.sH(), stageHeight = height * 0.9;
       
       canvas.attr('width', width).attr('height', stageHeight);
             

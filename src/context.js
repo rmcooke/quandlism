@@ -4,9 +4,8 @@ quandlism.context = function() {
   var context = new QuandlismContext(),
   frequency = 'daily',
   trans = 'none',
-  width,
-  height,
-  el,
+  bW, bH, sW, sH,
+  stageDOM = brushDOM = null,
   event = d3.dispatch('respond', 'adjust'),
   scale,
   timeout;
@@ -15,9 +14,14 @@ quandlism.context = function() {
    * Expose attributes with getter/setters
    */
   function update() {
-    width =  $(el).width();
-    height =  $(el).height();
-    scale = context.scale = d3.time.scale([0, width])
+    if (stageDOM != null) {
+      sW = $(stageDOM).width();
+      sH = $(stageDOM).height();
+    }
+    if (brushDOM != null) {
+      bW = $(brushDOM).width();
+      bH = $(brushDOM).height();
+    }
     return context;
   }
     
@@ -48,27 +52,51 @@ quandlism.context = function() {
     return update();
   }
   
-  context.height = function(_) {
+  context.bW = function(_) {
     if (!arguments.length) {
-      return height;
+      return bW;
     }
-    height = _;
+    bW = _;
     return update();
   }
   
-  context.width = function(_) {
+  context.bH = function(_) {
     if (!arguments.length) {
-      return width;
+      return bH;
     }
-    width = _;
+    bH = _;
     return update();
-  }  
+  }
   
-  context.el = function(_) {
+  context.sW = function(_) {
     if (!arguments.length) {
-      return el;
+      return sW;
     }
-    el = _;
+    sW = _;
+    return update();
+  }
+  
+  context.sH = function(_) {
+    if (!arguments.length) {
+      return sH;
+    }
+    sH = _;
+    return update();
+  }
+  
+  context.stageDOM = function(_) {
+    if (!arguments.length) {
+      return stageDOM;
+    }
+    stageDOM = _;
+    return update();
+  }
+  
+  context.brushDOM = function(_) {
+    if (!arguments.length) {
+      return brushDOM;
+    }
+    brushDOM = _;
     return update();
   }
   
@@ -97,11 +125,31 @@ quandlism.context = function() {
   
   d3.select(window).on('resize', function() {
     d3.event.preventDefault();
-    h = $(el).height(), w = $(el).width();
-    if (h != height || w != width) {
-      width = w, height = h;
-      context.respond();
+    if (stageDOM != null || brushDOM != null) {
+      respond = false;
+      if (stageDOM != null) {
+        sW0 = $(stageDOM).width();
+        sH0 = $(stageDOM).height();
+        if (sW0 != sW || sH0 != sH) {
+          respond = true;
+          sW = sW0;
+          sH = sH0;
+        } 
+      }
+      if (brushDOM != null) {
+       bW0 = $(brushDOM).width();
+       bH0 = $(brushDOM).height();
+       if (bH0 != bH || bW0 != bW) {
+         respond = true;
+         bW = bW0;
+         bH = bH0;
+       } 
+      }
+      if (respond) {
+        context.respond();
+      }
     }
+
   });
 
   

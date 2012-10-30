@@ -9,9 +9,8 @@ quandlism.context = function() {
   var context = new QuandlismContext(),
   frequency = 'daily',
   trans = 'none',
-  width,
-  height,
-  el,
+  bW, bH, sW, sH,
+  stageDOM = brushDOM = null,
   event = d3.dispatch('respond', 'adjust'),
   scale,
   timeout;
@@ -20,9 +19,14 @@ quandlism.context = function() {
    * Expose attributes with getter/setters
    */
   function update() {
-    width =  $(el).width();
-    height =  $(el).height();
-    scale = context.scale = d3.time.scale([0, width])
+    if (stageDOM != null) {
+      sW = $(stageDOM).width();
+      sH = $(stageDOM).height();
+    }
+    if (brushDOM != null) {
+      bW = $(brushDOM).width();
+      bH = $(brushDOM).height();
+    }
     return context;
   }
     
@@ -53,27 +57,51 @@ quandlism.context = function() {
     return update();
   }
   
-  context.height = function(_) {
+  context.bW = function(_) {
     if (!arguments.length) {
-      return height;
+      return bW;
     }
-    height = _;
+    bW = _;
     return update();
   }
   
-  context.width = function(_) {
+  context.bH = function(_) {
     if (!arguments.length) {
-      return width;
+      return bH;
     }
-    width = _;
+    bH = _;
     return update();
-  }  
+  }
   
-  context.el = function(_) {
+  context.sW = function(_) {
     if (!arguments.length) {
-      return el;
+      return sW;
     }
-    el = _;
+    sW = _;
+    return update();
+  }
+  
+  context.sH = function(_) {
+    if (!arguments.length) {
+      return sH;
+    }
+    sH = _;
+    return update();
+  }
+  
+  context.stageDOM = function(_) {
+    if (!arguments.length) {
+      return stageDOM;
+    }
+    stageDOM = _;
+    return update();
+  }
+  
+  context.brushDOM = function(_) {
+    if (!arguments.length) {
+      return brushDOM;
+    }
+    brushDOM = _;
     return update();
   }
   
@@ -102,11 +130,31 @@ quandlism.context = function() {
   
   d3.select(window).on('resize', function() {
     d3.event.preventDefault();
-    h = $(el).height(), w = $(el).width();
-    if (h != height || w != width) {
-      width = w, height = h;
-      context.respond();
+    if (stageDOM != null || brushDOM != null) {
+      respond = false;
+      if (stageDOM != null) {
+        sW0 = $(stageDOM).width();
+        sH0 = $(stageDOM).height();
+        if (sW0 != sW || sH0 != sH) {
+          respond = true;
+          sW = sW0;
+          sH = sH0;
+        } 
+      }
+      if (brushDOM != null) {
+       bW0 = $(brushDOM).width();
+       bH0 = $(brushDOM).height();
+       if (bH0 != bH || bW0 != bW) {
+         respond = true;
+         bW = bW0;
+         bH = bH0;
+       } 
+      }
+      if (respond) {
+        context.respond();
+      }
     }
+
   });
 
   
@@ -117,6 +165,8 @@ function QuandlismContext() {}
 var QuandlismContext_ = QuandlismContext.prototype = quandlism.context.prototype;
 
 var quandlism_axis = 0;
+var quandlism_content_width = 0.8;
+var quandlism_axis_width = 0.2;
 /**
  * Quandlism Line
  */
@@ -285,8 +335,7 @@ QuandlismContext_.line = function(data) {
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = context.width(), height = context.height(),
-  stageHeight = height * 0.9,
+  width = context.sW() * quandlism_content_width, height = context.sH(), stageHeight = height *.9,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
@@ -305,12 +354,16 @@ QuandlismContext_.stage = function() {
     lines = selection.datum();
     
     
-    selection.append('div').attr('id', 'y-axis-stage').call(context.yaxis().lines(lines).active(true).orient('left'));
+    // Append div to hold y-axis
+    // selection.append('div').attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().lines(lines).active(true).orient('left'));
     
-    selection.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    // Append div to hold stage canvas and x-axis
+    div = selection.append('div').attr('class', 'stage-holder');
     
-    // Create the time-series (x) axis
-    selection.append('div').attr('class', 'axis').attr('id', 'x-axis-stage').call(context.axis().lines(lines).active(true));    
+    
+    // x-axis and canvas
+    div.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
@@ -322,7 +375,6 @@ QuandlismContext_.stage = function() {
     draw();
     
     function draw() {
-      
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
       });  
@@ -357,7 +409,7 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, stageHeight);
       
-      width = context.width(), height = context.height(), stageHeight = height * 0.9;
+      width = context.sW() * quandlism_content_width, height = context.sH(), stageHeight = height * 0.9;
       
       canvas.attr('width', width).attr('height', stageHeight);
             
@@ -388,8 +440,8 @@ QuandlismContext_.stage = function() {
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.height() * 0.2, 
-  width = width0 = context.width(), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  height = height0 = context.bH() * 0.2, 
+  width = width0 = context.bW() * quandlism_content_width, brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -408,12 +460,14 @@ QuandlismContext_.brush = function() {
 
     var self = this;
     lines = selection.datum();
+      
     
-    selection.append('canvas').attr('width', width).attr('height', height).attr('id', 'brush');
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');
     
-    selection.append('div').attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis().lines(lines));
+    selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
     
-    canvas = selection.select('#brush');
+    canvas = selection.select('.brush');
+    
     ctx = canvas.node().getContext('2d');
     
   
@@ -457,7 +511,6 @@ QuandlismContext_.brush = function() {
      */ 
     function clearCanvas() {
       ctx.clearRect(0, 0, width0, height0);
-      
       canvas.attr('width', width).attr('height', height);
     }
     
@@ -512,7 +565,7 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = context.height() * 0.2, width = context.width();
+      height = context.bH() * 0.2, width = context.bW() * quandlism_content_width;
       brushWidth = Math.ceil(brushWidth/width0*width);
       start = Math.ceil(start/width0*width);
       start0 = Math.ceil(start0/width0*width);
@@ -599,7 +652,7 @@ QuandlismContext_.brush = function() {
 }
 QuandlismContext_.axis = function() {
   var context = this,
-  scale = d3.time.scale().domain([0, length]).range([0, context.width()]),
+  scale = d3.time.scale().domain([0, length]).range([0, context.sW() * quandlism_content_width]),
   axis_ = d3.svg.axis().scale(scale),
   active = false,
   lines = null,
@@ -609,7 +662,7 @@ QuandlismContext_.axis = function() {
   function axis(selection) {
     
     id = selection.attr('id');      
-    
+    lines = selection.datum();
     extent = [lines[0].dateAt(0), lines[0].dateAt((lines[0].length() -1))];
         
     parseDate = context.utility().parseDate();
@@ -618,13 +671,13 @@ QuandlismContext_.axis = function() {
        
     axis_.tickFormat(d3.time.format('%b %d, %Y'));
        
-    axis_.ticks(Math.floor(context.width() / 150), 0, 0);
-    scale.range([0, context.width()]);
+    axis_.ticks(Math.floor(context.sW() / 150), 0, 0);
+    scale.range([0, context.sW() * quandlism_content_width]);
         
     function update() {      
       axis.remove();
       var g = selection.append('svg')
-          .attr('width', context.width())
+          .attr('width', context.sW() * quandlism_content_width)
           .attr('height', 100)
         .append('g')
           .attr('transform', 'translate(0,27)')
@@ -635,15 +688,15 @@ QuandlismContext_.axis = function() {
     
     // Listen for resize
     context.on('respond.axis-'+id, function() {
-      axis_.ticks(Math.floor(context.width() / 150), 0, 0);
-      scale.range([0, context.width()]);
+      axis_.ticks(Math.floor(context.sW() / 150), 0, 0);
+      scale.range([0, context.sW() * quandlism_content_width]);
       update();
       
     });
     
     // If the axis is active, it should respond to the brush event to update its access
     if (active) {
-      context.on('adjust.axis-'+id, function(x1, x2) {
+      context.on('adjust.axis-'+id, function(x1, x2) {        
         x2 = (x2 > (lines[0].length() -1)) ? lines[0].length()-1 : x2;
         x1 = (x1 < 0) ? 0 : x1;
         extent = [lines[0].dateAt(x1), lines[0].dateAt(x2)];
@@ -686,7 +739,7 @@ QuandlismContext_.axis = function() {
 }
 QuandlismContext_.yaxis = function() {
   var context = this,
-  scale = d3.scale.linear().range([context.width(), 0]),
+  scale = d3.scale.linear().range([context.sH(), 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
   extent = null,
@@ -698,13 +751,12 @@ QuandlismContext_.yaxis = function() {
         
     end = lines[0].length() - 1;
     start = Math.floor(lines[0].length()*.80);
-  
+
     axis_.ticks(5, 0, 0);
-    scale.range([context.height(), 0]);
+    scale.range([context.sH(), 0]);
         
     function update() {   
-      
-      
+          
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
       });  
@@ -712,9 +764,10 @@ QuandlismContext_.yaxis = function() {
       scale.domain([extent[0], extent[1]]);
          
       axis.remove();
+      
       var g = selection.append('svg')
         .append('g')
-        .attr('transform', 'translate(20, 0)')
+        .attr('transform', 'translate(90, 0)')
         .attr('class', 'y axis')
         .call(axis_)
         .append("text")
@@ -731,7 +784,7 @@ QuandlismContext_.yaxis = function() {
     context.on('respond.y-axis-'+id, function() {
     
       axis_.ticks(10, 0, 0);
-      scale.range([context.height(), 0]);
+      scale.range([context.sH(), 0]);
       update();
       
     });

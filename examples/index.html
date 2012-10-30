@@ -6,23 +6,7 @@
   <style type="text/css" media="screen">
   body {
     float: left;
-  }
-
-  #chart {
-    position: relative;
-    width:  1200px;
-    padding: 50px;
-    height: 300px;
-  }
-  #chart #brush {
-    margin-top: 10px; 
-  }
-  #chart #brush.dragging {
-    cursor: move;
-  }
-
-  #chart #brush.resize {
-    cursor: col-resize;
+    width: 100%;
   }
   
   svg {
@@ -34,11 +18,57 @@
     stroke: #000;
     shape-rendering: crispEdges;
   }
+
+  #chart {
+    position: relative;
+    width:  80%;
+    height: 300px;
+  }
+  
+  #chart #stage {
+    width: 100%;
+    float: left;
+    height: 400px;
+  }
+  
+  #chart #brush {
+    width: 100%;
+    float: left;
+    height: 200px;
+    margin-top: 20px;
+  }
+  
+  #chart .stage-holder {
+    float: left;
+    width: 90%;
+  }
+  
+  #chart .axis.y {
+    float: left;
+    width: 10%;
+  }
+  
+  #chart #stage .x path {
+    display: none;
+  }
+  
+  #chart #stage  {
+    float: left;
+  }
+
+  
+  
+
+  
+
   </style>
 </head>
 <body id="index" onload="">
   
-  <div id='chart'></div>
+  <div id='chart'>
+    <div id='stage'></div>
+    <div id='brush'></div>
+  </div>
 
 
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
@@ -48,9 +78,9 @@
   <script type="text/javascript" charset="utf-8">
 
 
-  var context = quandlism.context().el('#chart').frequency('daily').trans('none');
-  
-  d3.csv('/data/apple.csv', function(data) {
+  var context = quandlism.context().stageDOM('#stage').brushDOM('#brush').frequency('daily').trans('none');
+    
+  d3.csv('/data/oil.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     
@@ -71,9 +101,9 @@
       return context.line(c);
     });
               
-    d3.select('#chart').call(function(div) {
-      div.append('div').attr('id', 'stage').datum(lines).call(context.stage());
-      div.append('div').attr('id', 'brush').datum(lines).call(context.brush());
+    d3.select('#chart').call(function(div) { 
+      div.select('#stage').datum(lines).call(context.stage());
+      div.select('#brush').datum(lines).call(context.brush());
     });
 
   
