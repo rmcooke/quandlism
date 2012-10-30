@@ -9,7 +9,9 @@ QuandlismContext_.yaxis = function() {
   function axis(selection) {
   
     id = selection.attr('id');      
-        
+    
+    lines = selection.datum();
+      
     end = lines[0].length() - 1;
     start = Math.floor(lines[0].length()*.80);
 

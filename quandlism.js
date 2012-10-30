@@ -355,7 +355,7 @@ QuandlismContext_.stage = function() {
     
     
     // Append div to hold y-axis
-    // selection.append('div').attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().lines(lines).active(true).orient('left'));
+    selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
     // Append div to hold stage canvas and x-axis
     div = selection.append('div').attr('class', 'stage-holder');
@@ -748,7 +748,9 @@ QuandlismContext_.yaxis = function() {
   function axis(selection) {
   
     id = selection.attr('id');      
-        
+    
+    lines = selection.datum();
+      
     end = lines[0].length() - 1;
     start = Math.floor(lines[0].length()*.80);
 
