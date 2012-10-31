@@ -285,7 +285,7 @@ QuandlismContext_.line = function(data) {
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h
+  width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h)
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
@@ -358,7 +358,7 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h;
+      width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h);
             
       canvas.attr('width', width).attr('height', height);
             
@@ -393,8 +393,8 @@ QuandlismContext_.stage = function() {
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.h() * quandlism_brush.h,
-  width = width0 = context.w() * quandlism_brush.w, brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  height = height0 = Math.floor(context.h()*quandlism_brush.h),
+  width = width0 = Math.floor(context.w()*quandlism_brush.w), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -694,7 +694,7 @@ QuandlismContext_.axis = function() {
 }
 QuandlismContext_.yaxis = function() {
   var context = this,
-  height = context.h()*quandlism_yaxis.h, width = context.w()*quandlism_yaxis.w,
+  height = Math.floor(context.h()*quandlism_yaxis.h), width = Math.floor(context.w()*quandlism_yaxis.w),
   scale = d3.scale.linear().range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,

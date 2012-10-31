@@ -1,8 +1,8 @@
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.h() * quandlism_brush.h,
-  width = width0 = context.w() * quandlism_brush.w, brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  height = height0 = Math.floor(context.h()*quandlism_brush.h),
+  width = width0 = Math.floor(context.w()*quandlism_brush.w), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),

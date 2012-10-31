@@ -1,6 +1,6 @@
 QuandlismContext_.yaxis = function() {
   var context = this,
-  height = context.h()*quandlism_yaxis.h, width = context.w()*quandlism_yaxis.w,
+  height = Math.floor(context.h()*quandlism_yaxis.h), width = Math.floor(context.w()*quandlism_yaxis.w),
   scale = d3.scale.linear().range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,

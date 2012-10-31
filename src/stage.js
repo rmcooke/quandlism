@@ -1,7 +1,7 @@
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h
+  width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h)
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
@@ -74,7 +74,7 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h;
+      width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h);
             
       canvas.attr('width', width).attr('height', height);
             
