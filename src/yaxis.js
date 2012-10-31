@@ -35,7 +35,6 @@ QuandlismContext_.yaxis = function() {
       var g = selection.append('svg')
         .append('g')
         .attr('transform', 'translate(' + width*.75 + ', 0)')
-        .attr('class', 'y axis')
         .attr('height', height)
         .attr('width', width)
         .call(axis_)
