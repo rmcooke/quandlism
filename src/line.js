@@ -68,11 +68,13 @@ QuandlismContext_.line = function(data) {
    * index - The data index for the point
    */
   line.drawPoint = function(color, ctx, xS, yS, index) {
-    ctx.beginPath();
-    ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.closePath();
+    if (this.visible()) {
+      ctx.beginPath();
+      ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.closePath();   
+    }
   }
   
   /**
@@ -87,8 +89,7 @@ QuandlismContext_.line = function(data) {
    *
    * Return nil
    */
-  line.drawPath = function(color, ctx, xS, yS, start, end) {
-    
+  line.drawPath = function(color, ctx, xS, yS, start, end) {  
     if (this.visible()) {
       ctx.beginPath();
       for (i = start; i <= end; i++) {
@@ -96,10 +97,8 @@ QuandlismContext_.line = function(data) {
       }  
       ctx.strokeStyle = color;
       ctx.stroke();
-    
       ctx.closePath();
     }
-
   }
   
   /**

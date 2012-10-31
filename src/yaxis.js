@@ -49,7 +49,6 @@ QuandlismContext_.yaxis = function() {
     
     // Listen for resize
     context.on('respond.y-axis-'+id, function() {
-    
       width = context.w()*quandlism_yaxis.w, height = context.h()*quandlism_yaxis.h;
       sel.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
       axis_.ticks(10, 0, 0);
