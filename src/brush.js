@@ -126,7 +126,7 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = context.h*quandlism_brush.h, width = context.w()*quandlism.brush.w;
+      height = context.h()*quandlism_brush.h, width = context.w()*quandlism_brush.w;
       brushWidth = Math.ceil(brushWidth/width0*width);
       start = Math.ceil(start/width0*width);
       start0 = Math.ceil(start0/width0*width);

@@ -74,7 +74,7 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      width = context.w()*quandlism_stage.w, height = context.w()*quandlism_stage.h;
+      width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h;
             
       canvas.attr('width', width).attr('height', height);
             

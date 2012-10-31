@@ -113,10 +113,10 @@ function QuandlismContext() {}
 var QuandlismContext_ = QuandlismContext.prototype = quandlism.context.prototype;
 
 var quandlism_axis  = 0;
-var quandlism_stage = {w: 0.75, h: 0.65};
-var quandlism_brush = {w: 0.75, h: 0.15};
-var quandlism_xaxis = {w: 0.75, h: 0.2};
-var quandlism_yaxis = {w: 0.25, h: 0.7};
+var quandlism_stage = {w: 0.90, h: 0.65};
+var quandlism_brush = {w: 0.90, h: 0.15};
+var quandlism_xaxis = {w: 0.90, h: 0.2};
+var quandlism_yaxis = {w: 0.10, h: 0.7};
 /**
  * Quandlism Line
  */
@@ -358,7 +358,7 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      width = context.w()*quandlism_stage.w, height = context.w()*quandlism_stage.h;
+      width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h;
             
       canvas.attr('width', width).attr('height', height);
             
@@ -518,7 +518,7 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = context.h*quandlism_brush.h, width = context.w()*quandlism.brush.w;
+      height = context.h()*quandlism_brush.h, width = context.w()*quandlism_brush.w;
       brushWidth = Math.ceil(brushWidth/width0*width);
       start = Math.ceil(start/width0*width);
       start0 = Math.ceil(start0/width0*width);
@@ -694,7 +694,7 @@ QuandlismContext_.axis = function() {
 }
 QuandlismContext_.yaxis = function() {
   var context = this,
-  height = context.h()*quandlism_yaxis.h, width = context.h()*quandlism_yaxis.w,
+  height = context.h()*quandlism_yaxis.h, width = context.w()*quandlism_yaxis.w,
   scale = d3.scale.linear().range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
@@ -705,8 +705,9 @@ QuandlismContext_.yaxis = function() {
   function axis(selection) {
   
     id = selection.attr('id');     
-    sel = selection
-    sel.attr('style', 'width: ' + width + 'px;');
+    sel = selection;
+    
+    sel.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
     
     lines = selection.datum();
       
@@ -727,8 +728,10 @@ QuandlismContext_.yaxis = function() {
       
       var g = selection.append('svg')
         .append('g')
-        .attr('transform', 'translate(90, 0)')
+        .attr('transform', 'translate(' + width*.75 + ', 0)')
         .attr('class', 'y axis')
+        .attr('height', height)
+        .attr('width', width)
         .call(axis_)
         .append("text")
               .attr("transform", "rotate(-90)")
@@ -743,8 +746,10 @@ QuandlismContext_.yaxis = function() {
     // Listen for resize
     context.on('respond.y-axis-'+id, function() {
     
+      width = context.w()*quandlism_yaxis.w, height = context.h()*quandlism_yaxis.h;
+      sel.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
       axis_.ticks(10, 0, 0);
-      scale.range([context.sH(), 0]);
+      scale.range([height, 0]);
       update();
       
     });

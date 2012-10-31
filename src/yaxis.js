@@ -1,6 +1,6 @@
 QuandlismContext_.yaxis = function() {
   var context = this,
-  height = context.h()*quandlism_yaxis.h, width = context.h()*quandlism_yaxis.w,
+  height = context.h()*quandlism_yaxis.h, width = context.w()*quandlism_yaxis.w,
   scale = d3.scale.linear().range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
@@ -11,8 +11,9 @@ QuandlismContext_.yaxis = function() {
   function axis(selection) {
   
     id = selection.attr('id');     
-    sel = selection
-    sel.attr('style', 'width: ' + width + 'px;');
+    sel = selection;
+    
+    sel.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
     
     lines = selection.datum();
       
@@ -33,8 +34,10 @@ QuandlismContext_.yaxis = function() {
       
       var g = selection.append('svg')
         .append('g')
-        .attr('transform', 'translate(90, 0)')
+        .attr('transform', 'translate(' + width*.75 + ', 0)')
         .attr('class', 'y axis')
+        .attr('height', height)
+        .attr('width', width)
         .call(axis_)
         .append("text")
               .attr("transform", "rotate(-90)")
@@ -49,8 +52,10 @@ QuandlismContext_.yaxis = function() {
     // Listen for resize
     context.on('respond.y-axis-'+id, function() {
     
+      width = context.w()*quandlism_yaxis.w, height = context.h()*quandlism_yaxis.h;
+      sel.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
       axis_.ticks(10, 0, 0);
-      scale.range([context.sH(), 0]);
+      scale.range([height, 0]);
       update();
       
     });
