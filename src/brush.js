@@ -83,7 +83,7 @@ QuandlismContext_.brush = function() {
     function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
-        line.drawPath(colors[j], ctx, xScale, yScale, 0, lines[0].length());
+        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length());
       });
     }
     
@@ -106,10 +106,7 @@ QuandlismContext_.brush = function() {
       ctx.strokeStyle = '#CFCFCF';
       ctx.strokeRect(start, 0, brushWidth, height);
       ctx.closePath();
-      
-      // ctx.fillRect(start, 0, 10, height);
-      //      ctx.fillRect(start + brushWidth - 10, 0, 10, height);      
-   
+
     }
     
     function invertAdjust() {

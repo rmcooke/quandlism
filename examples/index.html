@@ -78,12 +78,12 @@
 
 
   var context = quandlism.context().dom('#stage').domlegend('#legend');
-    
-    
-  d3.json('/data/hicp.json', function(data) {
+      
+  d3.json('/data/uhero.json', function(data) {
     
     context.frequency(data.frequency);
     keys = _.without(data.columns, 'Date', 'Year');
+    
     lines =  _.map(keys, function(key, i) {
       return context.line({
         name: key,

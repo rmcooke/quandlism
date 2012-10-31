@@ -12,6 +12,7 @@ quandlism.context = function() {
   w, h,
   dom = null, domlegend = null,
   event = d3.dispatch('respond', 'adjust', 'toggle'),
+  colorScale = d3.scale.category20(),
   scale,
   timeout;
   
@@ -74,6 +75,14 @@ quandlism.context = function() {
       return domlegend;
     }
     domlegend = _;
+    return update();
+  }
+  
+  context.colorScale = function(_) {
+    if (!arguments.length) {
+      return colorScale;
+    }
+    colorScale = _;
     return update();
   }
   
@@ -316,9 +325,7 @@ QuandlismContext_.stage = function() {
   canvas = null,
   axis = null,
   ctx = null,
-  start = 0, end = 0,
-  format = d3.format('.2s'),
-  colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"];
+  start = 0, end = 0;
   
   
   function stage(selection) {
@@ -372,11 +379,11 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      _.each(lines, function(line, j) {
+      _.each(lines, function(line, j) {        
         if (start == end) {
-          line.drawPoint(colors[j], ctx, xScale, yScale, start);
+          line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(colors[j], ctx, xScale, yScale, start, end);
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end);
         }
       });
       
@@ -507,7 +514,7 @@ QuandlismContext_.brush = function() {
     function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
-        line.drawPath(colors[j], ctx, xScale, yScale, 0, lines[0].length());
+        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length());
       });
     }
     
@@ -530,10 +537,7 @@ QuandlismContext_.brush = function() {
       ctx.strokeStyle = '#CFCFCF';
       ctx.strokeRect(start, 0, brushWidth, height);
       ctx.closePath();
-      
-      // ctx.fillRect(start, 0, 10, height);
-      //      ctx.fillRect(start + brushWidth - 10, 0, 10, height);      
-   
+
     }
     
     function invertAdjust() {
@@ -936,6 +940,18 @@ QuandlismContext_.utility = function() {
     y -= c.offsetTop;
     return {x: x, y: y};
     
+  }
+  
+  /**
+   * Returns a hex colour code corresponding to the given index
+   *
+   * i - An integer index
+   *
+   * Returns a string representing a hex code
+   */
+  utility.getColor = function(i) {
+     s = context.colorScale()
+     return s(i);
   }
   
   

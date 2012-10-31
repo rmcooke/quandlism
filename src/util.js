@@ -78,6 +78,18 @@ QuandlismContext_.utility = function() {
     
   }
   
+  /**
+   * Returns a hex colour code corresponding to the given index
+   *
+   * i - An integer index
+   *
+   * Returns a string representing a hex code
+   */
+  utility.getColor = function(i) {
+     s = context.colorScale()
+     return s(i);
+  }
+  
   
   return utility;
 }

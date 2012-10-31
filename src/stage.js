@@ -8,9 +8,7 @@ QuandlismContext_.stage = function() {
   canvas = null,
   axis = null,
   ctx = null,
-  start = 0, end = 0,
-  format = d3.format('.2s'),
-  colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"];
+  start = 0, end = 0;
   
   
   function stage(selection) {
@@ -64,11 +62,11 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      _.each(lines, function(line, j) {
+      _.each(lines, function(line, j) {        
         if (start == end) {
-          line.drawPoint(colors[j], ctx, xScale, yScale, start);
+          line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(colors[j], ctx, xScale, yScale, start, end);
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end);
         }
       });
       

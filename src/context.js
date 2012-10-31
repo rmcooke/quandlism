@@ -7,6 +7,7 @@ quandlism.context = function() {
   w, h,
   dom = null, domlegend = null,
   event = d3.dispatch('respond', 'adjust', 'toggle'),
+  colorScale = d3.scale.category20(),
   scale,
   timeout;
   
@@ -69,6 +70,14 @@ quandlism.context = function() {
       return domlegend;
     }
     domlegend = _;
+    return update();
+  }
+  
+  context.colorScale = function(_) {
+    if (!arguments.length) {
+      return colorScale;
+    }
+    colorScale = _;
     return update();
   }
   
