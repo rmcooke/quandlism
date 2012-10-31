@@ -2,9 +2,7 @@ QuandlismContext_.utility = function() {
   
   var context = this;
   
-  function utility() {
-    
-  }
+  function utility() {}
   
   utility.dateFormat = function() {
     dateString = '';
@@ -41,19 +39,7 @@ QuandlismContext_.utility = function() {
     dateString = this.dateFormat();
     return d3.time.format(dateString).parse;
   }
-  
-  /**
-   * Write this
-   */
-  utility.dateColumn = function(d) {
-    if (typeof(d.Year) != 'undefined') {
-      return 'Year';
-    }
-    if (typeof(d.Date != 'undefined')) {
-      return 'Date';
-    }
-    throw('Error - Unknown date column');
-  }
+
   
 
   /**

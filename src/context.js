@@ -21,7 +21,7 @@ quandlism.context = function() {
     }
     return context;
   }
-  
+
   /**
    * The transformation of the dataset
    */

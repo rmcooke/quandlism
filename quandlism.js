@@ -26,7 +26,7 @@ quandlism.context = function() {
     }
     return context;
   }
-  
+
   /**
    * The transformation of the dataset
    */
@@ -325,6 +325,7 @@ QuandlismContext_.stage = function() {
   canvas = null,
   axis = null,
   ctx = null,
+  colorRange = [],
   start = 0, end = 0;
   
   
@@ -333,14 +334,13 @@ QuandlismContext_.stage = function() {
     // Setup
     var self = this;
     lines = selection.datum();
-    
-    
+        
     // Append div to hold y-axis
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
     // Append div to hold stage canvas and x-axis
     div = selection.append('div').attr('class', 'stage-holder');
-    
+  
     // x-axis and canvas
     div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage');
     div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
@@ -358,6 +358,11 @@ QuandlismContext_.stage = function() {
     start = Math.floor(lines[0].length()*.80);
 
     draw();
+    
+    // After drawing the first time, save the computed color range for easy look up later!
+    colorRange = context.colorScale().range();
+    
+    
     
     function draw() {
       exes = _.map(lines, function(line, j) {
@@ -389,31 +394,57 @@ QuandlismContext_.stage = function() {
       
     }
     
-    
+    // Respond to changes in the containing element width/height
     context.on('respond.stage', function() {
-      
       ctx.clearRect(0, 0, width, height);
-      
       width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h);
-            
       canvas.attr('width', width).attr('height', height);
-            
       draw();
-
     });
     
+    // Respond to brush resize and movement
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       draw();
     });
     
+    // Respond to toggling of line visibility
     context.on('toggle.stage', function() {
       draw();
     });
   
+  
+    // Detect mouse move for tooltip
+    canvas.node().addEventListener('mousemove', function(e) {
+      click = context.utility().getClickLocation(e, canvas.node());
+      px = ctx.getImageData(click.x, click.y, 1, 1).data;
+      if (!(px[0] == 0 && px[1] == 0 && px[2] == 0)) {
+        rgb = d3.rgb(px[0], px[1], px[2]);
+        hex = rgb.toString();
 
+        index = _.indexOf(colorRange, hex);
+        if (index !== -1) {
+          line = lines[index];
+          lineIndex = Math.ceil(xScale.invert(click.x));
+          console.log(line.name() + '-' + line.valueAt(lineIndex));
+        }
+        
+      }
+
+      
+    
+    });
+    
+    canvas.node().addEventListener('mousedown', function() {
+      
+    });
+
+    // Draw the brush
     div.call(context.brush());
+    
+    
+    
 
       
   }
@@ -866,9 +897,7 @@ QuandlismContext_.utility = function() {
   
   var context = this;
   
-  function utility() {
-    
-  }
+  function utility() {}
   
   utility.dateFormat = function() {
     dateString = '';
@@ -905,19 +934,7 @@ QuandlismContext_.utility = function() {
     dateString = this.dateFormat();
     return d3.time.format(dateString).parse;
   }
-  
-  /**
-   * Write this
-   */
-  utility.dateColumn = function(d) {
-    if (typeof(d.Year) != 'undefined') {
-      return 'Year';
-    }
-    if (typeof(d.Date != 'undefined')) {
-      return 'Date';
-    }
-    throw('Error - Unknown date column');
-  }
+
   
 
   /**
