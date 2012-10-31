@@ -42,8 +42,7 @@ QuandlismContext_.yaxis = function() {
               .attr("transform", "rotate(-90)")
               .attr("y", 6)
               .attr("dy", ".71em")
-              .style("text-anchor", "end")
-              .text(lines[0].name());
+              .style("text-anchor", "end");
     }
     
     update();
