@@ -842,7 +842,7 @@ QuandlismContext_.legend = function() {
     legend_ = selection.selectAll('li').data(lines);
     
     legend_.enter()
-      .append('li')
+      .append('li').attr('style', function(line) { return 'background-color: ' + context.utility().getColor(line.id()); })
       .append('a').attr('href', 'javascript:;').attr('data-line-id', function(line) { return line.id(); })
       .text(function(l) { return l.name() });
       
