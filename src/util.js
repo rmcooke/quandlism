@@ -12,6 +12,15 @@ QuandlismContext_.utility = function() {
       case 'daily':
         dateString = '%Y-%m-%d';
         break;
+      case 'weekly':
+        dateString = '%Y-%m-%d';
+        break;    
+      case 'monthly':
+        dateString = '%Y-%m-%d';
+        break;
+      case 'quarterly':
+        dateString = '%Y-%m-%d';
+        break;
       case 'annual':
         dateString = '%Y';
         break;
