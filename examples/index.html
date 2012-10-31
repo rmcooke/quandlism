@@ -77,32 +77,27 @@
   <script type="text/javascript" charset="utf-8">
 
 
-  var context = quandlism.context().dom('#stage').domlegend('#legend').frequency('daily').trans('none');
+  var context = quandlism.context().dom('#stage').domlegend('#legend');
     
-  d3.csv('/data/uhero.csv', function(data) {
     
-    dateColumn = context.utility().dateColumn(data[0]);
+  d3.json('/data/hicp.json', function(data) {
     
-    keys = d3.keys(data[0]).filter(function(k) {
-      return k != dateColumn;
-    });
-    
-    columns = _.map(keys, function(key) {
-      return {
+    context.frequency(data.frequency);
+    keys = _.without(data.columns, 'Date', 'Year');
+    lines =  _.map(keys, function(key, i) {
+      return context.line({
         name: key,
-        values: _.map(data, function(d) {
-          return { date: d[dateColumn], num: +d[key] }
+        values: _.map(data.data, function(d) {
+          return { date: d[0], num: +d[(i+1)] }
         })
-      }
-    });    
-    
-    lines = _.map(columns, function(c, i) {
-      return context.line(c);
+      });
     });
-              
+
+    
     d3.select(context.dom()).datum(lines).call(context.stage());
-   
-  });
+  
+  }); 
+
 
     </script>
 </body>
