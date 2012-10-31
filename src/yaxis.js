@@ -1,14 +1,18 @@
 QuandlismContext_.yaxis = function() {
   var context = this,
-  scale = d3.scale.linear().range([context.sH(), 0]),
+  height = context.h()*quandlism_yaxis.h, width = context.h()*quandlism_yaxis.w,
+  scale = d3.scale.linear().range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
   extent = null,
+  sel = null,
   id;
   
   function axis(selection) {
   
-    id = selection.attr('id');      
+    id = selection.attr('id');     
+    sel = selection
+    sel.attr('style', 'width: ' + width + 'px;');
     
     lines = selection.datum();
       
@@ -16,7 +20,6 @@ QuandlismContext_.yaxis = function() {
     start = Math.floor(lines[0].length()*.80);
 
     axis_.ticks(5, 0, 0);
-    scale.range([context.sH(), 0]);
         
     function update() {   
           

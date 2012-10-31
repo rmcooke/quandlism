@@ -1,8 +1,8 @@
 QuandlismContext_.brush = function() {
   
   var context = this,
-  height = height0 = context.bH() * 0.2, 
-  width = width0 = context.bW() * quandlism_content_width, brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  height = height0 = context.h() * quandlism_brush.h,
+  width = width0 = context.w() * quandlism_brush.w, brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -21,17 +21,14 @@ QuandlismContext_.brush = function() {
 
     var self = this;
     lines = selection.datum();
-      
     
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');
-    
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');    
     selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
     
     canvas = selection.select('.brush');
     
     ctx = canvas.node().getContext('2d');
     
-  
     exes = _.map(lines, function(line, j) {
       return line.extent();
     });  
@@ -41,6 +38,10 @@ QuandlismContext_.brush = function() {
     setScales();
         
     update();
+    
+    console.log('hello');
+    
+    invertAdjust();
     
     
     /**
@@ -116,7 +117,6 @@ QuandlismContext_.brush = function() {
       context.adjust(Math.ceil(x1), Math.ceil(x2));
     }
   
-    invertAdjust();
       
     
     
@@ -126,7 +126,7 @@ QuandlismContext_.brush = function() {
     context.on('respond.brush', function() {
       
       height0 = height, width0 = width;
-      height = context.bH() * 0.2, width = context.bW() * quandlism_content_width;
+      height = context.h*quandlism_brush.h, width = context.w()*quandlism.brush.w;
       brushWidth = Math.ceil(brushWidth/width0*width);
       start = Math.ceil(start/width0*width);
       start0 = Math.ceil(start0/width0*width);

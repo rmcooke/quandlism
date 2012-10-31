@@ -31,23 +31,13 @@
     height: 400px;
   }
   
-  #chart #brush {
-    width: 100%;
+  #chart #stage .y.axis {
     float: left;
-    height: 200px;
-    margin-top: 20px;
   }
-  
-  #chart .stage-holder {
+  #chart #stage .stage-holder {
     float: left;
-    width: 90%;
   }
-  
-  #chart .axis.y {
-    float: left;
-    width: 10%;
-  }
-  
+
   #chart #stage .x path {
     display: none;
   }
@@ -67,7 +57,6 @@
   
   <div id='chart'>
     <div id='stage'></div>
-    <div id='brush'></div>
   </div>
 
 
@@ -78,7 +67,7 @@
   <script type="text/javascript" charset="utf-8">
 
 
-  var context = quandlism.context().stageDOM('#stage').brushDOM('#brush').frequency('daily').trans('none');
+  var context = quandlism.context().dom('#stage').frequency('daily').trans('none');
     
   d3.csv('/data/oil.csv', function(data) {
     
@@ -102,8 +91,7 @@
     });
               
     d3.select('#chart').call(function(div) { 
-      div.select('#stage').datum(lines).call(context.stage());
-      div.select('#brush').datum(lines).call(context.brush());
+      div.select(context.dom()).datum(lines).call(context.stage());
     });
 
   

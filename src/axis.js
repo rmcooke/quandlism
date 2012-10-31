@@ -1,6 +1,7 @@
 QuandlismContext_.axis = function() {
   var context = this,
-  scale = d3.time.scale().domain([0, length]).range([0, context.sW() * quandlism_content_width]),
+  width = context.w()*quandlism_xaxis.w, height = context.h()*quandlism_xaxis.h,
+  scale = d3.time.scale().domain([0, length]).range([0, width]),
   axis_ = d3.svg.axis().scale(scale),
   active = false,
   lines = null,
@@ -19,14 +20,14 @@ QuandlismContext_.axis = function() {
        
     axis_.tickFormat(d3.time.format('%b %d, %Y'));
        
-    axis_.ticks(Math.floor(context.sW() / 150), 0, 0);
-    scale.range([0, context.sW() * quandlism_content_width]);
+    axis_.ticks(Math.floor(width / 150), 0, 0);
+    scale.range([0, width]);
         
     function update() {      
       axis.remove();
       var g = selection.append('svg')
-          .attr('width', context.sW() * quandlism_content_width)
-          .attr('height', 100)
+          .attr('width', width)
+          .attr('height', height)
         .append('g')
           .attr('transform', 'translate(0,27)')
           .call(axis_);
@@ -36,8 +37,9 @@ QuandlismContext_.axis = function() {
     
     // Listen for resize
     context.on('respond.axis-'+id, function() {
-      axis_.ticks(Math.floor(context.sW() / 150), 0, 0);
-      scale.range([0, context.sW() * quandlism_content_width]);
+      width = context.w()*quandlism_xaxis.w;
+      axis_.ticks(Math.floor(width / 150), 0, 0);
+      scale.range([0, width]);
       update();
       
     });

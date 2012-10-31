@@ -1,7 +1,7 @@
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = context.sW() * quandlism_content_width, height = context.sH(), stageHeight = height *.9,
+  width = context.w()*quandlism_stage.w, height = context.h()*quandlism_stage.h
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
@@ -26,9 +26,8 @@ QuandlismContext_.stage = function() {
     // Append div to hold stage canvas and x-axis
     div = selection.append('div').attr('class', 'stage-holder');
     
-    
     // x-axis and canvas
-    div.append('canvas').attr('width', width).attr('height', stageHeight).attr('class', 'stage');
+    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage');
     div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     canvas = selection.select('.stage');
@@ -53,7 +52,7 @@ QuandlismContext_.stage = function() {
         xStart = Math.floor(width/2);
       }
       yScale.domain([extent[0], extent[1]]); 
-      yScale.range([stageHeight, 0 ]);
+      yScale.range([height, 0 ]);
     
       xScale.domain([start, end]);
       xScale.range([xStart, width]);
@@ -73,11 +72,11 @@ QuandlismContext_.stage = function() {
     
     context.on('respond.stage', function() {
       
-      ctx.clearRect(0, 0, width, stageHeight);
+      ctx.clearRect(0, 0, width, height);
       
-      width = context.sW() * quandlism_content_width, height = context.sH(), stageHeight = height * 0.9;
-      
-      canvas.attr('width', width).attr('height', stageHeight);
+      width = context.w()*quandlism_stage.w, height = context.w()*quandlism_stage.h;
+            
+      canvas.attr('width', width).attr('height', height);
             
       draw();
 
@@ -86,8 +85,12 @@ QuandlismContext_.stage = function() {
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
+      
+      console.log('adjust: ' + start + ' | ' + end);
       draw();
     });
+
+    div.call(context.brush());
 
       
   }
