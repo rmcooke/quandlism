@@ -731,7 +731,13 @@ QuandlismContext_.yaxis = function() {
         .attr('transform', 'translate(' + width*.75 + ', 0)')
         .attr('height', height)
         .attr('width', width)
-        .call(axis_);
+        .call(axis_)
+        .append("text")
+              .attr("transform", "rotate(-90)")
+              .attr("y", 6)
+              .attr("dy", ".71em")
+              .style("text-anchor", "end")
+              .text(lines[0].name());
     }
     
     update();

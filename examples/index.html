@@ -73,7 +73,7 @@
 
   var context = quandlism.context().dom('#stage').frequency('daily').trans('none');
     
-  d3.csv('/data/oil.csv', function(data) {
+  d3.csv('/data/boj.csv', function(data) {
     
     dateColumn = context.utility().dateColumn(data[0]);
     
@@ -94,9 +94,7 @@
       return context.line(c);
     });
               
-    d3.select('#chart').call(function(div) { 
-      div.select(context.dom()).datum(lines).call(context.stage());
-    });
+    d3.select(context.dom()).datum(lines).call(context.stage());
 
   
   });

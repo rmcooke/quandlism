@@ -3,28 +3,11 @@
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8">
   <title>Quandlism Test</title>
+
   <style type="text/css" media="screen">
   body {
     float: left;
-    width: 80%;
-  }
-
-  #chart {
-    float: left;
-    position: relative;
     width: 100%;
-    padding: 50px;
-    height: 300px;
-  }
-  #chart #brush {
-    margin-top: 10px; 
-  }
-  #chart #brush.dragging {
-    cursor: move;
-  }
-
-  #chart #brush.resize {
-    cursor: col-resize;
   }
   
   svg {
@@ -36,12 +19,44 @@
     stroke: #000;
     shape-rendering: crispEdges;
   }
+
+  #chart {
+    position: relative;
+    width:  80%;
+    height: 300px;
+  }
+  
+  #chart #stage {
+    width: 100%;
+    float: left;
+    height: 400px;
+  }
+  
+  #chart #stage .y.axis {
+    float: left;
+  }
+  
+  #chart #stage .y.axis svg {
+    float: left;
+  }
+  #chart #stage .stage-holder {
+    float: left;
+  }
+
+  #chart #stage .x path {
+    display: none;
+  }
+  
+  #chart #stage  {
+    float: left;
+  }
   </style>
+
 </head>
 <body id="index" onload="">
   
   <div id='chart'>
-    
+    <div id='stage'></div>
   </div>
 
 
@@ -52,7 +67,7 @@
   <script type="text/javascript" charset="utf-8">
 
 
-  var context = quandlism.context().el('#chart').frequency('annual').trans('none');
+  var context = quandlism.context().dom('#stage').frequency('annual').trans('none');
   
   d3.csv('/data/timmins.csv', function(data) {
     
@@ -74,11 +89,7 @@
       return context.line(c);
     });
         
-    d3.select('#chart').call(function(div) {
-      div.append('div').attr('id', 'stage').datum(lines).call(context.stage());
-      div.append('div').attr('id', 'brush').datum(lines).call(context.brush());
-
-    });
+    d3.select(context.dom()).datum(lines).call(context.stage());
 
   
   });
