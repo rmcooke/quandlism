@@ -30,6 +30,11 @@ QuandlismContext_.stage = function() {
     div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage');
     div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
+    // If Legend DOM is defined, create the legend. Style w/ CSS
+    if (context.domlegend() != null) {
+      d3.select(context.domlegend()).datum(lines).call(context.legend());
+    }
+    
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
@@ -85,10 +90,13 @@ QuandlismContext_.stage = function() {
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
-      
-      console.log('adjust: ' + start + ' | ' + end);
       draw();
     });
+    
+    context.on('toggle.stage', function() {
+      draw();
+    });
+  
 
     div.call(context.brush());
 

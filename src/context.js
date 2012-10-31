@@ -5,8 +5,8 @@ quandlism.context = function() {
   frequency = 'daily',
   trans = 'none',
   w, h,
-  dom = null,
-  event = d3.dispatch('respond', 'adjust'),
+  dom = null, domlegend = null,
+  event = d3.dispatch('respond', 'adjust', 'toggle'),
   scale,
   timeout;
   
@@ -20,7 +20,7 @@ quandlism.context = function() {
     }
     return context;
   }
-    
+  
   /**
    * The transformation of the dataset
    */
@@ -64,7 +64,14 @@ quandlism.context = function() {
     return update();
   }
   
-
+  context.domlegend = function(_) {
+    if (!arguments.length) {
+      return domlegend;
+    }
+    domlegend = _;
+    return update();
+  }
+  
   
   // Event listeners
 
@@ -76,6 +83,10 @@ quandlism.context = function() {
     event.adjust.call(context, x1, x2);
   }
   
+  // Handles toggling of visiblity
+  context.toggle = function() {
+    event.toggle.call(context);
+  }
   
   context.on = function(type, listener) {
     if (arguments.length < 2) {

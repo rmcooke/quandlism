@@ -29,20 +29,21 @@ QuandlismContext_.brush = function() {
     
     ctx = canvas.node().getContext('2d');
     
-    exes = _.map(lines, function(line, j) {
-      return line.extent();
-    });  
-        
-    extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
+    updateExtent();
       
     setScales();
         
     update();
-    
-    console.log('hello');
-    
+        
     invertAdjust();
     
+    function updateExtent() {
+      exes = _.map(lines, function(line, j) {
+        return line.extent();
+      });  
+        
+      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
+    }
     
     /**
      * Set scale functions for brush
@@ -132,6 +133,11 @@ QuandlismContext_.brush = function() {
       start0 = Math.ceil(start0/width0*width);
       setScales();
       
+    });
+    
+    context.on('toggle.brush', function() {
+      updateExtent();
+      setScales();
     });
     
     /**

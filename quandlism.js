@@ -10,8 +10,8 @@ quandlism.context = function() {
   frequency = 'daily',
   trans = 'none',
   w, h,
-  dom = null,
-  event = d3.dispatch('respond', 'adjust'),
+  dom = null, domlegend = null,
+  event = d3.dispatch('respond', 'adjust', 'toggle'),
   scale,
   timeout;
   
@@ -25,7 +25,7 @@ quandlism.context = function() {
     }
     return context;
   }
-    
+  
   /**
    * The transformation of the dataset
    */
@@ -69,7 +69,14 @@ quandlism.context = function() {
     return update();
   }
   
-
+  context.domlegend = function(_) {
+    if (!arguments.length) {
+      return domlegend;
+    }
+    domlegend = _;
+    return update();
+  }
+  
   
   // Event listeners
 
@@ -81,6 +88,10 @@ quandlism.context = function() {
     event.adjust.call(context, x1, x2);
   }
   
+  // Handles toggling of visiblity
+  context.toggle = function() {
+    event.toggle.call(context);
+  }
   
   context.on = function(type, listener) {
     if (arguments.length < 2) {
@@ -113,6 +124,7 @@ function QuandlismContext() {}
 var QuandlismContext_ = QuandlismContext.prototype = quandlism.context.prototype;
 
 var quandlism_axis  = 0;
+var quandlism_line_id = 0;
 var quandlism_stage = {w: 0.90, h: 0.65};
 var quandlism_brush = {w: 0.90, h: 0.15};
 var quandlism_xaxis = {w: 0.90, h: 0.2};
@@ -141,6 +153,11 @@ QuandlismLine_.extent = function(start, end) {
   min = Infinity, 
   max = -Infinity,
   val;
+  
+  // If this line is not visible, then return extreme values so its ignored from calculation of total extent
+  if (!this.visible()) {
+    return [min, max];
+  }
   if (start != null) {
     i = start;
   }
@@ -169,15 +186,8 @@ QuandlismContext_.line = function(data) {
   line = new QuandlismLine(context),
   name = data.name,
   values = data.values.reverse(),
-  id = ++quandlism_id,
-  step = 10,
-  visible = true,
-  canvas = null;
-    
-  
-  function prepare() {
-    
-  }
+  id = quandlism_line_id++,
+  visible = true;    
   
   /**
    * Draws a single point on the focus stage.
@@ -209,15 +219,38 @@ QuandlismContext_.line = function(data) {
    * Return nil
    */
   line.drawPath = function(color, ctx, xS, yS, start, end) {
-
-    ctx.beginPath();
-    for (i = start; i <= end; i++) {
-      ctx.lineTo(xS(i), yS(this.valueAt(i)));
-    }  
-    ctx.strokeStyle = color;
-    ctx.stroke();
     
-    ctx.closePath();
+    if (this.visible()) {
+      ctx.beginPath();
+      for (i = start; i <= end; i++) {
+        ctx.lineTo(xS(i), yS(this.valueAt(i)));
+      }  
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    
+      ctx.closePath();
+    }
+
+  }
+  
+  /**
+   * Toggle the visible state of the line
+   *
+   * Returns boolean, the stage that the line was togged to
+   */
+   
+  line.toggle = function() {
+    visibility = !this.visible();
+    this.visible(visibility);
+    return visibility;
+  }
+  
+  line.id = function(_) {
+    if (!arguments.length) {
+      return id;
+    }
+    id = _;
+    return line;
   }
   
   line.startDate = function() {
@@ -258,14 +291,6 @@ QuandlismContext_.line = function(data) {
       return visible;
     }
     visible = _;
-    return line;
-  }
-  
-  line.canvas = function(_) {
-    if (!arguments.length) {
-      return canvas;
-    }
-    canvas = _;
     return line;
   }
   
@@ -313,6 +338,11 @@ QuandlismContext_.stage = function() {
     // x-axis and canvas
     div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage');
     div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
+    
+    // If Legend DOM is defined, create the legend. Style w/ CSS
+    if (context.domlegend() != null) {
+      d3.select(context.domlegend()).datum(lines).call(context.legend());
+    }
     
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
@@ -369,10 +399,13 @@ QuandlismContext_.stage = function() {
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
-      
-      console.log('adjust: ' + start + ' | ' + end);
       draw();
     });
+    
+    context.on('toggle.stage', function() {
+      draw();
+    });
+  
 
     div.call(context.brush());
 
@@ -421,20 +454,21 @@ QuandlismContext_.brush = function() {
     
     ctx = canvas.node().getContext('2d');
     
-    exes = _.map(lines, function(line, j) {
-      return line.extent();
-    });  
-        
-    extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
+    updateExtent();
       
     setScales();
         
     update();
-    
-    console.log('hello');
-    
+        
     invertAdjust();
     
+    function updateExtent() {
+      exes = _.map(lines, function(line, j) {
+        return line.extent();
+      });  
+        
+      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
+    }
     
     /**
      * Set scale functions for brush
@@ -524,6 +558,11 @@ QuandlismContext_.brush = function() {
       start0 = Math.ceil(start0/width0*width);
       setScales();
       
+    });
+    
+    context.on('toggle.brush', function() {
+      updateExtent();
+      setScales();
     });
     
     /**
@@ -758,6 +797,10 @@ QuandlismContext_.yaxis = function() {
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       update();
     });
+    
+    context.on('toggle.y-axis-'+id, function() {
+      update();
+    });
       
   }
   
@@ -784,6 +827,39 @@ QuandlismContext_.yaxis = function() {
   
   
   return d3.rebind(axis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+}
+QuandlismContext_.legend = function() {
+  var context = this,
+  legend_ = null,
+  lines = null;
+  
+  
+  function legend(selection) {
+    
+    lines = selection.datum();
+    
+    legend_ = selection.selectAll('li').data(lines);
+    
+    legend_.enter()
+      .append('li')
+      .append('a').attr('href', 'javascript:;').attr('data-line-id', function(line) { return line.id(); })
+      .text(function(l) { return l.name() });
+      
+    legend_.exit().remove();
+    
+    selection.on('click', function(d, i) {
+      evt = d3.event;
+      evt.preventDefault();
+      line_id = evt.target.getAttribute('data-line-id');
+      vis = lines[line_id].toggle();
+      context.toggle();
+    });
+    
+  }
+  
+  
+  
+  return legend;
 }
 QuandlismContext_.utility = function() {
   

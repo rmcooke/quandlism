@@ -22,6 +22,11 @@ QuandlismLine_.extent = function(start, end) {
   min = Infinity, 
   max = -Infinity,
   val;
+  
+  // If this line is not visible, then return extreme values so its ignored from calculation of total extent
+  if (!this.visible()) {
+    return [min, max];
+  }
   if (start != null) {
     i = start;
   }
@@ -50,15 +55,8 @@ QuandlismContext_.line = function(data) {
   line = new QuandlismLine(context),
   name = data.name,
   values = data.values.reverse(),
-  id = ++quandlism_id,
-  step = 10,
-  visible = true,
-  canvas = null;
-    
-  
-  function prepare() {
-    
-  }
+  id = quandlism_line_id++,
+  visible = true;    
   
   /**
    * Draws a single point on the focus stage.
@@ -90,15 +88,38 @@ QuandlismContext_.line = function(data) {
    * Return nil
    */
   line.drawPath = function(color, ctx, xS, yS, start, end) {
-
-    ctx.beginPath();
-    for (i = start; i <= end; i++) {
-      ctx.lineTo(xS(i), yS(this.valueAt(i)));
-    }  
-    ctx.strokeStyle = color;
-    ctx.stroke();
     
-    ctx.closePath();
+    if (this.visible()) {
+      ctx.beginPath();
+      for (i = start; i <= end; i++) {
+        ctx.lineTo(xS(i), yS(this.valueAt(i)));
+      }  
+      ctx.strokeStyle = color;
+      ctx.stroke();
+    
+      ctx.closePath();
+    }
+
+  }
+  
+  /**
+   * Toggle the visible state of the line
+   *
+   * Returns boolean, the stage that the line was togged to
+   */
+   
+  line.toggle = function() {
+    visibility = !this.visible();
+    this.visible(visibility);
+    return visibility;
+  }
+  
+  line.id = function(_) {
+    if (!arguments.length) {
+      return id;
+    }
+    id = _;
+    return line;
   }
   
   line.startDate = function() {
@@ -139,14 +160,6 @@ QuandlismContext_.line = function(data) {
       return visible;
     }
     visible = _;
-    return line;
-  }
-  
-  line.canvas = function(_) {
-    if (!arguments.length) {
-      return canvas;
-    }
-    canvas = _;
     return line;
   }
   

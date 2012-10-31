@@ -64,6 +64,10 @@ QuandlismContext_.yaxis = function() {
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       update();
     });
+    
+    context.on('toggle.y-axis-'+id, function() {
+      update();
+    });
       
   }
   
