@@ -538,7 +538,7 @@ QuandlismContext_.brush = function() {
 
     lines = selection.datum();
     
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');    
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', 'brush-canvas');    
     selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
     
     canvas = selection.select('.brush');
@@ -655,33 +655,28 @@ QuandlismContext_.brush = function() {
     /**
      * Check if mouse click occured on the brush
      */
-    canvas.node().addEventListener('mousedown', function(e) {
-      click = context.utility().getClickLocation(e, canvas.node());
-      xPoint = click.x;
-      if (xPoint >= start && xPoint <= start + handleWidth) {
+    canvas.on('mousedown', function(e) {
+      m = d3.mouse(this);
+      if (m[0] >= start && m[0] <= start + handleWidth) {
         stretching = true;
         stretchingHandle = -1;
-        this.className = 'resize';
-        dragX = xPoint;
-      } else if (xPoint >= (start + brushWidth) && xPoint <= (start + brushWidth + handleWidth)) {
+        dragX = m[0];
+      } else if (m[0] >= (start + brushWidth) && m[0] <= (start + brushWidth + handleWidth)) {
         stretching = true;
         stretchingHandle = 1;
-        this.className = 'resize';
-        dragX = xPoint;
+        dragX = m[0];
       }
-      else if (xPoint <= (brushWidth + start) && xPoint >= start) {
+      else if (m[0] <= (brushWidth + start) && m[0] >= start) {
         dragging = true;
-        dragX = xPoint;
+        dragX = m[0];
       }
     });
     
     /**
      * Stop dragging
      */
-    canvas.node().addEventListener('mouseup', function(e) {
-      this.className = '';
-      dragging = false;
-      stretching = false;
+    canvas.on('mouseup', function(e) {
+      dragging = stretching = false;
       stretchingDir = 0;
       start0 = start;
       brushWidth0 = brushWidth;
@@ -690,22 +685,17 @@ QuandlismContext_.brush = function() {
     /**
      * Calculate the movement
      */
-    canvas.node().addEventListener('mousemove', function(e) {
+    canvas.on('mousemove', function(e) {
       
-      click = context.utility().getClickLocation(e, canvas.node())
-      xPoint = click.x;
-      
+      m = d3.mouse(this);
+        
       if (dragging || stretching) {
-      
         if (dragging) {
-          dragDiff = xPoint - dragX;
+          dragDiff = m[0] - dragX;
           start = start0 + dragDiff;
         }
-
-        else if (stretching) {
-          
-          dragDiff = xPoint - dragX;
-          
+        else if (stretching) { 
+          dragDiff = m[0] - dragX;
           if (stretchingHandle == -1) {
             start = start0 + dragDiff;
             brushWidth = brushWidth0 - dragDiff;
@@ -715,9 +705,7 @@ QuandlismContext_.brush = function() {
             throw('Error: Which direction?');
           }
         }
-        
         invertAdjust();
-
       }
     });
     
