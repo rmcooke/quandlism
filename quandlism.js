@@ -226,19 +226,21 @@ QuandlismContext_.line = function(data) {
    * yS - The D3 scale for the yAxis
    * start - The first x-index to draw
    * end - The last x-index to draw
+   * lineWidth - The width of the line to draw
    *
    * Return nil
    */
-  line.drawPath = function(color, ctx, xS, yS, start, end) {  
+  line.drawPath = function(color, ctx, xS, yS, start, end, lineWidth) {  
     if (this.visible()) {
       ctx.beginPath();
       for (i = start; i <= end; i++) {
         ctx.lineTo(xS(i), yS(this.valueAt(i)));
       }  
+      ctx.lineWidth = lineWidth;
       ctx.strokeStyle = color;
       ctx.stroke();
       ctx.closePath();
-    }
+     } 
   }
   
   /**
@@ -388,7 +390,7 @@ QuandlismContext_.stage = function() {
         if (start == end) {
           line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end);
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 3);
         }
       });
       
@@ -545,7 +547,7 @@ QuandlismContext_.brush = function() {
     function draw() {   
       // Draw lines
       _.each(lines, function(line, j) {
-        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length());
+        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1);
       });
     }
     

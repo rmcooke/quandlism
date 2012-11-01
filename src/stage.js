@@ -71,7 +71,7 @@ QuandlismContext_.stage = function() {
         if (start == end) {
           line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end);
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 3);
         }
       });
       

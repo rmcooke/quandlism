@@ -86,19 +86,21 @@ QuandlismContext_.line = function(data) {
    * yS - The D3 scale for the yAxis
    * start - The first x-index to draw
    * end - The last x-index to draw
+   * lineWidth - The width of the line to draw
    *
    * Return nil
    */
-  line.drawPath = function(color, ctx, xS, yS, start, end) {  
+  line.drawPath = function(color, ctx, xS, yS, start, end, lineWidth) {  
     if (this.visible()) {
       ctx.beginPath();
       for (i = start; i <= end; i++) {
         ctx.lineTo(xS(i), yS(this.valueAt(i)));
       }  
+      ctx.lineWidth = lineWidth;
       ctx.strokeStyle = color;
       ctx.stroke();
       ctx.closePath();
-    }
+     } 
   }
   
   /**
