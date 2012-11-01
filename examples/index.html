@@ -42,9 +42,7 @@
     float: left;
   }
 
-  #chart #stage .x path {
-    display: none;
-  }
+
   
   #chart #stage  {
     float: left;
@@ -78,7 +76,7 @@
 
   var context = quandlism.context().dom('#stage').domlegend('#legend');
       
-  d3.json('/data/oil.json', function(data) {
+  d3.json('/data/uhero.json', function(data) {
     
     context.frequency(data.frequency);
     keys = _.without(data.columns, _.first(data.columns));

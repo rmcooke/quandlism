@@ -3,7 +3,8 @@ QuandlismContext_.brush = function() {
   var context = this,
   height = height0 = Math.floor(context.h()*quandlism_brush.h),
   width = width0 = Math.floor(context.w()*quandlism_brush.w), 
-  brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  brushWidth = brushWidth0 = Math.ceil(width * 0.2), 
+  handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
@@ -13,28 +14,30 @@ QuandlismContext_.brush = function() {
   extent = [],
   dragging = false,
   stretching = false,
-  stretchingHandle = 0,
+  activeHandle = 0,
   dragX = 0;
   
   
   function brush(selection) {
 
+    // Extract line data from selection
     lines = selection.datum();
     
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', 'brush-canvas');    
-    selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
-    
-    canvas = selection.select('.brush');
-    
+    // Append canvas and axis elements
+    canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');   
+    axis = selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
+        
+    // Get drawing context
     ctx = canvas.node().getContext('2d');
     
     updateExtent();
       
     setScales();
+    
+    triggerAdjustEvent();
         
     update();
         
-    invertAdjust();
     
     function updateExtent() {
       exes = _.map(lines, function(line, j) {
@@ -107,36 +110,47 @@ QuandlismContext_.brush = function() {
 
     }
     
-    function invertAdjust() {
+    function triggerAdjustEvent() {
       x1 = xScale.invert(start);
       x2 = xScale.invert(start + brushWidth);
       context.adjust(Math.ceil(x1), Math.ceil(x2));
     }
-  
-      
-    
+   
     
     /**
-     * Binding
+     * Callbacks
      */
-    context.on('respond.brush', function() {
-      
+  
+    /**
+     * Resonds to respond event from context.  
+     * Re-calculate width, height, brushHeight and start values. Calls method to update y and x scales.
+     */
+    context.on('respond.brush', function() {  
       height0 = height, width0 = width;
       height = context.h()*quandlism_brush.h, width = context.w()*quandlism_brush.w;
       brushWidth = Math.ceil(brushWidth/width0*width);
       start = Math.ceil(start/width0*width);
       start0 = Math.ceil(start0/width0*width);
-      setScales();
-      
+      setScales();    
     });
     
+    /**
+     * Responds to toggle event from context
+     * Update extent (to ignore invisible lines) and updates x and y scales
+     */
     context.on('toggle.brush', function() {
       updateExtent();
       setScales();
     });
     
     /**
-     * Check if mouse click occured on the brush
+     * Event Bindings
+     */
+     
+    /**
+     * On mousedown
+     * Determines if click was in dragging area, or on stretching handle
+     * Save click location for stretch and drag actions
      */
     canvas.on('mousedown', function(e) {
       m = d3.mouse(this);
@@ -188,8 +202,10 @@ QuandlismContext_.brush = function() {
             throw('Error: Which direction?');
           }
         }
-        invertAdjust();
+        
+        triggerAdjustEvent();
       }
+      
     });
     
     setInterval(update, 50);
