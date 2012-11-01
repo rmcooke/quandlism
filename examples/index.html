@@ -63,6 +63,7 @@
 <body id="index" onload="">
   
   <div id='chart'>
+    <p id='tooltip'></p>
     <div id='stage'></div>
   </div>
   <ul id='legend'></ul>
@@ -74,7 +75,7 @@
   <script type="text/javascript" charset="utf-8">
 
 
-  var context = quandlism.context().dom('#stage').domlegend('#legend');
+  var context = quandlism.context().dom('#stage').domlegend('#legend').domtooltip('#tooltip');
       
   d3.json('/data/boj.json', function(data) {
     

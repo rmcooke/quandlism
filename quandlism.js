@@ -10,7 +10,7 @@ quandlism.context = function() {
   frequency = 'daily',
   trans = 'none',
   w, h,
-  dom = null, domlegend = null,
+  dom = null, domlegend = null, domtooltip = null,
   event = d3.dispatch('respond', 'adjust', 'toggle'),
   colorScale = d3.scale.category20(),
   scale,
@@ -75,6 +75,14 @@ quandlism.context = function() {
       return domlegend;
     }
     domlegend = _;
+    return update();
+  }
+  
+  context.domtooltip = function(_) {
+    if (!arguments.length) {
+      return domtooltip;
+    }
+    domtooltip = _;
     return update();
   }
   
@@ -371,7 +379,8 @@ QuandlismContext_.stage = function() {
   ctx = null,
   colorRange = [],
   start = 0, 
-  end = 0;
+  end = 0,
+  tooltip = false;
   
   
   function stage(selection) {
@@ -393,6 +402,10 @@ QuandlismContext_.stage = function() {
     if (context.domlegend() != null) {
       d3.select(context.domlegend()).datum(lines).call(context.legend());
     }
+    
+    // If toolitp DOM is defined, use it!
+    tooltip = (context.domtooltip() != null);
+    
     
     // Get references to canvas and canvas context for drawing
     canvas = selection.select('.stage');
@@ -492,22 +505,24 @@ QuandlismContext_.stage = function() {
     });
         
   
-    // Use d3 to get mouse co-ords
-    d3.select('#' + canvasId).on('mousemove', function(e) {
-      m = d3.mouse(this);
-      px = ctx.getImageData(m[0], m[1], 1, 1).data;
-      rgb = d3.rgb(px[0], px[1], px[2]);
-      hex = rgb.toString();
-      if (hex !== '#000000') {
-        i = _.indexOf(colorRange, hex);
-        if (i !== -1) {
-          line = lines[i];
-          x = Math.ceil(xScale.invert(m[0]));
-          console.log(line.name() + ' - ' + line.valueAt(x));
+    // Track mouse move for tooltip
+    if (tooltip) {
+      d3.select('#' + canvasId).on('mousemove', function(e) {
+        m = d3.mouse(this);
+        px = ctx.getImageData(m[0], m[1], 1, 1).data;
+        rgb = d3.rgb(px[0], px[1], px[2]);
+        hex = rgb.toString();
+        if (hex !== '#000000') {
+          i = _.indexOf(colorRange, hex);
+          if (i !== -1) {
+            line = lines[i];
+            x = Math.ceil(xScale.invert(m[0]));
+            console.log(line.name() + ' - ' + line.valueAt(x));
+          }
         }
-      }
+      });
+    }
 
-    });
 
       
     // Draw the brush inside the stage-holder

@@ -5,7 +5,7 @@ quandlism.context = function() {
   frequency = 'daily',
   trans = 'none',
   w, h,
-  dom = null, domlegend = null,
+  dom = null, domlegend = null, domtooltip = null,
   event = d3.dispatch('respond', 'adjust', 'toggle'),
   colorScale = d3.scale.category20(),
   scale,
@@ -70,6 +70,14 @@ quandlism.context = function() {
       return domlegend;
     }
     domlegend = _;
+    return update();
+  }
+  
+  context.domtooltip = function(_) {
+    if (!arguments.length) {
+      return domtooltip;
+    }
+    domtooltip = _;
     return update();
   }
   
