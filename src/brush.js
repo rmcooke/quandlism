@@ -15,6 +15,7 @@ QuandlismContext_.brush = function() {
   dragging = false,
   stretching = false,
   activeHandle = 0,
+  threshold = 10,
   dragX = 0;
   
   
@@ -85,7 +86,7 @@ QuandlismContext_.brush = function() {
       // Draw lines
       st = 0;
       en = lines[0].length();
-      showPoints = ((st -en) <= threshold);
+      showPoints = ((en - st) <= threshold);
       
       _.each(lines, function(line, j) {
         line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, st, en, 1);
