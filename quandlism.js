@@ -137,7 +137,7 @@ var quandlism_line_id = 0;
 var quandlism_stage = {w: 0.90, h: 0.55};
 var quandlism_brush = {w: 0.90, h: 0.15};
 var quandlism_xaxis = {w: 0.90, h: 0.15};
-var quandlism_yaxis = {w: 0.10, h: 0.7};
+var quandlism_yaxis = {w: 0.10, h: 0.55};
 /**
  * Quandlism Line
  */
@@ -404,18 +404,18 @@ QuandlismContext_.stage = function() {
     // Draw the stage
     draw();
     
+    
+
+    
     // After drawing the first time, save the computed color range for easy look up later!
     colorRange = context.colorScale().range();
-    
-    // Draw the brush inside the stage-holder
-    div.call(context.brush());
-    
-    
+
     /**
      * Draws the stage
      * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
      */
     function draw() {
+
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
       });  
@@ -427,6 +427,7 @@ QuandlismContext_.stage = function() {
         extent = [0, extent[0]*1.25];
         xStart = Math.floor(width/2);
       }
+          
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([height, 0 ]);
     
@@ -444,6 +445,7 @@ QuandlismContext_.stage = function() {
       });
       
     }
+    
     
   
     
@@ -501,6 +503,12 @@ QuandlismContext_.stage = function() {
       }
 
     });
+
+      
+    // Draw the brush inside the stage-holder
+    div.call(context.brush());
+    
+      
       
   }
 
