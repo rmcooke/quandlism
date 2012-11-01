@@ -83,10 +83,20 @@ QuandlismContext_.brush = function() {
      */
     function draw() {   
       // Draw lines
+      st = 0;
+      en = lines[0].length();
+      showPoints = ((st -en) <= threshold);
+      
       _.each(lines, function(line, j) {
-        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1);
+        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, st, en, 1);
+        if (showPoints) {
+          _.each(_.range(st, en), function(p) {
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+          });  
+        }
       });
     }
+    
     
     /**
      * Draw the brush

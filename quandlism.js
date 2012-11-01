@@ -204,7 +204,7 @@ QuandlismContext_.line = function(data) {
   line.drawPoint = function(color, ctx, xS, yS, index) {
    if (this.visible()) {
      ctx.beginPath();
-     ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
+     ctx.arc(xS(index), yS(this.valueAt(index)), 3, 0, Math.PI*2, true);
      ctx.fillStyle = color;
      ctx.fill();
      ctx.closePath();   
@@ -365,6 +365,7 @@ QuandlismContext_.stage = function() {
   height = Math.floor(context.h()*quandlism_stage.h)
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
+  threshold = 10,
   extent = null,
   canvas = null,
   ctx = null,
@@ -403,10 +404,7 @@ QuandlismContext_.stage = function() {
 
     // Draw the stage
     draw();
-    
-    
-
-    
+     
     // After drawing the first time, save the computed color range for easy look up later!
     colorRange = context.colorScale().range();
 
@@ -436,11 +434,18 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      _.each(lines, function(line, j) {        
-        if (start == end) {
+      _.each(lines, function(line, j) {   
+        if ((end - start) <= threshold) {
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1.5);
+          _.each(_.range(start, end + 1), function(p) {
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+          });
+        
+        }     
+        else if (start == end) {
           line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1);
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1.5);
         }
       });
       
@@ -509,6 +514,16 @@ QuandlismContext_.stage = function() {
     div.call(context.brush());
     
       
+    /**
+     * Getter/setters
+     */
+    stage.threshold = function(_) {
+      if (!arguments.length) {
+        return threshold;
+      }
+      threshold = _;
+      return stage;
+    }
       
   }
 
@@ -600,10 +615,20 @@ QuandlismContext_.brush = function() {
      */
     function draw() {   
       // Draw lines
+      st = 0;
+      en = lines[0].length();
+      showPoints = ((st -en) <= threshold);
+      
       _.each(lines, function(line, j) {
-        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1);
+        line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, st, en, 1);
+        if (showPoints) {
+          _.each(_.range(st, en), function(p) {
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+          });  
+        }
       });
     }
+    
     
     /**
      * Draw the brush

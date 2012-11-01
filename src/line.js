@@ -64,7 +64,7 @@ QuandlismContext_.line = function(data) {
   line.drawPoint = function(color, ctx, xS, yS, index) {
    if (this.visible()) {
      ctx.beginPath();
-     ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
+     ctx.arc(xS(index), yS(this.valueAt(index)), 3, 0, Math.PI*2, true);
      ctx.fillStyle = color;
      ctx.fill();
      ctx.closePath();   

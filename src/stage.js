@@ -6,6 +6,7 @@ QuandlismContext_.stage = function() {
   height = Math.floor(context.h()*quandlism_stage.h)
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
+  threshold = 10,
   extent = null,
   canvas = null,
   ctx = null,
@@ -44,10 +45,7 @@ QuandlismContext_.stage = function() {
 
     // Draw the stage
     draw();
-    
-    
-
-    
+     
     // After drawing the first time, save the computed color range for easy look up later!
     colorRange = context.colorScale().range();
 
@@ -77,11 +75,18 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
-      _.each(lines, function(line, j) {        
-        if (start == end) {
+      _.each(lines, function(line, j) {   
+        if ((end - start) <= threshold) {
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1.5);
+          _.each(_.range(start, end + 1), function(p) {
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+          });
+        
+        }     
+        else if (start == end) {
           line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1);
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1.5);
         }
       });
       
@@ -150,6 +155,16 @@ QuandlismContext_.stage = function() {
     div.call(context.brush());
     
       
+    /**
+     * Getter/setters
+     */
+    stage.threshold = function(_) {
+      if (!arguments.length) {
+        return threshold;
+      }
+      threshold = _;
+      return stage;
+    }
       
   }
 
