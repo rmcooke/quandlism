@@ -2,11 +2,11 @@ QuandlismContext_.brush = function() {
   
   var context = this,
   height = height0 = Math.floor(context.h()*quandlism_brush.h),
-  width = width0 = Math.floor(context.w()*quandlism_brush.w), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  width = width0 = Math.floor(context.w()*quandlism_brush.w), 
+  brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
-  colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"],
   canvas = null,
   ctx = null,
   lines = [],
@@ -19,7 +19,6 @@ QuandlismContext_.brush = function() {
   
   function brush(selection) {
 
-    var self = this;
     lines = selection.datum();
     
     selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');    
@@ -40,8 +39,7 @@ QuandlismContext_.brush = function() {
     function updateExtent() {
       exes = _.map(lines, function(line, j) {
         return line.extent();
-      });  
-        
+      });    
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
     }
     

@@ -148,47 +148,6 @@ function QuandlismLine(context) {
 var QuandlismLine_ = QuandlismLine.prototype;
 quandlism.line = QuandlismLine;
 
-QuandlismLine_.valueAt = function() {
-  return NaN;
-}
-
-QuandlismLine_.dateAt = function() {
-  return NaN;
-}
-
-QuandlismLine_.extent = function(start, end) {
-  var i = 0, 
-  n = this.length() -1, 
-  min = Infinity, 
-  max = -Infinity,
-  val;
-  
-  // If this line is not visible, then return extreme values so its ignored from calculation of total extent
-  if (!this.visible()) {
-    return [min, max];
-  }
-  if (start != null) {
-    i = start;
-  }
-  if (end != null) {
-    n = end;
-  }
-  while (i <= n) {
-    val = this.valueAt(i);
-    if (typeof(val) == 'undefined') {
-      i++;
-      continue;
-    }
-    if (val < min) {
-      min = val;
-    }
-    if (val > max) {
-      max = val;
-    }
-    i++;
-  }
-  return [min, max];
-}
 
 QuandlismContext_.line = function(data) {
   var context = this,
@@ -197,103 +156,19 @@ QuandlismContext_.line = function(data) {
   values = data.values.reverse(),
   id = quandlism_line_id++,
   visible = true;    
+
   
   /**
-   * Draws a single point on the focus stage.
+   * Getter / Setter methods
    *
-   * color - The fill color of the circle
-   * ctx - The HTML canvas elmenet to draw on
-   * xS - Scale function for x axis
-   * yS - Scale function for y axis
-   * index - The data index for the point
-   */
-  line.drawPoint = function(color, ctx, xS, yS, index) {
-    if (this.visible()) {
-      ctx.beginPath();
-      ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.closePath();   
-    }
-  }
-  
-  /**
-   * Draws the canvas path on the focus or brush chart
-   *
-   * color  - The hex color code of the line
-   * ctx - The HTML canavs element to draw on
-   * xS - The D3 scale for the xAxis
-   * yS - The D3 scale for the yAxis
-   * start - The first x-index to draw
-   * end - The last x-index to draw
-   * lineWidth - The width of the line to draw
-   *
-   * Return nil
-   */
-  line.drawPath = function(color, ctx, xS, yS, start, end, lineWidth) {  
-    if (this.visible()) {
-      ctx.beginPath();
-      for (i = start; i <= end; i++) {
-        ctx.lineTo(xS(i), yS(this.valueAt(i)));
-      }  
-      ctx.lineWidth = lineWidth;
-      ctx.strokeStyle = color;
-      ctx.stroke();
-      ctx.closePath();
-     } 
-  }
-  
-  /**
-   * Toggle the visible state of the line
-   *
-   * Returns boolean, the stage that the line was togged to
    */
    
-  line.toggle = function() {
-    visibility = !this.visible();
-    this.visible(visibility);
-    return visibility;
-  }
-  
   line.id = function(_) {
-    if (!arguments.length) {
-      return id;
-    }
-    id = _;
-    return line;
-  }
-  
-  line.startDate = function() {
-    return values[0].date;
-  }
-  
-  line.endDate = function() {
-    return values[this.length() - 1].date;
-  }
-  
-  line.valueAt = function(i) {
-    if (typeof(values[i]) === 'undefined') {
-      return null;
-    } else {
-      return values[i].num;
-    }
-  }
-  
-  line.dateAt = function(i) {
-    if (typeof(values[i]) === 'undefined') {
-      return null;
-    } else {
-      return values[i].date;
-    }
-  }
-  
-  line.values = function() {
-    return values;
-  }
-  
-  
-  line.length = function() {
-    return values.length;
+   if (!arguments.length) {
+     return id;
+   }
+   id = _;
+   return line;
   }
   
   line.visible = function(_) {
@@ -312,6 +187,171 @@ QuandlismContext_.line = function(data) {
     return line;
   }
   
+  /**
+   * Instance methods for a line object
+   *
+   */
+   
+  /**
+  * Draws a single point on the focus stage.
+  *
+  * color - The fill color of the circle
+  * ctx - The HTML canvas elmenet to draw on
+  * xS - Scale function for x axis
+  * yS - Scale function for y axis
+  * index - The data index for the point
+  */
+  line.drawPoint = function(color, ctx, xS, yS, index) {
+   if (this.visible()) {
+     ctx.beginPath();
+     ctx.arc(xS(index), yS(this.valueAt(index)), 5, 0, Math.PI*2, true);
+     ctx.fillStyle = color;
+     ctx.fill();
+     ctx.closePath();   
+   }
+  }
+  
+  /**
+  * Draws the canvas path on the focus or brush chart
+  *
+  * color  - The hex color code of the line
+  * ctx - The HTML canavs element to draw on
+  * xS - The D3 scale for the xAxis
+  * yS - The D3 scale for the yAxis
+  * start - The first x-index to draw
+  * end - The last x-index to draw
+  * lineWidth - The width of the line to draw
+  *
+  * Return nil
+  */
+  line.drawPath = function(color, ctx, xS, yS, start, end, lineWidth) {  
+   if (this.visible()) {
+     ctx.beginPath();
+     for (i = start; i <= end; i++) {
+       ctx.lineTo(xS(i), yS(this.valueAt(i)));
+     }  
+     ctx.lineWidth = lineWidth;
+     ctx.strokeStyle = color;
+     ctx.stroke();
+     ctx.closePath();
+    } 
+  }   
+     
+  /**
+   * Caclulate the extent of the line, between start and end, if they are defined, or of the entire line, if they are not.
+   *
+   * start - An integer index representing the starting point of the extent we want
+   * end - An integer index representing the end poitn of th extent we want
+   *
+   * Returns an array with two elements
+   */
+  line.extent = function(start, end) {
+    var i = 0, 
+    n = this.length() -1, 
+    min = Infinity, 
+    max = -Infinity,
+    val;
+  
+    // If this line is not visible, then return extreme values so its ignored from calculation of total extent
+    if (!this.visible()) {
+      return [min, max];
+    }
+    if (start != null) {
+      i = start;
+    }
+    if (end != null) {
+      n = end;
+    }
+    while (i <= n) {
+      val = this.valueAt(i);
+      if (typeof(val) == 'undefined') {
+        i++;
+        continue;
+      }
+      if (val < min) {
+        min = val;
+      }
+      if (val > max) {
+        max = val;
+      }
+      i++;
+    }
+    return [min, max];
+  }     
+   
+  /**
+   * Toggle the visible state of the line. 
+   *
+   * Returns boolean, the stage that the line was togged to
+   */
+  line.toggle = function() {
+    visibility = !this.visible();
+    this.visible(visibility);
+    return visibility;
+  }
+  
+
+  /**
+   * Returns the startDate of the line, the date of the first data point
+   *
+   * Returns a string representing a date
+   */
+  line.startDate = function() {
+    return values[0].date;
+  }
+  
+  /**
+   * Returns the endDate of the line, the date of the last data point
+   *
+   * Returns a string representing a date
+   */
+  line.endDate = function() {
+    return values[this.length() - 1].date;
+  }
+  
+  
+  /**
+   * Returns the number value of the dataset corresponding to an array index
+   *
+   * i - The integer index 
+   *
+   * Returns an integer value
+   */
+  line.valueAt = function(i) {
+    if (typeof(values[i]) === 'undefined') {
+      return null;
+    } else {
+      return values[i].num;
+    }
+  }
+  
+  /**
+   * Returns the date value of the dataset corresponding to an array index
+   *
+   * i - The integer index
+   *
+   * Returns a string reprenting a date
+   */
+  line.dateAt = function(i) {
+    if (typeof(values[i]) === 'undefined') {
+      return null;
+    } else {
+      return values[i].date;
+    }
+  }
+  
+  line.values = function() {
+    return values;
+  }
+  
+  line.length = function() {
+    return values.length;
+  }
+  
+
+  
+
+  
   return line;
 }
 
@@ -320,31 +360,32 @@ QuandlismContext_.line = function(data) {
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h)
+  canvasId = 'canvas-stage',
+  width = Math.floor(context.w()*quandlism_stage.w), 
+  height = Math.floor(context.h()*quandlism_stage.h)
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
   canvas = null,
-  axis = null,
   ctx = null,
   colorRange = [],
-  start = 0, end = 0;
+  start = 0, 
+  end = 0;
   
   
   function stage(selection) {
     
-    // Setup
-    var self = this;
+    // Extract line data    
     lines = selection.datum();
         
-    // Append div to hold y-axis
+    // Append div for y-axis and call yaxis from context
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
-    // Append div to hold stage canvas and x-axis
+    // Append div for stage-holder (to hold x-axis, stage data and brush)
     div = selection.append('div').attr('class', 'stage-holder');
   
-    // x-axis and canvas
-    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage');
+    // Append x-axis and stage
+    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
     div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     // If Legend DOM is defined, create the legend. Style w/ CSS
@@ -352,20 +393,28 @@ QuandlismContext_.stage = function() {
       d3.select(context.domlegend()).datum(lines).call(context.legend());
     }
     
+    // Get references to canvas and canvas context for drawing
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
-    // Determine start and end poitns
+    // Calculate initial start / end points
     end = lines[0].length();
     start = Math.floor(lines[0].length()*.80);
 
+    // Draw the stage
     draw();
     
     // After drawing the first time, save the computed color range for easy look up later!
     colorRange = context.colorScale().range();
     
+    // Draw the brush inside the stage-holder
+    div.call(context.brush());
     
     
+    /**
+     * Draws the stage
+     * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
+     */
     function draw() {
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
@@ -396,7 +445,17 @@ QuandlismContext_.stage = function() {
       
     }
     
-    // Respond to changes in the containing element width/height
+  
+    
+    /**
+     * Callbacks
+     */
+    
+    /**
+     * Callback for context.respond event
+     *
+     * Clears the drawing context, recalculates width / height and re-draws
+     */
     context.on('respond.stage', function() {
       ctx.clearRect(0, 0, width, height);
       width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h);
@@ -404,61 +463,47 @@ QuandlismContext_.stage = function() {
       draw();
     });
     
-    // Respond to brush resize and movement
+    /**
+     * Callback for context.adjust event
+     *
+     * Recalculates start and end points and re-draws the stage
+     */
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       draw();
     });
     
-    // Respond to toggling of line visibility
+    
+    /**
+     * Callback for context.toggle event
+     *
+     * Only redraw. Visiblity handled by line object
+     */
     context.on('toggle.stage', function() {
       draw();
     });
-  
-  
-    // Detect mouse move for tooltip
-    canvas.node().addEventListener('mousemove', function(e) {
-      click = context.utility().getClickLocation(e, canvas.node());
-      px = ctx.getImageData(click.x, click.y, 1, 1).data;
-      if (!(px[0] == 0 && px[1] == 0 && px[2] == 0)) {
-        rgb = d3.rgb(px[0], px[1], px[2]);
-        hex = rgb.toString();
-
-        index = _.indexOf(colorRange, hex);
-        if (index !== -1) {
-          line = lines[index];
-          lineIndex = Math.ceil(xScale.invert(click.x));
-          console.log(line.name() + '-' + line.valueAt(lineIndex));
-        }
         
+  
+    // Use d3 to get mouse co-ords
+    d3.select('#' + canvasId).on('mousemove', function(e) {
+      m = d3.mouse(this);
+      px = ctx.getImageData(m[0], m[1], 1, 1).data;
+      rgb = d3.rgb(px[0], px[1], px[2]);
+      hex = rgb.toString();
+      if (hex !== '#000000') {
+        i = _.indexOf(colorRange, hex);
+        if (i !== -1) {
+          line = lines[i];
+          x = Math.ceil(xScale.invert(m[0]));
+          console.log(line.name() + ' - ' + line.valueAt(x));
+        }
       }
 
-      
-    
     });
-    
-    canvas.node().addEventListener('mousedown', function() {
-      
-    });
-
-    // Draw the brush
-    div.call(context.brush());
-    
-    
-    
-
       
   }
 
-  
-  stage.lines = function(_) {
-    if (!arguments.length) {
-      return lines;
-    }
-    lines = _;
-    return stage;
-  }
   
   return stage;
 }
@@ -466,11 +511,11 @@ QuandlismContext_.brush = function() {
   
   var context = this,
   height = height0 = Math.floor(context.h()*quandlism_brush.h),
-  width = width0 = Math.floor(context.w()*quandlism_brush.w), brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
+  width = width0 = Math.floor(context.w()*quandlism_brush.w), 
+  brushWidth = brushWidth0 = Math.ceil(width * 0.2), handleWidth = 10,
   start = start0 = Math.ceil(width*0.8),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
-  colors = ["#08519c","#3182bd","#6baed6","#bdd7e7","#bae4b3","#74c476","#31a354","#006d2c"],
   canvas = null,
   ctx = null,
   lines = [],
@@ -483,7 +528,6 @@ QuandlismContext_.brush = function() {
   
   function brush(selection) {
 
-    var self = this;
     lines = selection.datum();
     
     selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');    
@@ -504,8 +548,7 @@ QuandlismContext_.brush = function() {
     function updateExtent() {
       exes = _.map(lines, function(line, j) {
         return line.extent();
-      });  
-        
+      });    
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
     }
     

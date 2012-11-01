@@ -1,31 +1,32 @@
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h)
+  canvasId = 'canvas-stage',
+  width = Math.floor(context.w()*quandlism_stage.w), 
+  height = Math.floor(context.h()*quandlism_stage.h)
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   extent = null,
   canvas = null,
-  axis = null,
   ctx = null,
   colorRange = [],
-  start = 0, end = 0;
+  start = 0, 
+  end = 0;
   
   
   function stage(selection) {
     
-    // Setup
-    var self = this;
+    // Extract line data    
     lines = selection.datum();
         
-    // Append div to hold y-axis
+    // Append div for y-axis and call yaxis from context
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
-    // Append div to hold stage canvas and x-axis
+    // Append div for stage-holder (to hold x-axis, stage data and brush)
     div = selection.append('div').attr('class', 'stage-holder');
   
-    // x-axis and canvas
-    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage');
+    // Append x-axis and stage
+    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
     div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     // If Legend DOM is defined, create the legend. Style w/ CSS
@@ -33,20 +34,28 @@ QuandlismContext_.stage = function() {
       d3.select(context.domlegend()).datum(lines).call(context.legend());
     }
     
+    // Get references to canvas and canvas context for drawing
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
-    // Determine start and end poitns
+    // Calculate initial start / end points
     end = lines[0].length();
     start = Math.floor(lines[0].length()*.80);
 
+    // Draw the stage
     draw();
     
     // After drawing the first time, save the computed color range for easy look up later!
     colorRange = context.colorScale().range();
     
+    // Draw the brush inside the stage-holder
+    div.call(context.brush());
     
     
+    /**
+     * Draws the stage
+     * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
+     */
     function draw() {
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
@@ -77,7 +86,17 @@ QuandlismContext_.stage = function() {
       
     }
     
-    // Respond to changes in the containing element width/height
+  
+    
+    /**
+     * Callbacks
+     */
+    
+    /**
+     * Callback for context.respond event
+     *
+     * Clears the drawing context, recalculates width / height and re-draws
+     */
     context.on('respond.stage', function() {
       ctx.clearRect(0, 0, width, height);
       width = Math.floor(context.w()*quandlism_stage.w), height = Math.floor(context.h()*quandlism_stage.h);
@@ -85,61 +104,47 @@ QuandlismContext_.stage = function() {
       draw();
     });
     
-    // Respond to brush resize and movement
+    /**
+     * Callback for context.adjust event
+     *
+     * Recalculates start and end points and re-draws the stage
+     */
     context.on('adjust.stage', function(x1, x2) {
       start = (x1 > 0) ? x1 : 0;
       end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
       draw();
     });
     
-    // Respond to toggling of line visibility
+    
+    /**
+     * Callback for context.toggle event
+     *
+     * Only redraw. Visiblity handled by line object
+     */
     context.on('toggle.stage', function() {
       draw();
     });
-  
-  
-    // Detect mouse move for tooltip
-    canvas.node().addEventListener('mousemove', function(e) {
-      click = context.utility().getClickLocation(e, canvas.node());
-      px = ctx.getImageData(click.x, click.y, 1, 1).data;
-      if (!(px[0] == 0 && px[1] == 0 && px[2] == 0)) {
-        rgb = d3.rgb(px[0], px[1], px[2]);
-        hex = rgb.toString();
-
-        index = _.indexOf(colorRange, hex);
-        if (index !== -1) {
-          line = lines[index];
-          lineIndex = Math.ceil(xScale.invert(click.x));
-          console.log(line.name() + '-' + line.valueAt(lineIndex));
-        }
         
+  
+    // Use d3 to get mouse co-ords
+    d3.select('#' + canvasId).on('mousemove', function(e) {
+      m = d3.mouse(this);
+      px = ctx.getImageData(m[0], m[1], 1, 1).data;
+      rgb = d3.rgb(px[0], px[1], px[2]);
+      hex = rgb.toString();
+      if (hex !== '#000000') {
+        i = _.indexOf(colorRange, hex);
+        if (i !== -1) {
+          line = lines[i];
+          x = Math.ceil(xScale.invert(m[0]));
+          console.log(line.name() + ' - ' + line.valueAt(x));
+        }
       }
 
-      
-    
     });
-    
-    canvas.node().addEventListener('mousedown', function() {
-      
-    });
-
-    // Draw the brush
-    div.call(context.brush());
-    
-    
-    
-
       
   }
 
-  
-  stage.lines = function(_) {
-    if (!arguments.length) {
-      return lines;
-    }
-    lines = _;
-    return stage;
-  }
   
   return stage;
 }
