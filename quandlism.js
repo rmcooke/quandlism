@@ -464,6 +464,12 @@ QuandlismContext_.stage = function() {
       
     }
     
+    function showTooltip(line, x, hex) {
+      $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span> (' + line.valueAt(x) + ')');    
+      draw();
+      line.drawPoint(hex, ctx, xScale, yScale, x);
+    }
+    
     
   
     
@@ -505,7 +511,9 @@ QuandlismContext_.stage = function() {
     });
         
   
-    // Track mouse move for tooltip
+    /**
+     * If tooltip dom is defined, track mousemovement on stage to render tooltip 
+     */
     if (tooltip) {
       d3.select('#' + canvasId).on('mousemove', function(e) {
         m = d3.mouse(this);
@@ -515,9 +523,7 @@ QuandlismContext_.stage = function() {
         if (hex !== '#000000') {
           i = _.indexOf(colorRange, hex);
           if (i !== -1) {
-            line = lines[i];
-            x = Math.ceil(xScale.invert(m[0]));
-            console.log(line.name() + ' - ' + line.valueAt(x));
+            showTooltip(lines[i], Math.ceil(xScale.invert(m[0])), hex);
           }
         }
       });

@@ -25,11 +25,11 @@ QuandlismContext_.stage = function() {
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
     // Append div for stage-holder (to hold x-axis, stage data and brush)
-    div = selection.append('div').attr('class', 'stage-holder');
+    stageHolder = selection.append('div').attr('class', 'stage-holder');
   
     // Append x-axis and stage
-    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
-    div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
+    stageHolder.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
+    stageHolder.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     // If Legend DOM is defined, create the legend. Style w/ CSS
     if (context.domlegend() != null) {
@@ -97,6 +97,12 @@ QuandlismContext_.stage = function() {
       
     }
     
+    function showTooltip(line, x, hex) {
+      $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span> (' + line.valueAt(x) + ')');    
+      draw();
+      line.drawPoint(hex, ctx, xScale, yScale, x);
+    }
+    
     
   
     
@@ -138,7 +144,9 @@ QuandlismContext_.stage = function() {
     });
         
   
-    // Track mouse move for tooltip
+    /**
+     * If tooltip dom is defined, track mousemovement on stage to render tooltip 
+     */
     if (tooltip) {
       d3.select('#' + canvasId).on('mousemove', function(e) {
         m = d3.mouse(this);
@@ -148,9 +156,7 @@ QuandlismContext_.stage = function() {
         if (hex !== '#000000') {
           i = _.indexOf(colorRange, hex);
           if (i !== -1) {
-            line = lines[i];
-            x = Math.ceil(xScale.invert(m[0]));
-            console.log(line.name() + ' - ' + line.valueAt(x));
+            showTooltip(lines[i], Math.ceil(xScale.invert(m[0])), hex);
           }
         }
       });

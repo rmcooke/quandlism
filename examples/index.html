@@ -57,13 +57,21 @@
     font-family: Helvetica;
     font-size: 14px;
   }
+  
+  #tooltip {
+    font-family: Helvetica;
+    height: 30px;
+  }
+  
   </style>
   
 </head>
 <body id="index" onload="">
   
+  <p id='tooltip'></p>
+  
+  
   <div id='chart'>
-    <p id='tooltip'></p>
     <div id='stage'></div>
   </div>
   <ul id='legend'></ul>
@@ -77,7 +85,7 @@
 
   var context = quandlism.context().dom('#stage').domlegend('#legend').domtooltip('#tooltip');
       
-  d3.json('/data/boj.json', function(data) {
+  d3.json('/data/uhero.json', function(data) {
     
     context.frequency(data.frequency);
     keys = _.without(data.columns, _.first(data.columns));
