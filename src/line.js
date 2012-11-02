@@ -60,11 +60,12 @@ QuandlismContext_.line = function(data) {
   * xS - Scale function for x axis
   * yS - Scale function for y axis
   * index - The data index for the point
+  * radius - The radius of the circle
   */
-  line.drawPoint = function(color, ctx, xS, yS, index) {
+  line.drawPoint = function(color, ctx, xS, yS, index, radius) {
    if (this.visible()) {
      ctx.beginPath();
-     ctx.arc(xS(index), yS(this.valueAt(index)), 3, 0, Math.PI*2, true);
+     ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI*2, true);
      ctx.fillStyle = color;
      ctx.fill();
      ctx.closePath();   
@@ -199,6 +200,7 @@ QuandlismContext_.line = function(data) {
       return values[i].date;
     }
   }
+  
   
   line.values = function() {
     return values;

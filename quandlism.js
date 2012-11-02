@@ -208,11 +208,12 @@ QuandlismContext_.line = function(data) {
   * xS - Scale function for x axis
   * yS - Scale function for y axis
   * index - The data index for the point
+  * radius - The radius of the circle
   */
-  line.drawPoint = function(color, ctx, xS, yS, index) {
+  line.drawPoint = function(color, ctx, xS, yS, index, radius) {
    if (this.visible()) {
      ctx.beginPath();
-     ctx.arc(xS(index), yS(this.valueAt(index)), 3, 0, Math.PI*2, true);
+     ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI*2, true);
      ctx.fillStyle = color;
      ctx.fill();
      ctx.closePath();   
@@ -348,6 +349,7 @@ QuandlismContext_.line = function(data) {
     }
   }
   
+  
   line.values = function() {
     return values;
   }
@@ -379,9 +381,7 @@ QuandlismContext_.stage = function() {
   ctx = null,
   colorRange = [],
   start = 0, 
-  end = 0,
-  tooltip = false;
-  
+  end = 0;  
   
   function stage(selection) {
     
@@ -399,12 +399,10 @@ QuandlismContext_.stage = function() {
     stageHolder.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     // If Legend DOM is defined, create the legend. Style w/ CSS
-    if (context.domlegend() != null) {
+    if (!_.isUndefined(context.domlegend())) {
       d3.select(context.domlegend()).datum(lines).call(context.legend());
     }
-    
-    // If toolitp DOM is defined, use it!
-    tooltip = (context.domtooltip() != null);
+  
     
     // Get references to canvas and canvas context for drawing
     canvas = selection.select('.stage');
@@ -458,12 +456,12 @@ QuandlismContext_.stage = function() {
           // If number of points under the threshold are being drawn, render the invidual points
           line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, lineWidth);
           _.each(_.range(start, end + 1), function(p) {
-            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p, 3);
           });
         }     
         else if (start == end) {
           // If drawing a single point, just render the point
-          line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
+          line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start, 3);
         } else {
           // Otherwise, draw the path
           line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, lineWidth);
@@ -472,12 +470,22 @@ QuandlismContext_.stage = function() {
       
     }
     
+    /**
+     * Shows tooltip data for the mouseover event.
+     *
+     * line - The active line object that was moused over.
+     * x - The data index that will be highlighted
+     * hex - The color of the line
+     */
     function showTooltip(line, x, hex) {
-      $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span> (' + line.valueAt(x) + ')');    
+      $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span> : ' + line.valueAt(x) + '');    
       draw(line.id());
-      line.drawPoint(hex, ctx, xScale, yScale, x);
+      line.drawPoint(hex, ctx, xScale, yScale, x, ((end - start) <= threshold) ? 5: 3);
     }
     
+    /**
+     * Removes content from the tooltip element
+     */
     function clearTooltip() {
       $(context.domtooltip()).text('');
     }
@@ -565,7 +573,7 @@ QuandlismContext_.stage = function() {
     /**
      * If tooltip dom is defined, track mousemovement on stage to render tooltip 
      */
-    if (tooltip) {
+    if (!_.isUndefined(context.domtooltip())) {
       d3.select('#' + canvasId).on('mousemove', function(e) {
         
         hit = lineHit(d3.mouse(this));
@@ -695,7 +703,7 @@ QuandlismContext_.brush = function() {
         line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, st, en, 1);
         if (showPoints) {
           _.each(_.range(st, en), function(p) {
-            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p, 2);
           });  
         }
       });

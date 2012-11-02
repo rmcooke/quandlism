@@ -92,7 +92,7 @@ QuandlismContext_.brush = function() {
         line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, st, en, 1);
         if (showPoints) {
           _.each(_.range(st, en), function(p) {
-            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p, 2);
           });  
         }
       });
