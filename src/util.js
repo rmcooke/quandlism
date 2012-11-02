@@ -39,6 +39,19 @@ QuandlismContext_.utility = function() {
     dateString = this.dateFormat();
     return d3.time.format(dateString).parse;
   }
+  
+  /**
+   * Given the coordinates of a point on a canvas element, return the pixel data
+   *
+   * m - An array with two elements, representing the x and y coordinates
+   *
+   * Return an RGB color hex
+   */
+  utility.getPixelRGB = function(m) {
+    px = ctx.getImageData(m[0], m[1], 1, 1).data;
+    rgb = d3.rgb(px[0], px[1], px[2]);
+    return rgb.toString();
+  }
 
   
 

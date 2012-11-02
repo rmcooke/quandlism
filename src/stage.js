@@ -39,7 +39,6 @@ QuandlismContext_.stage = function() {
     // If toolitp DOM is defined, use it!
     tooltip = (context.domtooltip() != null);
     
-    
     // Get references to canvas and canvas context for drawing
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
@@ -57,8 +56,10 @@ QuandlismContext_.stage = function() {
     /**
      * Draws the stage
      * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
+     *
+     * lineId - The id of the line that should be highlighted when the stage is drawn
      */
-    function draw() {
+    function draw(lineId) {
 
       exes = _.map(lines, function(line, j) {
         return line.extent(start, end);
@@ -80,18 +81,25 @@ QuandlismContext_.stage = function() {
       
       ctx.clearRect(0, 0, width, height);
       
+      // If lineId is not specified, set it as an invalid index
+      lineId = (_.isUndefined(lineId)) ? -1 : lineId;
+      
       _.each(lines, function(line, j) {   
+        // If we are drawing the line corresponding to a line that should be highlighted, increase the width
+        lineWidth = (j == lineId) ? 3 : 1.5
         if ((end - start) <= threshold) {
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1.5);
+          // If number of points under the threshold are being drawn, render the invidual points
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, lineWidth);
           _.each(_.range(start, end + 1), function(p) {
             line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, p);
           });
-        
         }     
         else if (start == end) {
+          // If drawing a single point, just render the point
           line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, start);
         } else {
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, 1.5);
+          // Otherwise, draw the path
+          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, start, end, lineWidth);
         }
       });
       
@@ -99,8 +107,47 @@ QuandlismContext_.stage = function() {
     
     function showTooltip(line, x, hex) {
       $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span> (' + line.valueAt(x) + ')');    
-      draw();
+      draw(line.id());
       line.drawPoint(hex, ctx, xScale, yScale, x);
+    }
+    
+    /**
+     * Given the mouse location, check the coordinates, and the immediate area around the coordinates
+     * for a line
+     *
+     * m - An array with 2 elements, representing the x and y coordinates (in canvas space), of the mouse location
+     *
+     * Returns false if there was no line hit, or the index of the line
+     */
+    function lineHit(m) {
+
+        
+      hex = context.utility().getPixelRGB(m);
+      
+      i = _.indexOf(colorRange, hex);
+      if (i !== -1) {
+        return {x: m[0], color: hex, line: lines[i]};
+      }
+      
+      // Genreate matrix of points to analyze      
+      hitMatrix = [];
+      for (j = (m[0]-3); j <= (m[0]+3); j++) {
+        for (k = (m[1]-3); k <= (m[1]+3); k++) {
+          if (j != m[0] || k != m[1]) {
+            hitMatrix.push([j, k]);
+          }
+        }
+      }
+      
+      for (n = 0; n < hitMatrix.length; n++) {
+        hex = context.utility().getPixelRGB(hitMatrix[n]);
+        i = _.indexOf(colorRange, hex);
+        if (i !== -1) {
+          return {x: hitMatrix[n][0], color: hex, line: lines[i]};
+        }
+      }
+      
+      return false;
     }
     
     
@@ -149,19 +196,15 @@ QuandlismContext_.stage = function() {
      */
     if (tooltip) {
       d3.select('#' + canvasId).on('mousemove', function(e) {
-        m = d3.mouse(this);
-        px = ctx.getImageData(m[0], m[1], 1, 1).data;
-        rgb = d3.rgb(px[0], px[1], px[2]);
-        hex = rgb.toString();
-        if (hex !== '#000000') {
-          i = _.indexOf(colorRange, hex);
-          if (i !== -1) {
-            showTooltip(lines[i], Math.round(xScale.invert(m[0])), hex);
-          }
+        
+        hit = lineHit(d3.mouse(this));
+
+        if (hit !== false) {
+          showTooltip(hit.line, Math.round(xScale.invert(hit.x)), hit.color);
         }
+
       });
     }
-
 
       
     // Draw the brush inside the stage-holder
