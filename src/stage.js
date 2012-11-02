@@ -111,6 +111,10 @@ QuandlismContext_.stage = function() {
       line.drawPoint(hex, ctx, xScale, yScale, x);
     }
     
+    function clearTooltip() {
+      $(context.domtooltip()).text('');
+    }
+    
     /**
      * Given the mouse location, check the coordinates, and the immediate area around the coordinates
      * for a line
@@ -201,6 +205,9 @@ QuandlismContext_.stage = function() {
 
         if (hit !== false) {
           showTooltip(hit.line, Math.round(xScale.invert(hit.x)), hit.color);
+        } else {
+          clearTooltip();
+          draw();
         }
 
       });
