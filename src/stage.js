@@ -156,7 +156,7 @@ QuandlismContext_.stage = function() {
         if (hex !== '#000000') {
           i = _.indexOf(colorRange, hex);
           if (i !== -1) {
-            showTooltip(lines[i], Math.ceil(xScale.invert(m[0])), hex);
+            showTooltip(lines[i], Math.round(xScale.invert(m[0])), hex);
           }
         }
       });
@@ -165,7 +165,7 @@ QuandlismContext_.stage = function() {
 
       
     // Draw the brush inside the stage-holder
-    div.call(context.brush());
+    stageHolder.call(context.brush());
     
       
     /**

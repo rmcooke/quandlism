@@ -392,11 +392,11 @@ QuandlismContext_.stage = function() {
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
     // Append div for stage-holder (to hold x-axis, stage data and brush)
-    div = selection.append('div').attr('class', 'stage-holder');
+    stageHolder = selection.append('div').attr('class', 'stage-holder');
   
     // Append x-axis and stage
-    div.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
-    div.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
+    stageHolder.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
+    stageHolder.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     // If Legend DOM is defined, create the legend. Style w/ CSS
     if (context.domlegend() != null) {
@@ -523,7 +523,7 @@ QuandlismContext_.stage = function() {
         if (hex !== '#000000') {
           i = _.indexOf(colorRange, hex);
           if (i !== -1) {
-            showTooltip(lines[i], Math.ceil(xScale.invert(m[0])), hex);
+            showTooltip(lines[i], Math.round(xScale.invert(m[0])), hex);
           }
         }
       });
@@ -532,7 +532,7 @@ QuandlismContext_.stage = function() {
 
       
     // Draw the brush inside the stage-holder
-    div.call(context.brush());
+    stageHolder.call(context.brush());
     
       
     /**
