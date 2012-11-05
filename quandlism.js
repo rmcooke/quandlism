@@ -152,9 +152,9 @@ var QuandlismContext_ = QuandlismContext.prototype = quandlism.context.prototype
 
 var quandlism_axis  = 0;
 var quandlism_line_id = 0;
-var quandlism_stage = {w: 0.90, h: 0.70};
-var quandlism_brush = {w: 0.90, h: 0.05};
-var quandlism_xaxis = {w: 0.90, h: 0.15};
+var quandlism_stage = {w: 0.85, h: 0.70};
+var quandlism_brush = {w: 0.85, h: 0.05};
+var quandlism_xaxis = {w: 0.85, h: 0.15};
 var quandlism_yaxis = {w: 0.10, h: 0.70};
 /**
  * Quandlism Line
@@ -972,7 +972,7 @@ QuandlismContext_.axis = function() {
 QuandlismContext_.yaxis = function() {
   var context = this,
   height = Math.floor(context.h()*quandlism_yaxis.h), width = Math.floor(context.w()*quandlism_yaxis.w),
-  scale = d3.scale.linear().range([height, 0]),
+  scale = d3.scale.linear().clamp(true).range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
   extent = null,
