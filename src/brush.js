@@ -185,7 +185,9 @@ QuandlismContext_.brush = function() {
     });
     
     /**
-     * Stop dragging
+     * On mouseup
+     * Sets brush in non-dragging, non-stretching state and erases any stored value for the stretching direction.
+     * Sets new start and brush width values.
      */
     canvas.on('mouseup', function(e) {
       dragging = stretching = false;
@@ -195,7 +197,9 @@ QuandlismContext_.brush = function() {
     });
     
     /**
-     * Calculate the movement
+     * On mousemove
+     * Given mouse location and state (dragging or stretching), calculates the new x-coordinates 
+     * for the start and end of the brush control.
      */
     canvas.on('mousemove', function(e) {
       
