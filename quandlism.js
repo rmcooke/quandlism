@@ -410,7 +410,7 @@ QuandlismContext_.stage = function() {
     stageHolder.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
     
     // If Legend DOM is defined, create the legend. Style w/ CSS
-    if (!_.isUndefined(context.domlegend())) {
+    if (context.domlegend()) {
       d3.select(context.domlegend()).datum(lines).call(context.legend());
     }
   
@@ -513,7 +513,7 @@ QuandlismContext_.stage = function() {
 
       hex = context.utility().getPixelRGB(m, ctx);
       
-      i = _.indexOf(colorRange, hex);
+      i = _.indexOf(context.colorScale().range(), hex);
       if (i !== -1) {
         return {x: m[0], color: hex, line: lines[i]};
       }
@@ -530,7 +530,7 @@ QuandlismContext_.stage = function() {
       
       for (n = 0; n < hitMatrix.length; n++) {
         hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
-        i = _.indexOf(colorRange, hex);
+        i = _.indexOf(context.colorScale().range(), hex);
         if (i !== -1) {
           return {x: hitMatrix[n][0], color: hex, line: lines[i]};
         }
@@ -972,7 +972,7 @@ QuandlismContext_.axis = function() {
 QuandlismContext_.yaxis = function() {
   var context = this,
   height = Math.floor(context.h()*quandlism_yaxis.h), width = Math.floor(context.w()*quandlism_yaxis.w),
-  scale = d3.scale.linear().clamp(true).range([height, 0]),
+  scale = d3.scale.linear().range([height, 0]),
   axis_ = d3.svg.axis().scale(scale),
   lines = null,
   extent = null,
