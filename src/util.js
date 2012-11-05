@@ -44,39 +44,16 @@ QuandlismContext_.utility = function() {
    * Given the coordinates of a point on a canvas element, return the pixel data
    *
    * m - An array with two elements, representing the x and y coordinates
+   * ctx - The canvas element drawing context
    *
    * Return an RGB color hex
    */
-  utility.getPixelRGB = function(m) {
+  utility.getPixelRGB = function(m, ctx) {
     px = ctx.getImageData(m[0], m[1], 1, 1).data;
     rgb = d3.rgb(px[0], px[1], px[2]);
     return rgb.toString();
   }
 
-  
-
-  /**
-   * Get co-ordinates in the context of the canvas element, of the user click.
-   * 
-   * e - Browser mouse click event
-   * c - The canvas element
-   *
-   * Returns an object with keys, x and y.
-   */
-  utility.getClickLocation = function(e, c) {
-    var x, y;
-    if (e.pageX || e.pageY) {
-      x = e.pageX, y = e.pageY;
-    } else {
-      x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-      y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-    }
-    x -= c.offsetLeft;
-    y -= c.offsetTop;
-    return {x: x, y: y};
-    
-  }
-  
   /**
    * Returns a hex colour code corresponding to the given index
    *

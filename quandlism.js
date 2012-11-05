@@ -9,12 +9,12 @@ quandlism.context = function() {
   var context = new QuandlismContext(),
   frequency = 'daily',
   trans = 'none',
-  w, h,
+  w = h = null,
   dom = null, domlegend = null, domtooltip = null,
   event = d3.dispatch('respond', 'adjust', 'toggle'),
   colorScale = d3.scale.category20(),
-  scale,
-  timeout;
+  endPercentage = 0.8,
+  scale;
   
   /**
    * Expose attributes with getter/setters
@@ -94,8 +94,18 @@ quandlism.context = function() {
     return update();
   }
   
+  context.endPercentage = function(_) {
+    if (!arguments.length) {
+      return endPercentage;
+    }
+    endPercentage = _;
+    return update();
+  }
   
-  // Event listeners
+  
+  /**
+   * Event Listeners / Dispatchers
+   */
 
   context.respond = _.throttle(function() {
     event.respond.call(context);
@@ -372,7 +382,8 @@ QuandlismContext_.stage = function() {
   lines = [],
   canvasId = 'canvas-stage',
   width = Math.floor(context.w()*quandlism_stage.w), 
-  height = Math.floor(context.h()*quandlism_stage.h)
+  height = Math.floor(context.h()*quandlism_stage.h),
+  canvasPadding = 10,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   threshold = 10,
@@ -380,8 +391,8 @@ QuandlismContext_.stage = function() {
   canvas = null,
   ctx = null,
   colorRange = [],
-  start = 0, 
-  end = 0;  
+  start = null, 
+  end = null;  
   
   function stage(selection) {
     
@@ -408,9 +419,13 @@ QuandlismContext_.stage = function() {
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
-    // Calculate initial start / end points
-    end = lines[0].length();
-    start = Math.floor(lines[0].length()*.80);
+    // Calculate initial start / end points, if they aren't set already
+    if (end == null) {
+      end = lines[0].length();
+    }
+    if (start == null) {
+      start = Math.floor(lines[0].length()*context.endPercentage());
+    }
 
     // Draw the stage
     draw();
@@ -432,7 +447,7 @@ QuandlismContext_.stage = function() {
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
     
       // For single points, edit extent so circle is not drawn at the corner
-      xStart = 0;
+      xStart = canvasPadding;
       if (start == end) {
         extent = [0, extent[0]*1.25];
         xStart = Math.floor(width/2);
@@ -442,9 +457,10 @@ QuandlismContext_.stage = function() {
       yScale.range([height, 0 ]);
     
       xScale.domain([start, end]);
-      xScale.range([xStart, width]);
+      xScale.range([xStart, (width - canvasPadding)]);
       
       ctx.clearRect(0, 0, width, height);
+
       
       // If lineId is not specified, set it as an invalid index
       lineId = (_.isUndefined(lineId)) ? -1 : lineId;
@@ -500,8 +516,7 @@ QuandlismContext_.stage = function() {
      */
     function lineHit(m) {
 
-        
-      hex = context.utility().getPixelRGB(m);
+      hex = context.utility().getPixelRGB(m, ctx);
       
       i = _.indexOf(colorRange, hex);
       if (i !== -1) {
@@ -519,7 +534,7 @@ QuandlismContext_.stage = function() {
       }
       
       for (n = 0; n < hitMatrix.length; n++) {
-        hex = context.utility().getPixelRGB(hitMatrix[n]);
+        hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
         i = _.indexOf(colorRange, hex);
         if (i !== -1) {
           return {x: hitMatrix[n][0], color: hex, line: lines[i]};
@@ -603,6 +618,30 @@ QuandlismContext_.stage = function() {
       threshold = _;
       return stage;
     }
+    
+    stage.canvasPadding = function(_) {
+      if (!arguments.length) {
+        return canvasPadding;
+      }
+      canvasPadding = _;
+      return stage;
+    }
+    
+    stage.end = function(_) {
+      if (!arguments.length) {
+        return end;
+      }
+      end = _;
+      return stage;
+    }
+    
+    stage.start = function(_) {
+      if (!arguments.length) {
+        return start;
+      }
+      start = _;
+      return stage;
+    }
       
   }
 
@@ -616,7 +655,7 @@ QuandlismContext_.brush = function() {
   width = width0 = Math.floor(context.w()*quandlism_brush.w), 
   brushWidth = brushWidth0 = Math.ceil(width * 0.2), 
   handleWidth = 10,
-  start = start0 = Math.ceil(width*0.8),
+  start = start0 = Math.ceil(width*context.endPercentage()),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   canvas = null,
@@ -659,7 +698,7 @@ QuandlismContext_.brush = function() {
     }
     
     /**
-     * Set scale functions for brush
+     * Set the domain and range for the x and y axes of the brush
      */
     function setScales() {
       // Scales should only be set on construction and resize   
@@ -671,10 +710,10 @@ QuandlismContext_.brush = function() {
     }
     
     /**
-     * Timeout function. Responds to drags!
+     * Drawing functions
+     * This is called via the interval.
      */
     function update() {
-      // Canvas clear
       clearCanvas();      
       draw();
       drawBrush();
@@ -683,7 +722,7 @@ QuandlismContext_.brush = function() {
     
     
     /**
-     * Clear the context
+     * Clears the context and adjust the size of the HTML element, if browser has been resized
      */ 
     function clearCanvas() {
       ctx.clearRect(0, 0, width0, height0);
@@ -691,7 +730,7 @@ QuandlismContext_.brush = function() {
     }
     
     /**
-     * Draw the lines 
+     * Draws the lines and points on the brush canvas.
      */
     function draw() {   
       // Draw lines
@@ -711,7 +750,7 @@ QuandlismContext_.brush = function() {
     
     
     /**
-     * Draw the brush
+     * Draws the brush control on the brush canvas.
      */
     function drawBrush() {
          
@@ -732,6 +771,10 @@ QuandlismContext_.brush = function() {
 
     }
     
+    /**
+     * Calculates the x1 and x2 values (the start and end of the brush control) and sends those
+     * values to the stage via the context.adjust() event
+     */
     function triggerAdjustEvent() {
       x1 = xScale.invert(start);
       x2 = xScale.invert(start + brushWidth);
@@ -1101,39 +1144,16 @@ QuandlismContext_.utility = function() {
    * Given the coordinates of a point on a canvas element, return the pixel data
    *
    * m - An array with two elements, representing the x and y coordinates
+   * ctx - The canvas element drawing context
    *
    * Return an RGB color hex
    */
-  utility.getPixelRGB = function(m) {
+  utility.getPixelRGB = function(m, ctx) {
     px = ctx.getImageData(m[0], m[1], 1, 1).data;
     rgb = d3.rgb(px[0], px[1], px[2]);
     return rgb.toString();
   }
 
-  
-
-  /**
-   * Get co-ordinates in the context of the canvas element, of the user click.
-   * 
-   * e - Browser mouse click event
-   * c - The canvas element
-   *
-   * Returns an object with keys, x and y.
-   */
-  utility.getClickLocation = function(e, c) {
-    var x, y;
-    if (e.pageX || e.pageY) {
-      x = e.pageX, y = e.pageY;
-    } else {
-      x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-      y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-    }
-    x -= c.offsetLeft;
-    y -= c.offsetTop;
-    return {x: x, y: y};
-    
-  }
-  
   /**
    * Returns a hex colour code corresponding to the given index
    *

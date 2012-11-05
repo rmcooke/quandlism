@@ -3,7 +3,8 @@ QuandlismContext_.stage = function() {
   lines = [],
   canvasId = 'canvas-stage',
   width = Math.floor(context.w()*quandlism_stage.w), 
-  height = Math.floor(context.h()*quandlism_stage.h)
+  height = Math.floor(context.h()*quandlism_stage.h),
+  canvasPadding = 10,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
   threshold = 10,
@@ -11,8 +12,8 @@ QuandlismContext_.stage = function() {
   canvas = null,
   ctx = null,
   colorRange = [],
-  start = 0, 
-  end = 0;  
+  start = null, 
+  end = null;  
   
   function stage(selection) {
     
@@ -39,9 +40,13 @@ QuandlismContext_.stage = function() {
     canvas = selection.select('.stage');
     ctx = canvas.node().getContext('2d');
     
-    // Calculate initial start / end points
-    end = lines[0].length();
-    start = Math.floor(lines[0].length()*.80);
+    // Calculate initial start / end points, if they aren't set already
+    if (end == null) {
+      end = lines[0].length();
+    }
+    if (start == null) {
+      start = Math.floor(lines[0].length()*context.endPercentage());
+    }
 
     // Draw the stage
     draw();
@@ -63,7 +68,7 @@ QuandlismContext_.stage = function() {
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
     
       // For single points, edit extent so circle is not drawn at the corner
-      xStart = 0;
+      xStart = canvasPadding;
       if (start == end) {
         extent = [0, extent[0]*1.25];
         xStart = Math.floor(width/2);
@@ -73,9 +78,10 @@ QuandlismContext_.stage = function() {
       yScale.range([height, 0 ]);
     
       xScale.domain([start, end]);
-      xScale.range([xStart, width]);
+      xScale.range([xStart, (width - canvasPadding)]);
       
       ctx.clearRect(0, 0, width, height);
+
       
       // If lineId is not specified, set it as an invalid index
       lineId = (_.isUndefined(lineId)) ? -1 : lineId;
@@ -131,8 +137,7 @@ QuandlismContext_.stage = function() {
      */
     function lineHit(m) {
 
-        
-      hex = context.utility().getPixelRGB(m);
+      hex = context.utility().getPixelRGB(m, ctx);
       
       i = _.indexOf(colorRange, hex);
       if (i !== -1) {
@@ -150,7 +155,7 @@ QuandlismContext_.stage = function() {
       }
       
       for (n = 0; n < hitMatrix.length; n++) {
-        hex = context.utility().getPixelRGB(hitMatrix[n]);
+        hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
         i = _.indexOf(colorRange, hex);
         if (i !== -1) {
           return {x: hitMatrix[n][0], color: hex, line: lines[i]};
@@ -232,6 +237,30 @@ QuandlismContext_.stage = function() {
         return threshold;
       }
       threshold = _;
+      return stage;
+    }
+    
+    stage.canvasPadding = function(_) {
+      if (!arguments.length) {
+        return canvasPadding;
+      }
+      canvasPadding = _;
+      return stage;
+    }
+    
+    stage.end = function(_) {
+      if (!arguments.length) {
+        return end;
+      }
+      end = _;
+      return stage;
+    }
+    
+    stage.start = function(_) {
+      if (!arguments.length) {
+        return start;
+      }
+      start = _;
       return stage;
     }
       

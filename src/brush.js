@@ -5,7 +5,7 @@ QuandlismContext_.brush = function() {
   width = width0 = Math.floor(context.w()*quandlism_brush.w), 
   brushWidth = brushWidth0 = Math.ceil(width * 0.2), 
   handleWidth = 10,
-  start = start0 = Math.ceil(width*0.8),
+  start = start0 = Math.ceil(width*context.endPercentage()),
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   canvas = null,
@@ -48,7 +48,7 @@ QuandlismContext_.brush = function() {
     }
     
     /**
-     * Set scale functions for brush
+     * Set the domain and range for the x and y axes of the brush
      */
     function setScales() {
       // Scales should only be set on construction and resize   
@@ -60,10 +60,10 @@ QuandlismContext_.brush = function() {
     }
     
     /**
-     * Timeout function. Responds to drags!
+     * Drawing functions
+     * This is called via the interval.
      */
     function update() {
-      // Canvas clear
       clearCanvas();      
       draw();
       drawBrush();
@@ -72,7 +72,7 @@ QuandlismContext_.brush = function() {
     
     
     /**
-     * Clear the context
+     * Clears the context and adjust the size of the HTML element, if browser has been resized
      */ 
     function clearCanvas() {
       ctx.clearRect(0, 0, width0, height0);
@@ -80,7 +80,7 @@ QuandlismContext_.brush = function() {
     }
     
     /**
-     * Draw the lines 
+     * Draws the lines and points on the brush canvas.
      */
     function draw() {   
       // Draw lines
@@ -100,7 +100,7 @@ QuandlismContext_.brush = function() {
     
     
     /**
-     * Draw the brush
+     * Draws the brush control on the brush canvas.
      */
     function drawBrush() {
          
@@ -121,6 +121,10 @@ QuandlismContext_.brush = function() {
 
     }
     
+    /**
+     * Calculates the x1 and x2 values (the start and end of the brush control) and sends those
+     * values to the stage via the context.adjust() event
+     */
     function triggerAdjustEvent() {
       x1 = xScale.invert(start);
       x2 = xScale.invert(start + brushWidth);

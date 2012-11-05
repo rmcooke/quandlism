@@ -4,12 +4,12 @@ quandlism.context = function() {
   var context = new QuandlismContext(),
   frequency = 'daily',
   trans = 'none',
-  w, h,
+  w = h = null,
   dom = null, domlegend = null, domtooltip = null,
   event = d3.dispatch('respond', 'adjust', 'toggle'),
   colorScale = d3.scale.category20(),
-  scale,
-  timeout;
+  endPercentage = 0.8,
+  scale;
   
   /**
    * Expose attributes with getter/setters
@@ -89,8 +89,18 @@ quandlism.context = function() {
     return update();
   }
   
+  context.endPercentage = function(_) {
+    if (!arguments.length) {
+      return endPercentage;
+    }
+    endPercentage = _;
+    return update();
+  }
   
-  // Event listeners
+  
+  /**
+   * Event Listeners / Dispatchers
+   */
 
   context.respond = _.throttle(function() {
     event.respond.call(context);
