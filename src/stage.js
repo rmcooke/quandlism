@@ -68,17 +68,12 @@ QuandlismContext_.stage = function() {
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
     
       // For single points, edit extent so circle is not drawn at the corner
-      xStart = canvasPadding;
-      if (start == end) {
-        extent = [0, extent[0]*1.25];
-        xStart = Math.floor(width/2);
-      }
-          
+   
       yScale.domain([extent[0], extent[1]]); 
-      yScale.range([height, 0 ]);
+      yScale.range([(height - canvasPadding), canvasPadding]);
     
       xScale.domain([start, end]);
-      xScale.range([xStart, (width - canvasPadding)]);
+      xScale.range([canvasPadding, (width - canvasPadding)]);
       
       ctx.clearRect(0, 0, width, height);
 
