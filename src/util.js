@@ -4,26 +4,26 @@ QuandlismContext_.utility = function() {
   
   function utility() {}
   
-  utility.dateFormat = function() {
+  /**
+   * Returns a string that can be parsed in the same format as the dates in the active graph.
+   * The number of - present indicate one of two date formats available.
+   * date - An example date
+   *
+   * Returns a string representing the date format
+   */
+  utility.dateFormat = function(date) {
     dateString = '';
-    switch(context.frequency()) {
-      case 'daily':
-        dateString = '%Y-%m-%d';
-        break;
-      case 'weekly':
-        dateString = '%Y-%m-%d';
-        break;    
-      case 'monthly':
-        dateString = '%Y-%m-%d';
-        break;
-      case 'quarterly':
-        dateString = '%Y-%m-%d';
-        break;
-      case 'annual':
+    hyphenCount = date.split('-').length - 1;
+    
+    switch(hyphenCount) {
+      case -1:
         dateString = '%Y';
         break;
+      case 2:
+        dateString = '%Y-%m-%d'
+        break;
       default:
-        throw('Error error');
+        throw("Unknown date format: " + hyphenCount + date);
     }
     return dateString;
 
@@ -33,10 +33,12 @@ QuandlismContext_.utility = function() {
    * Parses the input date into a readable format for D3
    * String format is a function of the datasets frequency parameter
    *
+   * date - A date to be parsed
+   *
    * Return a time formatter
    */
-  utility.parseDate = function() {   
-    dateString = this.dateFormat();
+  utility.parseDate = function(date) {
+    dateString = this.dateFormat(date);
     return d3.time.format(dateString).parse;
   }
   

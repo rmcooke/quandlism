@@ -14,7 +14,7 @@ QuandlismContext_.axis = function() {
     lines = selection.datum();
     extent = [lines[0].dateAt(0), lines[0].dateAt((lines[0].length() -1))];
         
-    parseDate = context.utility().parseDate();
+    parseDate = context.utility().parseDate(lines[0].dateAt(0));
         
     scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
        
