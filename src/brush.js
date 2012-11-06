@@ -46,30 +46,19 @@ QuandlismContext_.brush = function() {
     // Get drawing context
     canvas = selection.select('#' + id);
     ctx = canvas.node().getContext('2d');
-    
-    updateExtent();
-      
+  
     setScales();
     
     triggerAdjustEvent();
-        
-    update();
-        
-    /**
-     * Calculates and saves the total extent values for the visible lines in the brush
-     *
-     */
-    function updateExtent() {
-      exes = _.map(lines, function(line, j) {
-        return line.extent();
-      });    
-      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
-    }
+                
     
     /**
      * Set the domain and range for the x and y axes of the brush
      */
     function setScales() {
+      // Calculate the extent
+      extent = context.utility().getExtent(lines, null, null);
+      
       // Scales should only be set on construction and resize   
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([height, 0 ]);
@@ -172,7 +161,6 @@ QuandlismContext_.brush = function() {
      * Update extent (to ignore invisible lines) and updates x and y scales
      */
     context.on('toggle.brush', function() {
-      updateExtent();
       setScales();
     });
     
@@ -187,9 +175,7 @@ QuandlismContext_.brush = function() {
       start0 = start;
       brushWidth = Math.ceil(width * 0.2);
       brushWidth0 = brushWidth;
-      updateExtent();
       setScales();
-      update();
     });
     
     /**

@@ -797,30 +797,19 @@ QuandlismContext_.brush = function() {
     // Get drawing context
     canvas = selection.select('#' + id);
     ctx = canvas.node().getContext('2d');
-    
-    updateExtent();
-      
+  
     setScales();
     
     triggerAdjustEvent();
-        
-    update();
-        
-    /**
-     * Calculates and saves the total extent values for the visible lines in the brush
-     *
-     */
-    function updateExtent() {
-      exes = _.map(lines, function(line, j) {
-        return line.extent();
-      });    
-      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })];
-    }
+                
     
     /**
      * Set the domain and range for the x and y axes of the brush
      */
     function setScales() {
+      // Calculate the extent
+      extent = context.utility().getExtent(lines, null, null);
+      
       // Scales should only be set on construction and resize   
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([height, 0 ]);
@@ -923,7 +912,6 @@ QuandlismContext_.brush = function() {
      * Update extent (to ignore invisible lines) and updates x and y scales
      */
     context.on('toggle.brush', function() {
-      updateExtent();
       setScales();
     });
     
@@ -938,9 +926,7 @@ QuandlismContext_.brush = function() {
       start0 = start;
       brushWidth = Math.ceil(width * 0.2);
       brushWidth0 = brushWidth;
-      updateExtent();
       setScales();
-      update();
     });
     
     /**
@@ -1147,7 +1133,10 @@ QuandlismContext_.yaxis = function() {
   lines = null,
   extent = null,
   sel = null,
+  startPoint = null,
+  endPoint = null,
   id;
+
   
   function axis(selection) {
   
@@ -1160,11 +1149,8 @@ QuandlismContext_.yaxis = function() {
         
     function update() {   
       
-      exes = _.map(lines, function(line, j) {
-        return line.extent(start, end);
-      });  
+      extent = context.utility().getExtent(lines, startPoint, endPoint);
       
-      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]    
       scale.domain([extent[0], extent[1]]);
       
       axis.remove();
@@ -1186,8 +1172,8 @@ QuandlismContext_.yaxis = function() {
      * Sets the end points of the data that will be displayed on the stage
      */
     function setEndPoints() {
-      end = lines[0].length() - 1;
-      start = Math.floor(lines[0].length()*context.endPercentage());
+      axis.endPoint(lines[0].length()-1);
+      axis.startPoint(Math.floor(lines[0].length()*context.endPercentage()));
     }
     
     // Draw the y-axis
@@ -1215,8 +1201,8 @@ QuandlismContext_.yaxis = function() {
      * Recalculates the end points of the visible dataset and redraws the axis
      */
     context.on('adjust.y-axis-'+id, function(x1, x2) {
-      start = (x1 > 0) ? x1 : 0;
-      end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
+      axis.startPoint((x1 > 0) ? x1 : 0);
+      axis.endPoint((x2 < lines[0].length()) ? x2 : lines[0].length() -1);
       update();
     });
     
@@ -1258,6 +1244,22 @@ QuandlismContext_.yaxis = function() {
       return lines;
     }
     lines = _;
+    return axis;
+  }
+  
+  axis.startPoint = function(_) {
+    if (!arguments.length) {
+      return startPoint;
+    }
+    startPoint = _;
+    return axis;
+  }
+  
+  axis.endPoint = function(_) {
+    if (!arguments.length) {
+      return endPoint;
+    }
+    endPoint = _;
     return axis;
   }
   
@@ -1335,6 +1337,22 @@ QuandlismContext_.utility = function() {
     }
     return dateString;
 
+  }
+  
+  /**
+   * Calculates the extent for an array of quandlism line objects.
+   * 
+   * lines - The lines to be analyzed
+   * start - An integer start index, or null, if the entire line should be analyzed
+   * end - An integer end index, or null, if the entire line should be analyzed
+   *
+   * Returns an array with two number vales
+   */
+  utility.getExtent = function(lines, start, end) {
+    exes = _.map(lines, function(line, j) {
+      return line.extent(start, end);
+    });     
+    return [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]    
   }
   
   /**

@@ -6,7 +6,10 @@ QuandlismContext_.yaxis = function() {
   lines = null,
   extent = null,
   sel = null,
+  startPoint = null,
+  endPoint = null,
   id;
+
   
   function axis(selection) {
   
@@ -19,11 +22,8 @@ QuandlismContext_.yaxis = function() {
         
     function update() {   
       
-      exes = _.map(lines, function(line, j) {
-        return line.extent(start, end);
-      });  
+      extent = context.utility().getExtent(lines, startPoint, endPoint);
       
-      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]    
       scale.domain([extent[0], extent[1]]);
       
       axis.remove();
@@ -45,8 +45,8 @@ QuandlismContext_.yaxis = function() {
      * Sets the end points of the data that will be displayed on the stage
      */
     function setEndPoints() {
-      end = lines[0].length() - 1;
-      start = Math.floor(lines[0].length()*context.endPercentage());
+      axis.endPoint(lines[0].length()-1);
+      axis.startPoint(Math.floor(lines[0].length()*context.endPercentage()));
     }
     
     // Draw the y-axis
@@ -74,8 +74,8 @@ QuandlismContext_.yaxis = function() {
      * Recalculates the end points of the visible dataset and redraws the axis
      */
     context.on('adjust.y-axis-'+id, function(x1, x2) {
-      start = (x1 > 0) ? x1 : 0;
-      end = (x2 < lines[0].length()) ? x2 : lines[0].length() -1;
+      axis.startPoint((x1 > 0) ? x1 : 0);
+      axis.endPoint((x2 < lines[0].length()) ? x2 : lines[0].length() -1);
       update();
     });
     
@@ -117,6 +117,22 @@ QuandlismContext_.yaxis = function() {
       return lines;
     }
     lines = _;
+    return axis;
+  }
+  
+  axis.startPoint = function(_) {
+    if (!arguments.length) {
+      return startPoint;
+    }
+    startPoint = _;
+    return axis;
+  }
+  
+  axis.endPoint = function(_) {
+    if (!arguments.length) {
+      return endPoint;
+    }
+    endPoint = _;
     return axis;
   }
   

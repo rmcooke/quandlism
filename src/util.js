@@ -30,6 +30,22 @@ QuandlismContext_.utility = function() {
   }
   
   /**
+   * Calculates the extent for an array of quandlism line objects.
+   * 
+   * lines - The lines to be analyzed
+   * start - An integer start index, or null, if the entire line should be analyzed
+   * end - An integer end index, or null, if the entire line should be analyzed
+   *
+   * Returns an array with two number vales
+   */
+  utility.getExtent = function(lines, start, end) {
+    exes = _.map(lines, function(line, j) {
+      return line.extent(start, end);
+    });     
+    return [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]    
+  }
+  
+  /**
    * Create an array of line objects
    *
    * data - The raw data returned from the Quandl API
