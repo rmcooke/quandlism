@@ -1,7 +1,7 @@
 QuandlismContext_.stage = function() {
   var context = this,
+  id = null,
   lines = [],
-  canvasId,
   width = Math.floor(context.w()*quandlism_stage.w), 
   height = Math.floor(context.h()*quandlism_stage.h),
   canvasPadding = 10,
@@ -24,20 +24,20 @@ QuandlismContext_.stage = function() {
     
     // Extract line data    
     lines = selection.datum();
-    canvasId = 'canvas-stage-' + (++quandlism_id_ref);
+    id = 'canvas-stage-' + (++quandlism_id_ref);
     
     // Append y-axis and render
     if (!yAxis) {
-      yAxis = selection
-      .append('div').datum(lines)
+      yAxis = selection.append('div')
+        .datum(lines)
         .attr('width', context.w()*quandlism_yaxis.w)
         .attr('height', context.h()*quandlism_yaxis.h)
         .attr('class', 'y axis')
-        .attr('id', 'y-axis-' + canvasId)
+        .attr('id', 'y-axis-' + id)
         .call(context.yaxis().active(true).orient('left'));
     }
     // Generate canvas ID and append the canvas element for drawing the stage
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', id);
     
     // Append x-axis and render
     if (!xAxis) {
@@ -46,12 +46,12 @@ QuandlismContext_.stage = function() {
         .attr('width', context.w()*quandlism_xaxis.w)
         .attr('height', context.h()*quandlism_xaxis.h)
         .attr('class', 'x axis')
-        .attr('id', 'x-axis-' + canvasId)
+        .attr('id', 'x-axis-' + id)
         .call(context.axis().active(true));
     }
     
     // Get references to canvas and canvas context for drawing
-    canvas = selection.select('#' + canvasId);
+    canvas = selection.select('#' + id);
     ctx = canvas.node().getContext('2d');
     
     // Calculate initial start / end points, if they aren't set already
@@ -67,24 +67,7 @@ QuandlismContext_.stage = function() {
      
     // After drawing the first time, save the computed color range for easy look up later!
     colorRange = context.colorScale().range();
-
-    /**
-     * Refresh the stage. Called when frequency or transformation is changed.
-     * Update lines and start and end date
-     */
-    function refresh() {
-      lines = selection.datum();
-      if (xAxis && false) {
-        xAxis.datum(lines).refresh();
-      }
-      if (yAxis && false) {
-        yAxis.datum(lines).refresh();
-      }
-      end = lines[0].length();
-      start = Math.floor(lines[0].length()*context.endPercentage());
-      draw();
-    }
-
+    
     /**
      * Draws the stage
      * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
@@ -236,24 +219,23 @@ QuandlismContext_.stage = function() {
      * Update line data and re-draw
      */
      context.on('refresh.stage', function() {
-       refresh();
+       lines = selection.datum();
+       end = lines[0].length();
+       start = Math.floor(lines[0].length()*context.endPercentage());
+       draw();
      });
   
     /**
      * If tooltip dom is defined, track mousemovement on stage to render tooltip 
      */
-    if (!_.isUndefined(context.domtooltip())) {
-      d3.select('#' + canvasId).on('mousemove', function(e) {
-        
-        hit = lineHit(d3.mouse(this));
-
-        if (hit !== false) {
+    if (context.domtooltip()) {
+      d3.select('#' + id).on('mousemove', function(e) {
+        if (hit = lineHit(d3.mouse(this))) {
           showTooltip(hit.line, Math.round(xScale.invert(hit.x)), hit.color);
         } else {
           clearTooltip();
           draw();
         }
-
       });
     }
     

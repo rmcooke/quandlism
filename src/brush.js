@@ -9,7 +9,7 @@ QuandlismContext_.brush = function() {
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   canvas = null,
-  canvasId,
+  id,
   xAxis = null,
   ctx = null,
   lines = [],
@@ -27,10 +27,10 @@ QuandlismContext_.brush = function() {
     lines = selection.datum();
   
     // Generate canvas id
-    canvasId = 'canvas-brush-' + (++quandlism_id_ref);
+    id = 'canvas-brush-' + (++quandlism_id_ref);
   
     // Append canvas and axis elements
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', id);
 
     // If x Axis is not defined, append it
     if (!xAxis) {
@@ -39,12 +39,12 @@ QuandlismContext_.brush = function() {
         .attr('class', 'x axis')
         .attr('width', context.w()*quandlism_xaxis.w)
         .attr('height', context.h()*quandlism_xaxis.h)
-        .attr('id', 'x-axis-' + canvasId)
+        .attr('id', 'x-axis-' + id)
         .call(context.axis()); 
     } 
         
     // Get drawing context
-    canvas = selection.select('#' + canvasId);
+    canvas = selection.select('#' + id);
     ctx = canvas.node().getContext('2d');
     
     updateExtent();
@@ -86,17 +86,6 @@ QuandlismContext_.brush = function() {
       clearCanvas();      
       draw();
       drawBrush();
-    }
-    
-    function refresh() {      
-      lines = selection.datum();
-      start = Math.ceil(width*context.endPercentage());
-      start0 = start;
-      brushWidth = Math.ceil(width * 0.2);
-      brushWidth0 = brushWidth;
-      updateExtent();
-      setScales();
-      update();
     }
     
     
@@ -190,9 +179,17 @@ QuandlismContext_.brush = function() {
     
     /**
      * Responds to refresh event. Updates lines and start/end points and redraws
+     * Attachs data to xAxis and tells context to send refresh event
      */
     context.on('refresh.brush', function() {
-      refresh();
+      lines = selection.datum();
+      start = Math.ceil(width*context.endPercentage());
+      start0 = start;
+      brushWidth = Math.ceil(width * 0.2);
+      brushWidth0 = brushWidth;
+      updateExtent();
+      setScales();
+      update();
     });
     
     /**

@@ -12,16 +12,7 @@ QuandlismContext_.axis = function() {
     
     id = selection.attr('id');      
     lines = selection.datum();
-    extent = [lines[0].dateAt(0), lines[0].dateAt((lines[0].length() -1))];
-        
-    parseDate = context.utility().parseDate(lines[0].dateAt(0));
-        
-    scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
-       
-    axis_.tickFormat(d3.time.format('%b %d, %Y'));
-       
-    axis_.ticks(Math.floor(width / 150), 0, 0);
-    scale.range([0, width]);
+
         
     function update() {      
       axis.remove();
@@ -33,18 +24,45 @@ QuandlismContext_.axis = function() {
           .call(axis_);
     }
     
+    function changeScale() {
+      extent = [lines[0].dateAt(0), lines[0].dateAt((lines[0].length() -1))];
+      parseDate = context.utility().parseDate(lines[0].dateAt(0));  
+      scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
+      axis_.tickFormat(d3.time.format('%b %d, %Y'));
+      axis_.ticks(Math.floor(width / 150), 0, 0);
+      scale.range([0, width]);
+    }
+    
+    changeScale();
     update();
     
-    // Listen for resize
+    
+    /**
+     * Event Listeners
+     */
+    
+    /**
+     * Listen for resizing
+     */ 
     context.on('respond.axis-'+id, function() {
       width = context.w()*quandlism_xaxis.w;
       axis_.ticks(Math.floor(width / 150), 0, 0);
       scale.range([0, width]);
-      update();
-      
+      update();  
     });
     
-    // If the axis is active, it should respond to the brush event to update its access
+    /**
+     * Wait for stage to append new lines and have axis-update event triggered. 
+     */
+    context.on('refresh.axis-' + id, function() {
+      lines = selection.datum();
+      changeScale();
+      update();
+    });
+    
+    /**
+     * If active is set to true, listen for adjust even to redraw the axis range
+     */
     if (active) {
       context.on('adjust.axis-'+id, function(x1, x2) {        
         x2 = (x2 > (lines[0].length() -1)) ? lines[0].length()-1 : x2;
@@ -54,7 +72,8 @@ QuandlismContext_.axis = function() {
         update();
       });
     }
-           
+    
+
   }
   
   axis.remove = function() {

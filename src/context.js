@@ -6,7 +6,7 @@ quandlism.context = function() {
   trans = 'none',
   w = h = null,
   dom = null, domlegend = null, domtooltip = null, dombrush = null, domstage = null,
-  event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh'),
+  event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh', 'x_axis_refresh'),
   colorScale = d3.scale.category20(),
   endPercentage = 0.8,
   scale;
@@ -42,10 +42,19 @@ quandlism.context = function() {
   
   context.attachData = function(lines) {
     if (domstage) {
-      d3.select(domstage).datum(lines);
+      stage = d3.select(domstage).datum(lines);
+      if (stage.select('.x')) {
+        stage.select('.x').datum(lines);
+      }
+      if (stage.select('.y')) {
+        stage.select('.y').datum(lines);
+      }
     }
     if (dombrush) {
-      d3.select(dombrush).datum(lines);
+      brush = d3.select(dombrush).datum(lines);
+      if (brush.select('.x')) {
+        brush.select('.x').datum(lines);
+      }
     }
     if (domlegend) {
       d3.select(domlegend).datum(lines);
@@ -175,6 +184,10 @@ quandlism.context = function() {
   // Handles toggling of visiblity
   context.toggle = function() {
     event.toggle.call(context);
+  }
+  
+  context.x_axis_refresh = function() {
+    event.x_axis_refresh.call(context);
   }
   
   context.on = function(type, listener) {
