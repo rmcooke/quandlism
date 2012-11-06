@@ -1,5 +1,6 @@
 var quandlism_axis  = 0;
 var quandlism_line_id = 0;
+var quandlism_id_ref = 0;
 var quandlism_stage = {w: 0.85, h: 0.70};
 var quandlism_brush = {w: 0.85, h: 0.05};
 var quandlism_xaxis = {w: 0.85, h: 0.15};

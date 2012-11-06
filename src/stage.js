@@ -1,7 +1,7 @@
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  canvasId = 'canvas-stage',
+  canvasId,
   width = Math.floor(context.w()*quandlism_stage.w), 
   height = Math.floor(context.h()*quandlism_stage.h),
   canvasPadding = 10,
@@ -14,41 +14,51 @@ QuandlismContext_.stage = function() {
   ctx = null,
   colorRange = [],
   start = null, 
-  end = null;  
+  end = null,
+  xAxis = null,
+  yAxis = null;
   
   
   
   function stage(selection) {
     
     // Extract line data    
-  
     lines = selection.datum();
-            
-    // Append div for y-axis and call yaxis from context
-    selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
+    canvasId = 'canvas-stage-' + (++quandlism_id_ref);
     
-    // Append div for stage-holder (to hold x-axis, stage data and brush)
-    stageHolder = selection.append('div').attr('class', 'stage-holder');
-  
-    // Append x-axis and stage
-    stageHolder.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
-    stageHolder.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
-    
-    // If Legend DOM is defined, create the legend. Style w/ CSS
-    if (context.domlegend()) {
-      d3.select(context.domlegend()).datum(lines).call(context.legend());
+    // Append y-axis and render
+    if (!yAxis) {
+      yAxis = selection
+      .append('div').datum(lines)
+        .attr('width', context.w()*quandlism_yaxis.w)
+        .attr('height', context.h()*quandlism_yaxis.h)
+        .attr('class', 'y axis')
+        .attr('id', 'y-axis-' + canvasId)
+        .call(context.yaxis().active(true).orient('left'));
     }
-  
+    // Generate canvas ID and append the canvas element for drawing the stage
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
+    
+    // Append x-axis and render
+    if (!xAxis) {
+      xAxis = selection.append('div')
+        .datum(lines)
+        .attr('width', context.w()*quandlism_xaxis.w)
+        .attr('height', context.h()*quandlism_xaxis.h)
+        .attr('class', 'x axis')
+        .attr('id', 'x-axis-' + canvasId)
+        .call(context.axis().active(true));
+    }
     
     // Get references to canvas and canvas context for drawing
-    canvas = selection.select('.stage');
+    canvas = selection.select('#' + canvasId);
     ctx = canvas.node().getContext('2d');
     
     // Calculate initial start / end points, if they aren't set already
-    if (end == null) {
+    if (!end) {
       end = lines[0].length();
     }
-    if (start == null) {
+    if (!start) {
       start = Math.floor(lines[0].length()*context.endPercentage());
     }
 
@@ -240,10 +250,6 @@ QuandlismContext_.stage = function() {
 
       });
     }
-
-      
-    // Draw the brush inside the stage-holder
-    stageHolder.call(context.brush());
     
       
     /**
@@ -278,6 +284,22 @@ QuandlismContext_.stage = function() {
         return start;
       }
       start = _;
+      return stage;
+    }
+    
+    stage.xAxis = function(_) {
+      if (!arguments.length) {
+        return xAxis;
+      }
+      xAxis = _;
+      return stage;
+    }
+    
+    stage.yAxis = function(_) {
+      if (!arguments.length) {
+        return yAxis;
+      }
+      yAxis = _;
       return stage;
     }
       

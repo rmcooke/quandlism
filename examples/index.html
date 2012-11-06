@@ -23,30 +23,35 @@
   #chart {
     position: relative;
     width:  80%;
-    height: 300px;
+    height: 600px;
   }
   
   #chart #stage {
     width: 100%;
     float: left;
-    height: 600px;
+  }
+  
+  
+  #chart #stage {
+    
+    float: right;
   }
   
   #chart #stage .y.axis {
     float: left;
   }
   
+  #chart #stage .x.axis, #chart #stage canvas {
+    float: right;
+  }
+  
   #chart #stage .y.axis svg {
     float: left;
   }
-  #chart #stage .stage-holder {
-    float: left;
-  }
 
-
-  
-  #chart #stage  {
-    float: left;
+  #chart #brush {
+    float: right;
+    
   }
   
   #legend {
@@ -74,6 +79,7 @@
   
   <div id='chart'>
     <div id='stage'></div>
+    <div id='brush'></div>
   </div>
   <ul id='legend'></ul>
 
@@ -84,25 +90,18 @@
   <script type="text/javascript" charset="utf-8">
 
 
-  var context = quandlism.context().dom('#stage').domlegend('#legend').domtooltip('#tooltip');
+  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
       
   d3.json('/data/uhero.json', function(data) {
     
     context.frequency(data.frequency);
-    keys = _.without(data.columns, _.first(data.columns));
     
-    lines =  _.map(keys, function(key, i) {
-      return context.line({
-        name: key,
-        values: _.map(data.data, function(d) {
-          return { date: d[0], num: +d[(i+1)] }
-        })
-      });
-    });
-
+    lines = context.utility().createLines(data);
     
-    d3.select(context.dom()).datum(lines).call(context.stage());
-  
+    // Create each independent element
+    d3.select(context.domstage()).datum(lines).call(context.stage());
+    d3.select(context.dombrush()).datum(lines).call(context.brush());
+    d3.select(context.domlegend()).datum(lines).call(context.legend());
   }); 
 
 

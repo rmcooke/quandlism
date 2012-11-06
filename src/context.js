@@ -5,7 +5,7 @@ quandlism.context = function() {
   frequency = 'daily',
   trans = 'none',
   w = h = null,
-  dom = null, domlegend = null, domtooltip = null,
+  dom = null, domlegend = null, domtooltip = null, dombrush = null, domstage = null,
   event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh'),
   colorScale = d3.scale.category20(),
   endPercentage = 0.8,
@@ -78,6 +78,22 @@ quandlism.context = function() {
       return domtooltip;
     }
     domtooltip = _;
+    return update();
+  }
+  
+  context.domstage = function(_) {
+    if (!arguments.length) {
+      return domstage;
+    }
+    domstage = _;
+    return update();
+  }
+  
+  context.dombrush = function(_) {
+    if (!arguments.length) {
+      return dombrush;
+    }
+    dombrush = _;
     return update();
   }
   

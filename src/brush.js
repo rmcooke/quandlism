@@ -9,6 +9,8 @@ QuandlismContext_.brush = function() {
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   canvas = null,
+  canvasId,
+  xAxis = null,
   ctx = null,
   lines = [],
   extent = [],
@@ -23,12 +25,26 @@ QuandlismContext_.brush = function() {
 
     // Extract line data from selection
     lines = selection.datum();
-    
+  
+    // Generate canvas id
+    canvasId = 'canvas-brush-' + (++quandlism_id_ref);
+  
     // Append canvas and axis elements
-    canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');   
-    axis = selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
+
+    // If x Axis is not defined, append it
+    if (!xAxis) {
+      xAxis = selection.append('div')
+        .datum(lines)
+        .attr('class', 'x axis')
+        .attr('width', context.w()*quandlism_xaxis.w)
+        .attr('height', context.h()*quandlism_xaxis.h)
+        .attr('id', 'x-axis-' + canvasId)
+        .call(context.axis()); 
+    } 
         
     // Get drawing context
+    canvas = selection.select('#' + canvasId);
     ctx = canvas.node().getContext('2d');
     
     updateExtent();
@@ -39,7 +55,10 @@ QuandlismContext_.brush = function() {
         
     update();
         
-    
+    /**
+     * Calculates and saves the total extent values for the visible lines in the brush
+     *
+     */
     function updateExtent() {
       exes = _.map(lines, function(line, j) {
         return line.extent();
@@ -69,12 +88,8 @@ QuandlismContext_.brush = function() {
       drawBrush();
     }
     
-    function refresh() {
-      console.log('refresh!');
-      
+    function refresh() {      
       lines = selection.datum();
-      
-      console.log(lines);
       updateExtent();
       setScales();
       update();
@@ -248,6 +263,17 @@ QuandlismContext_.brush = function() {
     
     setInterval(update, 50);
       
+  }
+  
+  /**
+   * Getters and setters
+   */
+  brush.xAxis = function(_) {
+    if (!arguments.length) {
+      return xAxis;
+    }
+    xAxis = _;
+    return brush;
   }
   
   return brush;

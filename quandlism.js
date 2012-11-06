@@ -10,7 +10,7 @@ quandlism.context = function() {
   frequency = 'daily',
   trans = 'none',
   w = h = null,
-  dom = null, domlegend = null, domtooltip = null,
+  dom = null, domlegend = null, domtooltip = null, dombrush = null, domstage = null,
   event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh'),
   colorScale = d3.scale.category20(),
   endPercentage = 0.8,
@@ -83,6 +83,22 @@ quandlism.context = function() {
       return domtooltip;
     }
     domtooltip = _;
+    return update();
+  }
+  
+  context.domstage = function(_) {
+    if (!arguments.length) {
+      return domstage;
+    }
+    domstage = _;
+    return update();
+  }
+  
+  context.dombrush = function(_) {
+    if (!arguments.length) {
+      return dombrush;
+    }
+    dombrush = _;
     return update();
   }
   
@@ -162,6 +178,7 @@ var QuandlismContext_ = QuandlismContext.prototype = quandlism.context.prototype
 
 var quandlism_axis  = 0;
 var quandlism_line_id = 0;
+var quandlism_id_ref = 0;
 var quandlism_stage = {w: 0.85, h: 0.70};
 var quandlism_brush = {w: 0.85, h: 0.05};
 var quandlism_xaxis = {w: 0.85, h: 0.15};
@@ -388,7 +405,7 @@ QuandlismContext_.line = function(data) {
 QuandlismContext_.stage = function() {
   var context = this,
   lines = [],
-  canvasId = 'canvas-stage',
+  canvasId,
   width = Math.floor(context.w()*quandlism_stage.w), 
   height = Math.floor(context.h()*quandlism_stage.h),
   canvasPadding = 10,
@@ -401,41 +418,51 @@ QuandlismContext_.stage = function() {
   ctx = null,
   colorRange = [],
   start = null, 
-  end = null;  
+  end = null,
+  xAxis = null,
+  yAxis = null;
   
   
   
   function stage(selection) {
     
     // Extract line data    
-  
     lines = selection.datum();
-            
-    // Append div for y-axis and call yaxis from context
-    selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
+    canvasId = 'canvas-stage-' + (++quandlism_id_ref);
     
-    // Append div for stage-holder (to hold x-axis, stage data and brush)
-    stageHolder = selection.append('div').attr('class', 'stage-holder');
-  
-    // Append x-axis and stage
-    stageHolder.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
-    stageHolder.append('div').datum(lines).attr('class', 'x axis').attr('id', 'x-axis-stage').call(context.axis().active(true));    
-    
-    // If Legend DOM is defined, create the legend. Style w/ CSS
-    if (context.domlegend()) {
-      d3.select(context.domlegend()).datum(lines).call(context.legend());
+    // Append y-axis and render
+    if (!yAxis) {
+      yAxis = selection
+      .append('div').datum(lines)
+        .attr('width', context.w()*quandlism_yaxis.w)
+        .attr('height', context.h()*quandlism_yaxis.h)
+        .attr('class', 'y axis')
+        .attr('id', 'y-axis-' + canvasId)
+        .call(context.yaxis().active(true).orient('left'));
     }
-  
+    // Generate canvas ID and append the canvas element for drawing the stage
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
+    
+    // Append x-axis and render
+    if (!xAxis) {
+      xAxis = selection.append('div')
+        .datum(lines)
+        .attr('width', context.w()*quandlism_xaxis.w)
+        .attr('height', context.h()*quandlism_xaxis.h)
+        .attr('class', 'x axis')
+        .attr('id', 'x-axis-' + canvasId)
+        .call(context.axis().active(true));
+    }
     
     // Get references to canvas and canvas context for drawing
-    canvas = selection.select('.stage');
+    canvas = selection.select('#' + canvasId);
     ctx = canvas.node().getContext('2d');
     
     // Calculate initial start / end points, if they aren't set already
-    if (end == null) {
+    if (!end) {
       end = lines[0].length();
     }
-    if (start == null) {
+    if (!start) {
       start = Math.floor(lines[0].length()*context.endPercentage());
     }
 
@@ -627,10 +654,6 @@ QuandlismContext_.stage = function() {
 
       });
     }
-
-      
-    // Draw the brush inside the stage-holder
-    stageHolder.call(context.brush());
     
       
     /**
@@ -667,6 +690,22 @@ QuandlismContext_.stage = function() {
       start = _;
       return stage;
     }
+    
+    stage.xAxis = function(_) {
+      if (!arguments.length) {
+        return xAxis;
+      }
+      xAxis = _;
+      return stage;
+    }
+    
+    stage.yAxis = function(_) {
+      if (!arguments.length) {
+        return yAxis;
+      }
+      yAxis = _;
+      return stage;
+    }
       
   }
 
@@ -684,6 +723,8 @@ QuandlismContext_.brush = function() {
   xScale = d3.scale.linear(), 
   yScale = d3.scale.linear(),
   canvas = null,
+  canvasId,
+  xAxis = null,
   ctx = null,
   lines = [],
   extent = [],
@@ -698,12 +739,26 @@ QuandlismContext_.brush = function() {
 
     // Extract line data from selection
     lines = selection.datum();
-    
+  
+    // Generate canvas id
+    canvasId = 'canvas-brush-' + (++quandlism_id_ref);
+  
     // Append canvas and axis elements
-    canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush');   
-    axis = selection.append('div').datum(lines).attr('id', 'x-axis-brush').attr('class', 'axis').call(context.axis());
+    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
+
+    // If x Axis is not defined, append it
+    if (!xAxis) {
+      xAxis = selection.append('div')
+        .datum(lines)
+        .attr('class', 'x axis')
+        .attr('width', context.w()*quandlism_xaxis.w)
+        .attr('height', context.h()*quandlism_xaxis.h)
+        .attr('id', 'x-axis-' + canvasId)
+        .call(context.axis()); 
+    } 
         
     // Get drawing context
+    canvas = selection.select('#' + canvasId);
     ctx = canvas.node().getContext('2d');
     
     updateExtent();
@@ -714,7 +769,10 @@ QuandlismContext_.brush = function() {
         
     update();
         
-    
+    /**
+     * Calculates and saves the total extent values for the visible lines in the brush
+     *
+     */
     function updateExtent() {
       exes = _.map(lines, function(line, j) {
         return line.extent();
@@ -744,12 +802,8 @@ QuandlismContext_.brush = function() {
       drawBrush();
     }
     
-    function refresh() {
-      console.log('refresh!');
-      
+    function refresh() {      
       lines = selection.datum();
-      
-      console.log(lines);
       updateExtent();
       setScales();
       update();
@@ -923,6 +977,17 @@ QuandlismContext_.brush = function() {
     
     setInterval(update, 50);
       
+  }
+  
+  /**
+   * Getters and setters
+   */
+  brush.xAxis = function(_) {
+    if (!arguments.length) {
+      return xAxis;
+    }
+    xAxis = _;
+    return brush;
   }
   
   return brush;
@@ -1134,7 +1199,7 @@ QuandlismContext_.legend = function() {
     
     /**
      * Callback for refresh event
-     * Set the lines variable for the new data
+     * Set the lines variable for the new data. No need to re-render elements.
      */
     context.on('refresh.legend', function() {
       lines = selection.datum();

@@ -19,7 +19,7 @@ QuandlismContext_.legend = function() {
     
     /**
      * Callback for refresh event
-     * Set the lines variable for the new data
+     * Set the lines variable for the new data. No need to re-render elements.
      */
     context.on('refresh.legend', function() {
       lines = selection.datum();
