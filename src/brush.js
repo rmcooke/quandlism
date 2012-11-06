@@ -90,10 +90,13 @@ QuandlismContext_.brush = function() {
     
     function refresh() {      
       lines = selection.datum();
+      start = Math.ceil(width*context.endPercentage());
+      start0 = start;
+      brushWidth = Math.ceil(width * 0.2);
+      brushWidth0 = brushWidth;
       updateExtent();
       setScales();
       update();
-      
     }
     
     

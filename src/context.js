@@ -23,23 +23,35 @@ quandlism.context = function() {
   
   /**
    * Creates each quandlism chart that has a specified dom element.
-   * 
-   * lines - The line objects
+   * Convenenice method. Each element can be created and updated separately.
    *
    * Returns self
    */
-  context.quandlism = function(lines) {
+  context.render = function() {
     if (domstage) {
-      d3.select(domstage).datum(lines).call(this.stage());
+      d3.select(domstage).call(this.stage());
     }
     if (dombrush) {
-      d3.select(dombrush).datum(lines).call(this.brush());
+      d3.select(dombrush).call(this.brush());
     }
     if (domlegend) {
-      d3.select(domlegend).datum(lines).call(this.legend());
+      d3.select(domlegend).call(this.legend());
     }
     return update();
   } 
+  
+  context.attachData = function(lines) {
+    if (domstage) {
+      d3.select(domstage).datum(lines);
+    }
+    if (dombrush) {
+      d3.select(dombrush).datum(lines);
+    }
+    if (domlegend) {
+      d3.select(domlegend).datum(lines);
+    }
+    return update();
+  }
   
   /**
    * Before refershing data, due to updated frequency or transformation, reset the line counter

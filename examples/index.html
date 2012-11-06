@@ -94,7 +94,7 @@
       
   d3.json('/data/uhero.json', function(data) {    
     context.frequency(data.frequency);
-    context.quandlism(context.utility().createLines(data));
+    context.attachData(context.utility().createLines(data)).render();
   }); 
 
 

@@ -74,6 +74,12 @@ QuandlismContext_.stage = function() {
      */
     function refresh() {
       lines = selection.datum();
+      if (xAxis && false) {
+        xAxis.datum(lines).refresh();
+      }
+      if (yAxis && false) {
+        yAxis.datum(lines).refresh();
+      }
       end = lines[0].length();
       start = Math.floor(lines[0].length()*context.endPercentage());
       draw();
