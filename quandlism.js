@@ -528,12 +528,9 @@ QuandlismContext_.stage = function() {
      * lineId - The id of the line that should be highlighted when the stage is drawn
      */
     function draw(lineId) {
-
-      exes = _.map(lines, function(line, j) {
-        return line.extent(start, end);
-      });  
-      extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
-      // For single points, edit extent so circle is not drawn at the corner
+      
+      // Calculate the extent and adust the x and y scales
+      extent = context.utility().getExtent(lines, start, end);
    
       yScale.domain([extent[0], extent[1]]); 
       yScale.range([(height - canvasPadding), canvasPadding]);
