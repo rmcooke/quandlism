@@ -15,21 +15,50 @@ quandlism.context = function() {
   colorScale = d3.scale.category20(),
   endPercentage = 0.8,
   scale;
-  
-  /**
-   * Expose attributes with getter/setters
-   */
+
+
   function update() {
-    if (dom !== null) {
-      w = $(dom).width();
-      h = $(dom).height();
-    }
+    w = $(dom).width();
+    h = $(dom).height();
     return context;
   }
+  /**
+   * Functions
+   */
+  
+  /**
+   * Creates each quandlism chart that has a specified dom element.
+   * 
+   * lines - The line objects
+   *
+   * Returns self
+   */
+  context.quandlism = function(lines) {
+    if (domstage) {
+      d3.select(domstage).datum(lines).call(this.stage());
+    }
+    if (dombrush) {
+      d3.select(dombrush).datum(lines).call(this.brush());
+    }
+    if (domlegend) {
+      d3.select(domlegend).datum(lines).call(this.legend());
+    }
+    return update();
+  } 
+  
+  /**
+   * Before refershing data, due to updated frequency or transformation, reset the line counter
+   */
+  context.prepare = function() {
+    quandlism_line_id = 0;
+    return update();
+  }
+  
 
   /**
-   * The transformation of the dataset
+   * Expose attributes with getters and setters
    */
+   
   context.trans = function(_) {
     if (!arguments.length) {
       return trans;
@@ -115,11 +144,6 @@ quandlism.context = function() {
       return endPercentage;
     }
     endPercentage = _;
-    return update();
-  }
-  
-  context.prepare = function() {
-    quandlism_line_id = 0;
     return update();
   }
   

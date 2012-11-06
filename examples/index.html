@@ -92,16 +92,9 @@
 
   var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
       
-  d3.json('/data/uhero.json', function(data) {
-    
+  d3.json('/data/uhero.json', function(data) {    
     context.frequency(data.frequency);
-    
-    lines = context.utility().createLines(data);
-    
-    // Create each independent element
-    d3.select(context.domstage()).datum(lines).call(context.stage());
-    d3.select(context.dombrush()).datum(lines).call(context.brush());
-    d3.select(context.domlegend()).datum(lines).call(context.legend());
+    context.quandlism(context.utility().createLines(data));
   }); 
 
 
