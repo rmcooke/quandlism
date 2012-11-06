@@ -40,6 +40,14 @@ quandlism.context = function() {
     return update();
   } 
   
+  /**
+   * Traverse the defined dom elements (and their axis children) and attach data for future
+   * operations.
+   * 
+   * lines - The array of lines
+   *
+   * Returns self
+   */
   context.attachData = function(lines) {
     if (domstage) {
       stage = d3.select(domstage).datum(lines);
