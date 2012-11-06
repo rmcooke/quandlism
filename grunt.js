@@ -54,12 +54,19 @@ module.exports = function(grunt) {
         dest: '.',
         wrapper: ['(function(exports) { \n', '\n })(this);']
       }
+    },
+    min: {
+      dist: {
+        src: 'quandlism.js',
+        dest: 'quandlism.min.js'
+      }
     }
   });
 
   // Default task.
   
   grunt.registerTask('default', 'concat wrap');
+  grunt.registerTask('production', 'concat wrap min');
   
   grunt.registerMultiTask('wrap', 'Wraps file with specified strings', function() {
     var files = grunt.file.expandFiles(this.file.src),
