@@ -6,7 +6,7 @@ quandlism.context = function() {
   trans = 'none',
   w = h = null,
   dom = null, domlegend = null, domtooltip = null,
-  event = d3.dispatch('respond', 'adjust', 'toggle'),
+  event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh'),
   colorScale = d3.scale.category20(),
   endPercentage = 0.8,
   scale;
@@ -97,10 +97,20 @@ quandlism.context = function() {
     return update();
   }
   
+  context.prepare = function() {
+    quandlism_line_id = 0;
+    return update();
+  }
+  
   
   /**
    * Event Listeners / Dispatchers
    */
+   
+  context.refresh = function() {
+    // Reset the quandlism_line_id to keep legend interaction
+    event.refresh.call(context);
+  }
 
   context.respond = _.throttle(function() {
     event.respond.call(context);

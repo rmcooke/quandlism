@@ -11,7 +11,7 @@ quandlism.context = function() {
   trans = 'none',
   w = h = null,
   dom = null, domlegend = null, domtooltip = null,
-  event = d3.dispatch('respond', 'adjust', 'toggle'),
+  event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh'),
   colorScale = d3.scale.category20(),
   endPercentage = 0.8,
   scale;
@@ -102,10 +102,20 @@ quandlism.context = function() {
     return update();
   }
   
+  context.prepare = function() {
+    quandlism_line_id = 0;
+    return update();
+  }
+  
   
   /**
    * Event Listeners / Dispatchers
    */
+   
+  context.refresh = function() {
+    // Reset the quandlism_line_id to keep legend interaction
+    event.refresh.call(context);
+  }
 
   context.respond = _.throttle(function() {
     event.respond.call(context);
@@ -174,8 +184,6 @@ QuandlismContext_.line = function(data) {
   values = data.values.reverse(),
   id = quandlism_line_id++,
   visible = true;    
-
-  
   /**
    * Getter / Setter methods
    *
@@ -283,7 +291,7 @@ QuandlismContext_.line = function(data) {
     }
     while (i <= n) {
       val = this.valueAt(i);
-      if (typeof(val) == 'undefined') {
+      if (_.isUndefined(val) || _.isNull(val)) {
         i++;
         continue;
       }
@@ -386,6 +394,7 @@ QuandlismContext_.stage = function() {
   canvasPadding = 10,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
+  selection = null,
   threshold = 10,
   extent = null,
   canvas = null,
@@ -394,11 +403,14 @@ QuandlismContext_.stage = function() {
   start = null, 
   end = null;  
   
+  
+  
   function stage(selection) {
     
     // Extract line data    
+  
     lines = selection.datum();
-        
+            
     // Append div for y-axis and call yaxis from context
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
@@ -434,6 +446,17 @@ QuandlismContext_.stage = function() {
     colorRange = context.colorScale().range();
 
     /**
+     * Refresh the stage. Called when frequency or transformation is changed.
+     * Update lines and start and end date
+     */
+    function refresh() {
+      lines = selection.datum();
+      end = lines[0].length();
+      start = Math.floor(lines[0].length()*context.endPercentage());
+      draw();
+    }
+
+    /**
      * Draws the stage
      * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
      *
@@ -445,7 +468,6 @@ QuandlismContext_.stage = function() {
         return line.extent(start, end);
       });  
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
-    
       // For single points, edit extent so circle is not drawn at the corner
    
       yScale.domain([extent[0], extent[1]]); 
@@ -579,6 +601,14 @@ QuandlismContext_.stage = function() {
       draw();
     });
         
+    /**
+     * Callback for context.refresh event
+     *
+     * Update line data and re-draw
+     */
+     context.on('refresh.stage', function() {
+       refresh();
+     });
   
     /**
      * If tooltip dom is defined, track mousemovement on stage to render tooltip 
@@ -714,6 +744,17 @@ QuandlismContext_.brush = function() {
       drawBrush();
     }
     
+    function refresh() {
+      console.log('refresh!');
+      
+      lines = selection.datum();
+      
+      console.log(lines);
+      updateExtent();
+      setScales();
+      update();
+      
+    }
     
     
     /**
@@ -801,6 +842,14 @@ QuandlismContext_.brush = function() {
     context.on('toggle.brush', function() {
       updateExtent();
       setScales();
+    });
+    
+    
+    /**
+     * Responds to refresh event. Updates lines and start/end points and redraws
+     */
+    context.on('refresh.brush', function() {
+      refresh();
     });
     
     /**
@@ -1083,6 +1132,14 @@ QuandlismContext_.legend = function() {
       
     legend_.exit().remove();
     
+    /**
+     * Callback for refresh event
+     * Set the lines variable for the new data
+     */
+    context.on('refresh.legend', function() {
+      lines = selection.datum();
+    });
+    
     selection.on('click', function(d, i) {
       evt = d3.event;
       evt.preventDefault();
@@ -1126,6 +1183,26 @@ QuandlismContext_.utility = function() {
     }
     return dateString;
 
+  }
+  
+  /**
+   * Create an array of line objects
+   *
+   * data - The raw data returned from the Quandl API
+   *
+   * Returns an array of objects 
+   */
+  utility.createLines = function(data) {
+    keys = _.without(data.columns, _.first(data.columns));
+    lines =  _.map(keys, function(key, i) {
+      return context.line({
+        name: key,
+        values: _.map(data.data, function(d) {
+          return { date: d[0], num: +d[(i+1)] }
+        })
+      });
+    }); 
+    return lines;
   }
   
   /**

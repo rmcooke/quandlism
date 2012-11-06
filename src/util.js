@@ -30,6 +30,26 @@ QuandlismContext_.utility = function() {
   }
   
   /**
+   * Create an array of line objects
+   *
+   * data - The raw data returned from the Quandl API
+   *
+   * Returns an array of objects 
+   */
+  utility.createLines = function(data) {
+    keys = _.without(data.columns, _.first(data.columns));
+    lines =  _.map(keys, function(key, i) {
+      return context.line({
+        name: key,
+        values: _.map(data.data, function(d) {
+          return { date: d[0], num: +d[(i+1)] }
+        })
+      });
+    }); 
+    return lines;
+  }
+  
+  /**
    * Parses the input date into a readable format for D3
    * String format is a function of the datasets frequency parameter
    *

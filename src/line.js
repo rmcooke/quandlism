@@ -16,8 +16,6 @@ QuandlismContext_.line = function(data) {
   values = data.values.reverse(),
   id = quandlism_line_id++,
   visible = true;    
-
-  
   /**
    * Getter / Setter methods
    *
@@ -125,7 +123,7 @@ QuandlismContext_.line = function(data) {
     }
     while (i <= n) {
       val = this.valueAt(i);
-      if (typeof(val) == 'undefined') {
+      if (_.isUndefined(val) || _.isNull(val)) {
         i++;
         continue;
       }

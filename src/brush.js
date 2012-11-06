@@ -69,6 +69,17 @@ QuandlismContext_.brush = function() {
       drawBrush();
     }
     
+    function refresh() {
+      console.log('refresh!');
+      
+      lines = selection.datum();
+      
+      console.log(lines);
+      updateExtent();
+      setScales();
+      update();
+      
+    }
     
     
     /**
@@ -156,6 +167,14 @@ QuandlismContext_.brush = function() {
     context.on('toggle.brush', function() {
       updateExtent();
       setScales();
+    });
+    
+    
+    /**
+     * Responds to refresh event. Updates lines and start/end points and redraws
+     */
+    context.on('refresh.brush', function() {
+      refresh();
     });
     
     /**

@@ -17,6 +17,14 @@ QuandlismContext_.legend = function() {
       
     legend_.exit().remove();
     
+    /**
+     * Callback for refresh event
+     * Set the lines variable for the new data
+     */
+    context.on('refresh.legend', function() {
+      lines = selection.datum();
+    });
+    
     selection.on('click', function(d, i) {
       evt = d3.event;
       evt.preventDefault();

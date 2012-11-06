@@ -7,6 +7,7 @@ QuandlismContext_.stage = function() {
   canvasPadding = 10,
   xScale = d3.scale.linear(),
   yScale = d3.scale.linear(),
+  selection = null,
   threshold = 10,
   extent = null,
   canvas = null,
@@ -15,11 +16,14 @@ QuandlismContext_.stage = function() {
   start = null, 
   end = null;  
   
+  
+  
   function stage(selection) {
     
     // Extract line data    
+  
     lines = selection.datum();
-        
+            
     // Append div for y-axis and call yaxis from context
     selection.append('div').datum(lines).attr('class', 'y axis').attr('id', 'y-axis-stage').call(context.yaxis().active(true).orient('left'));
     
@@ -55,6 +59,17 @@ QuandlismContext_.stage = function() {
     colorRange = context.colorScale().range();
 
     /**
+     * Refresh the stage. Called when frequency or transformation is changed.
+     * Update lines and start and end date
+     */
+    function refresh() {
+      lines = selection.datum();
+      end = lines[0].length();
+      start = Math.floor(lines[0].length()*context.endPercentage());
+      draw();
+    }
+
+    /**
      * Draws the stage
      * Calculates extents, given the start and end, adjusts the axis domain/ranges and draws the path
      *
@@ -66,7 +81,6 @@ QuandlismContext_.stage = function() {
         return line.extent(start, end);
       });  
       extent = [d3.min(exes, function(m) { return m[0]; }), d3.max(exes, function(m) { return m[1]; })]
-    
       // For single points, edit extent so circle is not drawn at the corner
    
       yScale.domain([extent[0], extent[1]]); 
@@ -200,6 +214,14 @@ QuandlismContext_.stage = function() {
       draw();
     });
         
+    /**
+     * Callback for context.refresh event
+     *
+     * Update line data and re-draw
+     */
+     context.on('refresh.stage', function() {
+       refresh();
+     });
   
     /**
      * If tooltip dom is defined, track mousemovement on stage to render tooltip 
