@@ -120,7 +120,7 @@ QuandlismContext_.stage = function() {
      * hex - The color of the line
      */
     function showTooltip(line, x, hex) {
-      $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span> : ' + line.valueAt(x) + '');    
+      $(context.domtooltip()).html('<span style="color: ' + hex + ';">' + line.name() + '</span>: ' + line.valueAt(x) + '');    
       draw(line.id());
       line.drawPoint(hex, ctx, xScale, yScale, x, ((end - start) <= threshold) ? 5: 3);
     }
