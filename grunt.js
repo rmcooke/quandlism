@@ -30,6 +30,13 @@ module.exports = function(grunt) {
       files: '<config:lint.files>',
       tasks: 'default'
     },
+    coffee: {
+      compile: {
+        files: {
+          'build/*.js': ['src/*.coffee']
+        }
+      }
+    },
     jshint: {
       options: {
         curly: true,
@@ -63,11 +70,16 @@ module.exports = function(grunt) {
     }
   });
 
-  // Default task.
+  // Load plugins
+  grunt.loadNpmTasks('grunt-contrib-coffee');
   
+  // Default task.
+  grunt.registerTask('cof', 'coffee');
   grunt.registerTask('default', 'concat wrap');
   grunt.registerTask('production', 'concat wrap min');
-  
+  /**
+   * Register wrap helper
+   */
   grunt.registerMultiTask('wrap', 'Wraps file with specified strings', function() {
     var files = grunt.file.expandFiles(this.file.src),
         path = require('path'),
@@ -88,6 +100,8 @@ module.exports = function(grunt) {
     
     
   });
+  
+  
 
   // Helpers
   
