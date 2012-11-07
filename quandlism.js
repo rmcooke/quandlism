@@ -1278,6 +1278,9 @@ QuandlismContext_.legend = function() {
     
     lines = selection.datum();
     
+    // Remove any elements in the legend that may be there
+    selection.selectAll('li').remove();
+    
     legend_ = selection.selectAll('li').data(lines);
     
     legend_.enter()
