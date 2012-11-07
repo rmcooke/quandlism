@@ -22,15 +22,14 @@
   ],
   "main": "quandlism",
   "engines": {
-    "node": ">= 0.6.0"
+    "node": ">= 0.8.0"
   },
   "scripts": {
     "test": "grunt test"
   },
   "devDependencies": {
     "grunt": "~0.3.16",
-    "grunt-wrap" : "~0.1.1",
-    "coffe-script": "~1.4.0"
+    "grunt-contrib-coffee": ">= 0.3.1"
   },
   "keywords": []
 }
