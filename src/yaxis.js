@@ -13,12 +13,11 @@ QuandlismContext_.yaxis = function() {
   
   function axis(selection) {
   
-    id = selection.attr('id');         
-    selection.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
+    id = selection.attr('id');        
     
     lines = selection.datum();
 
-    axis_.ticks(5, 0, 0);
+    axis_.ticks(Math.floor(height/50), 0, 0);
         
     function update() {   
       
@@ -26,19 +25,17 @@ QuandlismContext_.yaxis = function() {
       
       scale.domain([extent[0], extent[1]]);
       
-      axis.remove();
       
+      
+      axis.remove();
       var g = selection.append('svg')
+        .attr('width', width)
+        .attr('height', height)
         .append('g')
-        .attr('transform', 'translate(' + width*.75 + ', 0)')
+        .attr('transform', 'translate(' + width *.75 + ',0)')
         .attr('height', height)
         .attr('width', width)
-        .call(axis_)
-        .append("text")
-              .attr("transform", "rotate(-90)")
-              .attr("y", 6)
-              .attr("dy", ".71em")
-              .style("text-anchor", "end");
+        .call(axis_);
     }
     
     /**
@@ -63,7 +60,7 @@ QuandlismContext_.yaxis = function() {
       */
     context.on('respond.y-axis-'+id, function() {
       width = context.w()*quandlism_yaxis.w, height = context.h()*quandlism_yaxis.h;
-      selection.attr('style', 'width: ' + width + 'px; height: ' + height + 'px;');
+      axis_.ticks(Math.floor(height/50), 0, 0);
       scale.range([height, 0]);
       update();
       

@@ -1,5 +1,3 @@
-
-
 quandlism.context = function() {
   var context = new QuandlismContext(),
   frequency = 'daily',
@@ -17,6 +15,7 @@ quandlism.context = function() {
     h = $(dom).height();
     return context;
   }
+  
   /**
    * Functions
    */
