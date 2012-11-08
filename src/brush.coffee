@@ -97,13 +97,17 @@ QuandlismContext_.brush = () ->
     # Event listners
   
     # Respond to resized browser by recalculating key points and redrawing
-    context.on "respond.brush", () =>
+    context.on "respond.brush", () ->
       height0 = height
       width0 = width
       height = context.h()*quandlism_brush.h
       width = context.w()*quandlism_brush.w
       xStart = Math.ceil xStart/width0*width
       xStart0 = Math.ceil xStart0/width0*width
+      setScales()
+      
+    # Respond to toggle by re-setting extents to account for newly hidden or visible columns
+    context.on "toggle.brush", () ->
       setScales()
       
     # Listen for mousedown event to track mouse clicks before dragging or stretching control
@@ -121,6 +125,7 @@ QuandlismContext_.brush = () ->
         activeHandle = 1
         touchPoint = m[0]
       else if m[0] <= (brushWidth + xStart) and m[0] >= xStart
+        # if dragging
         dragging = true
         touchPoint = m[0]
         
@@ -152,12 +157,12 @@ QuandlismContext_.brush = () ->
 
 
   brush.xAxis = (_) =>
-    if not _ then return xAxis
+    if not _? then return xAxis
     xAxis = _
     brush
     
   brush.threshold = (_) =>
-    if not _ then return threshold
+    if not _? then return threshold
     threshold = _
     brush
     

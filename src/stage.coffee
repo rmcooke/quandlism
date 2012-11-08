@@ -103,6 +103,10 @@ QuandlismContext_.stage = () ->
       xStart = if x1 > 0 then x1 else 0
       xEnd = if lines[0].length() > 2 then x2 else lines[0].length()-1
       draw()
+      
+    # Respond to toggle event by re-drawing
+    context.on 'toggle.stage', () =>
+      draw()
     
     return
     
@@ -111,47 +115,47 @@ QuandlismContext_.stage = () ->
     
   # Expose attributes via getters/setters
   stage.padding = (_) =>
-    if not _ then return padding
+    if not _? then return padding
     padding = _
     stage
     
   stage.canvasId = (_) =>
-    if not _ then return canvasId
+    if not _? then return canvasId
     canvasId = _
     stage
     
   stage.width = (_) =>
-    if not _ then return width
+    if not _? then return width
     width = _
     stage
   
   stage.height = (_) =>
-    if not _ then return height
+    if not _? then return height
     height = _
     stage
     
   stage.xScale = (_) =>
-    if not _ then return xScale
+    if not _? then return xScale
     xScale = _
     stage
     
   stage.yScale = (_) =>
-    if not _ then return yScale
+    if not _? then return yScale
     yScale = _
     stage
 
   stage.xEnd = (_) =>
-    if not _ then return xEnd
+    if not _? then return xEnd
     xEnd = _
     stage    
 
   stage.xStart = (_) =>
-    if not _ then return xStart
+    if not _? then return xStart
     xStart = _
     stage        
     
   stage.threshold = (_) =>
-    if not _ then return threshold
+    if not _? then return threshold
     threshold = _
     stage
     

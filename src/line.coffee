@@ -97,26 +97,31 @@ QuandlismContext_.line = (data) ->
       ctx.stroke()
       ctx.closePath()
       
-
+      
+  # Toggle visibility of line
+  line.toggle = () ->
+    v = not @.visible()
+    @.visible(v)
+    v
   
   #
   line.id = (_) =>
-    if not _ then return id
+    if not _? then return id
     id = _
     line
     
   line.name = (_) =>
-    if not _ then return name
+    if not _? then return name
     name = _
     line
     
   line.values = (_) =>
-    if not _ then return values
+    if not _? then return values
     values = _
     line
     
   line.visible = (_) =>
-    if not _ then return visible
+    if not _? then return visible
     visible = _
     line
     

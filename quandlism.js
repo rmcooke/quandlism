@@ -26,6 +26,9 @@
       if (_this.dombrush) {
         d3.select(_this.dombrush).datum(lines);
       }
+      if (_this.domlegend) {
+        d3.select(_this.domlegend).datum(lines);
+      }
       return _this.context;
     };
     this.context.render = function() {
@@ -34,6 +37,9 @@
       }
       if (_this.dombrush) {
         d3.select(_this.dombrush).call(_this.context.brush());
+      }
+      if (_this.domlegend) {
+        d3.select(_this.domlegend).call(_this.context.legend());
       }
       return _this.context;
     };
@@ -104,8 +110,11 @@
     this.context.adjust = function(x1, x2) {
       return _this.event.adjust.call(_this.context, x1, x2);
     };
+    this.context.toggle = function() {
+      return _this.event.toggle.call(_this.context);
+    };
     this.context.on = function(type, listener) {
-      if (arguments.length < 2) {
+      if (!(listener != null)) {
         return _this.event.on(type);
       }
       _this.event.on(type, listener);
@@ -244,29 +253,35 @@
         return ctx.closePath();
       }
     };
+    line.toggle = function() {
+      var v;
+      v = !this.visible();
+      this.visible(v);
+      return v;
+    };
     line.id = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return id;
       }
       id = _;
       return line;
     };
     line.name = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return name;
       }
       name = _;
       return line;
     };
     line.values = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return values;
       }
       values = _;
       return line;
     };
     line.visible = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return visible;
       }
       visible = _;
@@ -358,65 +373,68 @@
         xEnd = lines[0].length() > 2 ? x2 : lines[0].length() - 1;
         return draw();
       });
+      context.on('toggle.stage', function() {
+        return draw();
+      });
     };
     stage.padding = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return padding;
       }
       padding = _;
       return stage;
     };
     stage.canvasId = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return canvasId;
       }
       canvasId = _;
       return stage;
     };
     stage.width = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return width;
       }
       width = _;
       return stage;
     };
     stage.height = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return height;
       }
       height = _;
       return stage;
     };
     stage.xScale = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return xScale;
       }
       xScale = _;
       return stage;
     };
     stage.yScale = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return yScale;
       }
       yScale = _;
       return stage;
     };
     stage.xEnd = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return xEnd;
       }
       xEnd = _;
       return stage;
     };
     stage.xStart = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return xStart;
       }
       xStart = _;
       return stage;
     };
     stage.threshold = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return threshold;
       }
       threshold = _;
@@ -526,6 +544,9 @@
         xStart0 = Math.ceil(xStart0 / width0 * width);
         return setScales();
       });
+      context.on("toggle.brush", function() {
+        return setScales();
+      });
       canvas.on('mousedown', function(e) {
         var m;
         m = d3.mouse(this);
@@ -571,14 +592,14 @@
       });
     };
     brush.xAxis = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return xAxis;
       }
       xAxis = _;
       return brush;
     };
     brush.threshold = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return threshold;
       }
       threshold = _;
@@ -706,6 +727,37 @@
       return d3.select("#" + id).selectAll("svg").remove();
     };
     return d3.rebind(yaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  };
+
+  QuandlismContext_.legend = function() {
+    var context, legend, legend_, lines,
+      _this = this;
+    context = this;
+    legend_ = null;
+    lines = [];
+    legend = function(selection) {
+      lines = selection.datum();
+      selection.selectAll('li').remove();
+      legend_ = selection.selectAll('li').data(lines);
+      legend_.enter().append('li').append('a').attr('href', "javascript:;").attr('data-line-id', function(line) {
+        return line.id();
+      }).text(function(line) {
+        return line.name();
+      });
+      legend_.exit().remove();
+      context.on("refresh.legend", function() {
+        return lines = selection.datum();
+      });
+      return selection.on("click", function(d, i) {
+        var e, lineId, vis;
+        e = d3.event;
+        e.preventDefault();
+        lineId = e.target.getAttribute('data-line-id');
+        vis = lines[lineId].toggle();
+        context.toggle();
+      });
+    };
+    return legend;
   };
 
   QuandlismContext_.utility = function() {

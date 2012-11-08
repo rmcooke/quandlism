@@ -53,10 +53,8 @@ QuandlismContext_.yaxis = () ->
       xEnd = if x2 < lines[0].length() then x2 else lines[0].length()
       update()
       
-
-    
-
     return
+    
   yaxis.remove = (_) =>
     d3.select("##{id}").selectAll("svg").remove();
   

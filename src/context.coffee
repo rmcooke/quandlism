@@ -18,7 +18,7 @@ quandlism.context = () ->
   @context.attachData = (lines) =>
     d3.select(@domstage).datum lines if @domstage
     d3.select(@dombrush).datum lines if @dombrush
-
+    d3.select(@domlegend).datum lines if @domlegend
     @context
   
   # render
@@ -26,13 +26,15 @@ quandlism.context = () ->
   @context.render = () =>
     d3.select(@domstage).call @context.stage() if @domstage
     d3.select(@dombrush).call @context.brush() if @dombrush
+    d3.select(@domlegend).call @context.legend() if @domlegend
     @context
   
-  
+  # Update the height and width 
   @context.build = () =>
     @w = $(@dom).width()
     @h = $(@dom).height()
     @context
+    
   # Expose attributes via getters and settesr
   
   @context.colorScale = (_) =>
@@ -86,8 +88,14 @@ quandlism.context = () ->
   @context.adjust = (x1, x2) =>
     @event.adjust.call @context, x1, x2
     
+    
+  # Responds to toggle event
+  @context.toggle = () =>
+    @event.toggle.call @context
+    
+    
   @context.on = (type, listener) =>
-    if arguments.length < 2 then return @event.on type
+    if not listener? then return @event.on type
     @event.on type, listener
     @context
 
