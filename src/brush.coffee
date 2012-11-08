@@ -30,15 +30,19 @@ QuandlismContext_.brush = () ->
     canvasId = "canvas-brush-#{++quandlism_id_ref}"
 
     # append canvas and get reference to element and drawing context
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId)
-    canvas = selection.select("##{canvasId}")
+    canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId)
     ctx = canvas.node().getContext '2d'
     
     # if xAxis not defined, create it
     if not xAxis?
-      xAxis = selection.append('div').datum lines
-      xAxis.attr('class', 'x axis').attr('width', context.w()*quandlism_xaxis.w).attr('height', context.h()*quandlism_xaxis.h).attr('id', "x-axis-#{canvasId}")
+      xAxis = selection.append 'div'
+      xAxis.datum lines
+      xAxis.attr 'class', 'x axis'
+      xAxis.attr 'width', context.w()*quandlism_xaxis.w
+      xAxis.attr 'height', context.h()*quandlism_xaxis.h
+      xAxis.attr 'id', "x-axis-#{canvasId}"
       xAxis.call context.xaxis()
+
     
     # Set domain and range for x and y scales
     setScales = () =>
@@ -105,6 +109,16 @@ QuandlismContext_.brush = () ->
       xStart = Math.ceil xStart/width0*width
       xStart0 = Math.ceil xStart0/width0*width
       setScales()
+      
+    # Respond to refresh event
+    context.on 'refresh.brush', () ->
+      lines = selection.datum()
+      xStart = Math.ceil width*context.endPercent()
+      xStart0 = xStart
+      brushWidth = Math.ceil width*0.2
+      brushWidth0 = brushWidth
+      setScales()
+      
       
     # Respond to toggle by re-setting extents to account for newly hidden or visible columns
     context.on "toggle.brush", () ->

@@ -569,12 +569,15 @@
       var clearCanvas, dispatchAdjust, draw, drawBrush, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
-      selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
-      canvas = selection.select("#" + canvasId);
+      canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
       if (!(xAxis != null)) {
-        xAxis = selection.append('div').datum(lines);
-        xAxis.attr('class', 'x axis').attr('width', context.w() * quandlism_xaxis.w).attr('height', context.h() * quandlism_xaxis.h).attr('id', "x-axis-" + canvasId);
+        xAxis = selection.append('div');
+        xAxis.datum(lines);
+        xAxis.attr('class', 'x axis');
+        xAxis.attr('width', context.w() * quandlism_xaxis.w);
+        xAxis.attr('height', context.h() * quandlism_xaxis.h);
+        xAxis.attr('id', "x-axis-" + canvasId);
         xAxis.call(context.xaxis());
       }
       setScales = function() {
@@ -638,6 +641,14 @@
         width = context.w() * quandlism_brush.w;
         xStart = Math.ceil(xStart / width0 * width);
         xStart0 = Math.ceil(xStart0 / width0 * width);
+        return setScales();
+      });
+      context.on('refresh.brush', function() {
+        lines = selection.datum();
+        xStart = Math.ceil(width * context.endPercent());
+        xStart0 = xStart;
+        brushWidth = Math.ceil(width * 0.2);
+        brushWidth0 = brushWidth;
         return setScales();
       });
       context.on("toggle.brush", function() {
@@ -763,6 +774,7 @@
       }
     };
     xaxis.remove = function() {
+      console.log("removing for " + id);
       return d3.select("#" + id).selectAll("svg").remove();
     };
     xaxis.active = function(_) {
