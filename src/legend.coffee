@@ -4,19 +4,19 @@ QuandlismContext_.legend = () ->
   lines     = []
   
   
-  legend = (selection) =>
+  legend = (selection) ->
     
     # Extract lines and remove any child elements in the selection
-    
     lines = selection.datum()
     selection.selectAll('li').remove()
     
-    # Use d3 joines to create the legend
+    # d3 joins
     legend_ = selection.selectAll('li').data(lines)
-    
-    legend_.enter().append('li').append('a').attr('href', "javascript:;").attr('data-line-id', (line) -> line.id()).text((line) -> line.name())
-    legend_.exit().remove()
-
+      .enter()
+      .append('li')
+      .append('a').attr('href', 'javascript:;').attr('style', (line) -> "background-color: #{context.utility().getColor line.id()}").attr('data-line-id', (line) -> line.id())
+      .text((line) -> line.name())
+  
 
     # When the data is refreshed, get the new lines
     context.on "refresh.legend", () ->
@@ -24,12 +24,12 @@ QuandlismContext_.legend = () ->
 
     # Event listenr for clicks on the legend. Dispatch toggle event
     
-    selection.on "click", (d, i) =>
+    selection.selectAll('a').on "click", (d, i) =>
       e = d3.event
       e.preventDefault()
-      lineId = e.target.getAttribute 'data-line-id'
-      vis = lines[lineId].toggle()
-      context.toggle()
+      id = e.target.getAttribute 'data-line-id'
+      lines[id].toggle() if lines[id]?
+      context.toggle() if lines[id]?
       return
 
 

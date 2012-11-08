@@ -733,31 +733,39 @@
   };
 
   QuandlismContext_.legend = function() {
-    var context, legend, legend_, lines,
-      _this = this;
+    var context, legend, legend_, lines;
     context = this;
     legend_ = null;
     lines = [];
     legend = function(selection) {
+      var itemBuilder,
+        _this = this;
+      itemBuilder = function(sel) {
+        return console.log(sel.datum());
+      };
       lines = selection.datum();
       selection.selectAll('li').remove();
-      legend_ = selection.selectAll('li').data(lines);
-      legend_.enter().append('li').append('a').attr('href', "javascript:;").attr('data-line-id', function(line) {
+      legend_ = selection.selectAll('li').data(lines).enter().append('li').append('a').attr('href', 'javascript:;').attr('style', function(line) {
+        return "background-color: " + (context.utility().getColor(line.id()));
+      }).attr('data-line-id', function(line) {
         return line.id();
       }).text(function(line) {
         return line.name();
       });
-      legend_.exit().remove();
       context.on("refresh.legend", function() {
         return lines = selection.datum();
       });
-      return selection.on("click", function(d, i) {
-        var e, lineId, vis;
+      return selection.selectAll('a').on("click", function(d, i) {
+        var e, id;
         e = d3.event;
         e.preventDefault();
-        lineId = e.target.getAttribute('data-line-id');
-        vis = lines[lineId].toggle();
-        context.toggle();
+        id = e.target.getAttribute('data-line-id');
+        if (lines[id] != null) {
+          lines[id].toggle();
+        }
+        if (lines[id] != null) {
+          context.toggle();
+        }
       });
     };
     return legend;
