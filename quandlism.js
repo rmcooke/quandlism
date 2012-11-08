@@ -622,7 +622,16 @@
         ctx.beginPath();
         ctx.lineWidth = handleWidth;
         ctx.strokeStyle = "#CFCFCF";
-        ctx.strokeRect(xStart, 0, brushWidth, height);
+        ctx.moveTo(xStart, 0);
+        ctx.lineTo(xStart, height);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.beginPath();
+        ctx.lineWidth = handleWidth;
+        ctx.strokeStyle = "#CFCFCF";
+        ctx.moveTo(xStart + brushWidth, 0);
+        ctx.lineTo(xStart + brushWidth, height);
+        ctx.stroke();
         return ctx.closePath();
       };
       dispatchAdjust = function() {
@@ -774,7 +783,6 @@
       }
     };
     xaxis.remove = function() {
-      console.log("removing for " + id);
       return d3.select("#" + id).selectAll("svg").remove();
     };
     xaxis.active = function(_) {
