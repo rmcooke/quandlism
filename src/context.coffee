@@ -1,14 +1,16 @@
    
 quandlism.context = () ->
-  @context    = new QuandlismContext()
-  @w          = null
-  @h          = null
-  @dom        = null
-  @domstage   = null
-  @dombrush   = null
-  @domlegend  = null
-  @domtooltip = null
-  @event      = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
+  @context      = new QuandlismContext()
+  @w            = null
+  @h            = null
+  @dom          = null
+  @domstage     = null
+  @dombrush     = null
+  @domlegend    = null
+  @domtooltip   = null
+  @endPercent   = 0.8
+  @event        = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
+  @colorScale   = d3.scale.category20()
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
@@ -24,10 +26,27 @@ quandlism.context = () ->
     d3.select(@domstage).call @context.stage() if @domstage
     @context
   
+  
   # Expose attributes via getters and settesr
+  
+  @context.colorScale = (_) =>
+    if not _ then return @colorScale
+    @colorScale = _
+    @context
+    
+  @context.endPercent = (_) =>
+    if not _ then return @endPercent
+    @endPercent = _
+    @context
+  
   @context.w = (_) =>
     if not _ then return @w
     @w = _
+    @context
+    
+  @context.h = (_) =>
+    if not _ then return @h
+    @h = _
     @context
     
   @context.dom = (_) =>
