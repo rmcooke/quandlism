@@ -22,20 +22,20 @@ QuandlismContext_.stage = () ->
     @lines = selection.datum()
     @canvasId = "canvas-stage-#{++quandlism_id_ref}"
     
-    # If yAxis not defined, create it
-    # XXX Todo
-    
+    # If no y axis is defined, create it
+    if not @yAxis?
+      @yAxis = selection.append('div').datum(@lines)
+      @yAxis.attr('height', @context.h()).attr('width', @context.w()).attr('class', 'axis y').attr('id', "y-axis-#{@canvasId}")
+      @yAxis.call @context.yaxis().orient('left')
+       
     selection.append('canvas').attr('width', @width).attr('height', @height).attr('class', 'stage').attr('id', @canvasId)
     
     # If there is not x-axis defined, create one for the stage
     if not @xAxis?
-      @xAxis = selection.append 'div'
-      @xAxis.datum @lines
-      @xAxis.attr('width', @context.w() * quandlism_xaxis.w).attr('height', @context.h() * quandlism_xaxis.h)
-      @xAxis.attr 'class', 'axis x'
-      @xAxis.attr 'id', "x-axis-#{@canvasId}"
+      @xAxis = selection.append('div').datum(@lines)
+      @xAxis.attr('width', @context.w() * quandlism_xaxis.w).attr('height', @context.h() * quandlism_xaxis.h).attr('class', 'x axis').attr('id', "x-axis-#{@canvasId}")
       @xAxis.call @context.xaxis().active true
-    
+      
 
     # Get reference to canvas selection and drawing context
     @canvas = selection.select("##{@canvasId}")

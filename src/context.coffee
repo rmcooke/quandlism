@@ -12,11 +12,12 @@ quandlism.context = () ->
   @event        = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   @colorScale   = d3.scale.category20()
   
+  
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
   @context.attachData = (lines) =>
     if @domstage
-      stage = d3.select(@domstage).datum lines
+      d3.select(@domstage).datum lines
 
     @context
   
@@ -27,6 +28,10 @@ quandlism.context = () ->
     @context
   
   
+  @context.build = () =>
+    @w = $(@dom).width()
+    @h = $(@dom).height()
+    @context
   # Expose attributes via getters and settesr
   
   @context.colorScale = (_) =>
@@ -93,7 +98,7 @@ quandlism.context = () ->
         @h = h0
         @context.respond()
     return
-
+  
   
   @context
   

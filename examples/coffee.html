@@ -91,7 +91,7 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var context = quandlism.context().dom('#chart').domstage('#stage')
+  var context = quandlism.context().dom('#chart').domstage('#stage').build()
   
   d3.json('/data/apple.json', function(data) {    
     lines = context.utility().createLines(data);

@@ -20,9 +20,8 @@
     this.event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     this.colorScale = d3.scale.category20();
     this.context.attachData = function(lines) {
-      var stage;
       if (_this.domstage) {
-        stage = d3.select(_this.domstage).datum(lines);
+        d3.select(_this.domstage).datum(lines);
       }
       return _this.context;
     };
@@ -30,6 +29,11 @@
       if (_this.domstage) {
         d3.select(_this.domstage).call(_this.context.stage());
       }
+      return _this.context;
+    };
+    this.context.build = function() {
+      _this.w = $(_this.dom).width();
+      _this.h = $(_this.dom).height();
       return _this.context;
     };
     this.context.colorScale = function(_) {
@@ -284,13 +288,15 @@
     stage = function(selection) {
       _this.lines = selection.datum();
       _this.canvasId = "canvas-stage-" + (++quandlism_id_ref);
+      if (!(_this.yAxis != null)) {
+        _this.yAxis = selection.append('div').datum(_this.lines);
+        _this.yAxis.attr('height', _this.context.h()).attr('width', _this.context.w()).attr('class', 'axis y').attr('id', "y-axis-" + _this.canvasId);
+        _this.yAxis.call(_this.context.yaxis().orient('left'));
+      }
       selection.append('canvas').attr('width', _this.width).attr('height', _this.height).attr('class', 'stage').attr('id', _this.canvasId);
       if (!(_this.xAxis != null)) {
-        _this.xAxis = selection.append('div');
-        _this.xAxis.datum(_this.lines);
-        _this.xAxis.attr('width', _this.context.w() * quandlism_xaxis.w).attr('height', _this.context.h() * quandlism_xaxis.h);
-        _this.xAxis.attr('class', 'axis x');
-        _this.xAxis.attr('id', "x-axis-" + _this.canvasId);
+        _this.xAxis = selection.append('div').datum(_this.lines);
+        _this.xAxis.attr('width', _this.context.w() * quandlism_xaxis.w).attr('height', _this.context.h() * quandlism_xaxis.h).attr('class', 'x axis').attr('id', "x-axis-" + _this.canvasId);
         _this.xAxis.call(_this.context.xaxis().active(true));
       }
       _this.canvas = selection.select("#" + _this.canvasId);
@@ -458,6 +464,55 @@
       return xaxis;
     };
     return d3.rebind(xaxis, this.axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  };
+
+  QuandlismContext_.yaxis = function() {
+    var yaxis,
+      _this = this;
+    this.context = this;
+    this.width = this.context.w() * quandlism_yaxis.w;
+    this.height = this.context.h() * quandlism_yaxis.h;
+    this.scale = d3.scale.linear().range([this.height, 0]);
+    this.axis_ = d3.svg.axis().scale(this.scale);
+    this.lines = [];
+    this.extent = [];
+    this.xStart = null;
+    this.xEnd = null;
+    this.id = null;
+    yaxis = function(selection) {
+      _this.id = selection.attr('id');
+      _this.lines = selection.datum();
+      _this.axis_.ticks(Math.floor(_this.height / 50, 0, 0));
+      _this.update = function() {
+        var a, g;
+        _this.extent = _this.context.utility().getExtent(_this.lines, _this.xStart, _this.xEnd);
+        _this.scale.domain([_this.extent[0], _this.extent[1]]);
+        yaxis.remove();
+        g = selection.append('svg');
+        g.attr('width', _this.width).attr('height', _this.height);
+        a = g.append('g');
+        a.attr('transform', "translate(" + (_this.width * 0.75) + ", 0)");
+        a.attr('width', _this.width).attr('height', _this.height);
+        return a.call(_this.axis_);
+      };
+      _this.setEndPoints = function() {
+        _this.xEnd = _this.lines[0].length() - 1;
+        return _this.xStart = Math.floor(_this.lines[0].length() * _this.context.endPercent());
+      };
+      _this.setEndPoints();
+      return _this.update();
+    };
+    this.context.on("respond.y-axis-" + this.id, function() {
+      _this.width = _this.context.w() * quandlism_yaxis.w;
+      _this.height = _this.context.h() * quandlism_yaxis.h;
+      _this.axis_.ticks(Math.floor(_this.height / 50, 0, 0));
+      _this.scale.range([_this.height, 0]);
+      return _this.update();
+    });
+    yaxis.remove = function(_) {
+      return d3.select("#" + _this.id).selectAll("svg").remove();
+    };
+    return d3.rebind(yaxis, this.axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
   };
 
   QuandlismContext_.utility = function() {
