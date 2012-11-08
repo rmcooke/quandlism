@@ -19,8 +19,10 @@
     this.endPercent = 0.8;
     this.event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     this.colorScale = d3.scale.category20();
+    this.lines = [];
     this.context.attachData = function(lines) {
       var brush, stage;
+      _this.lines = lines;
       if (_this.domstage) {
         stage = d3.select(_this.domstage).datum(lines);
       }
@@ -58,9 +60,11 @@
       _this.h = $(_this.dom).height();
       return _this.context;
     };
-    this.context.prepare = function() {
-      var quandlism_line_id;
-      quandlism_line_id = 0;
+    this.context.lines = function(_) {
+      if (!(_ != null)) {
+        return _this.lines;
+      }
+      _this.lines = _;
       return _this.context;
     };
     this.context.colorScale = function(_) {
@@ -897,19 +901,31 @@
     this.context = this;
     utility = function() {};
     utility.createLines = function(data) {
-      var keys;
+      var i, keys, line, lineData, lines, _i, _len;
       keys = data.columns.slice(1);
-      return _.map(keys, function(key, i) {
-        return _this.context.line({
-          name: key,
-          values: _.map(data.data, function(d) {
-            return {
-              date: d[0],
-              num: +d[i + 1]
-            };
-          })
+      lineData = _.map(keys, function(key, i) {
+        return _.map(data.data, function(d) {
+          return {
+            date: d[0],
+            num: +d[i + 1]
+          };
         });
       });
+      if (!_this.context.lines().length) {
+        lines = _.map(keys, function(key, i) {
+          return _this.context.line({
+            name: key,
+            values: lineData[i]
+          });
+        });
+      } else {
+        lines = _this.context.lines();
+        for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
+          line = lines[i];
+          line.values(lineData[i]);
+        }
+      }
+      return lines;
     };
     utility.getExtent = function(lines, start, end) {
       var exes, line;

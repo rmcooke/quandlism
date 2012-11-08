@@ -11,11 +11,12 @@ quandlism.context = () ->
   @endPercent   = 0.8
   @event        = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   @colorScale   = d3.scale.category20()
-  
+  @lines        = []
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
   @context.attachData = (lines) =>
+    @lines = lines
     stage = d3.select(@domstage).datum lines if @domstage
     stage.select('.x').datum lines if stage and stage.select('.x')
     stage.select('.y').datum lines if stage and stage.select('.y')
@@ -41,14 +42,14 @@ quandlism.context = () ->
     @context
     
     
-  # Prepare for update. Reset line counter
-  @context.prepare = () =>
-    quandlism_line_id = 0
-    @context
-    
-    
   # Expose attributes via getters and settesr
   
+  
+  @context.lines = (_) =>
+    if not _? then return @lines
+    @lines = _
+    @context
+    
   @context.colorScale = (_) =>
     if not _? then return @colorScale
     @colorScale = _

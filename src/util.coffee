@@ -11,15 +11,24 @@ QuandlismContext_.utility = () ->
   # Returns an array of quandlism lines
   utility.createLines = (data) =>
     keys = data.columns[1..]
-    _.map keys, (key, i) =>
-      @context.line({
-        name: key
-        values: _.map data.data, (d) ->
-          { 
-            date: d[0]
-            num:  +d[(i+1)]
-          }
-      })
+    lineData = _.map keys, (key, i) =>
+      _.map data.data, (d) ->
+        {
+          date: d[0]
+          num: +d[(i+1)]
+        }
+        
+    if not @context.lines().length
+      lines = _.map keys, (key, i) =>
+        @context.line {name: key, values: lineData[i]}
+    else
+      lines = @context.lines()
+      for line, i in lines
+        line.values lineData[i]
+      
+    lines
+    # Before returning lines, check if line with that id already exists. Maintain the visiblity state 
+
       
   # Calculates the minimum and maxium values for all of the lines in the lines array
   # between the index values start, and end
