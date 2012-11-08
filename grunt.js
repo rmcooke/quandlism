@@ -15,7 +15,7 @@ module.exports = function(grunt) {
           'src/line.coffee', 
           'src/stage.coffee', 
           'src/brush.coffee', 
-          'src/axis.coffee', 
+          'src/xaxis.coffee', 
           'src/yaxis.coffee', 
           'src/legend.coffee', 
           'src/util.coffee'

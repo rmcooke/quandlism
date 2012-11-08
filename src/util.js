@@ -30,6 +30,20 @@ QuandlismContext_.utility = function() {
   }
   
   /**
+   * Parses the input date into a readable format for D3
+   * String format is a function of the datasets frequency parameter
+   *
+   * date - A date to be parsed
+   *
+   * Return a time formatter
+   */
+  utility.parseDate = function(date) {
+    dateString = this.dateFormat(date);
+    return d3.time.format(dateString).parse;
+  }
+  
+  
+  /**
    * Calculates the extent for an array of quandlism line objects.
    * 
    * lines - The lines to be analyzed
@@ -65,19 +79,7 @@ QuandlismContext_.utility = function() {
     return lines;
   }
   
-  /**
-   * Parses the input date into a readable format for D3
-   * String format is a function of the datasets frequency parameter
-   *
-   * date - A date to be parsed
-   *
-   * Return a time formatter
-   */
-  utility.parseDate = function(date) {
-    dateString = this.dateFormat(date);
-    return d3.time.format(dateString).parse;
-  }
-  
+
   /**
    * Given the coordinates of a point on a canvas element, return the pixel data
    *

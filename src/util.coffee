@@ -43,5 +43,28 @@ QuandlismContext_.utility = () ->
     s = @context.colorScale()
     s i
   
+  
+  # Returns a string that can be parsed in the same format as the dates in the active graph.
+  # The number of - present indicate one of two date formats available.
+  # date - An example date
+  #  
+  # Returns a string representing the date format
+  utility.dateFormat = (date) ->
+    hyphenCount = date.split('-').length - 1
+    switch hyphenCount
+      when -1 then dateString = '%Y'
+      when 2  then dateString = '%Y-%m-%d'
+      else throw("Unknown date format: #{hyphenCount} #{date}")
+    dateString
+
+  # Parses the input date into a readable format for D3
+  # String format is a function of the datasets frequency parameter
+  #   
+  # date - A date to be parsed
+  #   
+  # Return a time formatter
+  utility.parseDate = (date) ->
+    dateString = @.dateFormat date
+    d3.time.format(dateString).parse;
     
   utility

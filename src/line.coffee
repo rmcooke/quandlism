@@ -47,7 +47,34 @@ QuandlismContext_.line = (data) ->
   line.valueAt = (i) =>
     if @values[i]? then @values[i].num else null
   
+  # Get the date associated with an array index
+  #
+  # i - The array index we want the date for
+  #
+  # Returns a string representing a date
+  line.dateAt = (i) =>
+    if @values[i]? then @values[i].date else null
+    
   
+  # Renders an individual point on the canvas
+  #
+  # color   - The color of the point
+  # ctx     - The HTML canvas context
+  # xS      - The d3 scale for the x co-ordinate
+  # yS      - The d3 scale for the y co-ordinate
+  # index   - The array index of the point to render
+  # radius  - The radius of the point
+  #
+  # Returns null
+  line.drawPoint = (color, ctx, xS, yX, index, radius) ->
+      # do something\
+    if @.visible()
+      ctx.beginPath()
+      ctx.arc xS(index), yS(@.valueAt(index)), radius, 0, Math.PI*2, true
+      ctx.fillStyle = color
+      ctx.fill()
+      ctx.closePath()
+
   # Draw a path on the drawing context
   #
   # color     - The color of the path
@@ -70,27 +97,8 @@ QuandlismContext_.line = (data) ->
       ctx.stroke()
       ctx.closePath()
       
-  # Renders an individual point on the canvas
-  #
-  # color   - The color of the point
-  # ctx     - The HTML canvas context
-  # xS      - The d3 scale for the x co-ordinate
-  # yS      - The d3 scale for the y co-ordinate
-  # index   - The array index of the point to render
-  # radius  - The radius of the point
-  #
-  # Returns null
-  line.drawPoint = (color, ctx, xS, yX, index, radius) ->
-    if @.visible()
-      ctx.beginPath()
-      ctx.arc xS(index), yS(@.valueAt(index), radius, 0, Math.PI*2, true
-      ctx.fillStyle = color
-      ctx.fill()
-      ctx.closePath()
+
   
-  # 
-  #  
-  # Expose attributes via getters/stters
   #
   line.id = (_) =>
     if not _ then return @id

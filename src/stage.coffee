@@ -1,11 +1,13 @@
 QuandlismContext_.stage = () ->
   @context    = @
-  @id         = null
+  @canvasId   = null
   @lines      = []
   @width      = Math.floor @context.w() * quandlism_stage.w
   @height     = Math.floor @context.h() * quandlism_stage.h
   @xScale     = d3.scale.linear()
   @yScale     = d3.scale.linear()
+  @xAxis      = null
+  @yAxis      = null
   @padding    = 10
   @extent     = []
   @xStart     = null
@@ -18,17 +20,25 @@ QuandlismContext_.stage = () ->
   stage = (selection) =>
     # Get lines and generate unique ID for the stage
     @lines = selection.datum()
-    @id = "canvas-stage-#{++quandlism_id_ref}"
+    @canvasId = "canvas-stage-#{++quandlism_id_ref}"
     
     # If yAxis not defined, create it
     # XXX Todo
     
-    # If xAxis not defined, create it
-    # XXX Todo
-    selection.append('canvas').attr('width', @width).attr('height', @height).attr('class', 'stage').attr('id', @id)
+    selection.append('canvas').attr('width', @width).attr('height', @height).attr('class', 'stage').attr('id', @canvasId)
     
+    # If there is not x-axis defined, create one for the stage
+    if not @xAxis?
+      @xAxis = selection.append 'div'
+      @xAxis.datum @lines
+      @xAxis.attr('width', @context.w() * quandlism_xaxis.w).attr('height', @context.h() * quandlism_xaxis.h)
+      @xAxis.attr 'class', 'axis x'
+      @xAxis.attr 'id', "x-axis-#{@canvasId}"
+      @xAxis.call @context.xaxis().active true
+    
+
     # Get reference to canvas selection and drawing context
-    @canvas = selection.select("##{@id}")
+    @canvas = selection.select("##{@canvasId}")
     @ctx = @canvas.node().getContext '2d'
     
     # Set start and end indexes, if they have not already been set
@@ -95,9 +105,9 @@ QuandlismContext_.stage = () ->
     @padding = _
     stage
     
-  stage.id = (_) =>
-    if not _ then return @id
-    @id = _
+  stage.canvasId = (_) =>
+    if not _ then return @canvasId
+    @canvasId = _
     stage
     
   stage.width = (_) =>

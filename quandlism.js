@@ -202,6 +202,22 @@
         return null;
       }
     };
+    line.dateAt = function(i) {
+      if (_this.values[i] != null) {
+        return _this.values[i].date;
+      } else {
+        return null;
+      }
+    };
+    line.drawPoint = function(color, ctx, xS, yX, index, radius) {
+      if (this.visible()) {
+        ctx.beginPath();
+        ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
+        ctx.fillStyle = color;
+        ctx.fill();
+        return ctx.closePath();
+      }
+    };
     line.drawPath = function(color, ctx, xS, yS, start, end, lineWidth) {
       var i, _i;
       if (this.visible()) {
@@ -250,12 +266,14 @@
     var stage,
       _this = this;
     this.context = this;
-    this.id = null;
+    this.canvasId = null;
     this.lines = [];
     this.width = Math.floor(this.context.w() * quandlism_stage.w);
     this.height = Math.floor(this.context.h() * quandlism_stage.h);
     this.xScale = d3.scale.linear();
     this.yScale = d3.scale.linear();
+    this.xAxis = null;
+    this.yAxis = null;
     this.padding = 10;
     this.extent = [];
     this.xStart = null;
@@ -265,14 +283,22 @@
     this.ctx = null;
     stage = function(selection) {
       _this.lines = selection.datum();
-      _this.id = "canvas-stage-" + (++quandlism_id_ref);
-      selection.append('canvas').attr('width', _this.width).attr('height', _this.height).attr('class', 'stage').attr('id', _this.id);
-      _this.canvas = selection.select("#" + _this.id);
+      _this.canvasId = "canvas-stage-" + (++quandlism_id_ref);
+      selection.append('canvas').attr('width', _this.width).attr('height', _this.height).attr('class', 'stage').attr('id', _this.canvasId);
+      if (!(_this.xAxis != null)) {
+        _this.xAxis = selection.append('div');
+        _this.xAxis.datum(_this.lines);
+        _this.xAxis.attr('width', _this.context.w() * quandlism_xaxis.w).attr('height', _this.context.h() * quandlism_xaxis.h);
+        _this.xAxis.attr('class', 'axis x');
+        _this.xAxis.attr('id', "x-axis-" + _this.canvasId);
+        _this.xAxis.call(_this.context.xaxis().active(true));
+      }
+      _this.canvas = selection.select("#" + _this.canvasId);
       _this.ctx = _this.canvas.node().getContext('2d');
       _this.xStart = !_this.xStart ? Math.floor(_this.lines[0].length() * _this.context.endPercent()) : _this.xStart;
       _this.xEnd = !_this.xEnd ? lines[0].length() : _this.xEnd;
       _this.draw = function(lineId) {
-        var j, line, lineWidth, _i, _len, _ref, _results;
+        var i, j, line, lineWidth, _i, _len, _ref, _results;
         _this.extent = _this.context.utility().getExtent(_this.lines, _this.xStart, _this.xEnd);
         _this.yScale.domain([_this.extent[0], _this.extent[1]]);
         _this.yScale.range([_this.height - _this.padding, _this.padding]);
@@ -285,7 +311,21 @@
         for (j = _i = 0, _len = _ref.length; _i < _len; j = ++_i) {
           line = _ref[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          _results.push(line.drawPath(_this.context.utility().getColor(j), _this.ctx, _this.xScale, _this.yScale, _this.xStart, _this.xEnd, lineWidth));
+          if (_this.xEnd - _this.xStart <= _this.threshold) {
+            line.drawPath(_this.context.utility().getColor(j), _this.ctx, _this.xScale, _this.yScale, _this.xStart, _this.xEnd, lineWidth);
+            _results.push((function() {
+              var _j, _ref1, _ref2, _results1;
+              _results1 = [];
+              for (i = _j = _ref1 = this.xStart, _ref2 = this.xEnd; _ref1 <= _ref2 ? _j <= _ref2 : _j >= _ref2; i = _ref1 <= _ref2 ? ++_j : --_j) {
+                _results1.push(line.drawPoint(this.context.utility().getColor(j), this.ctx, this.xScale, this.yScale, i, 3));
+              }
+              return _results1;
+            }).call(_this));
+          } else if (_this.xEnd === _this.xStart) {
+            _results.push(line.drawPoint(_this.context.utility().getColor(j), _this.ctx, _this.xScale, _this.yScale, _this.xStart, 3));
+          } else {
+            _results.push(line.drawPath(_this.context.utility().getColor(j), _this.ctx, _this.xScale, _this.yScale, _this.xStart, _this.xEnd, lineWidth));
+          }
         }
         return _results;
       };
@@ -305,11 +345,11 @@
       _this.padding = _;
       return stage;
     };
-    stage.id = function(_) {
+    stage.canvasId = function(_) {
       if (!_) {
-        return _this.id;
+        return _this.canvasId;
       }
-      _this.id = _;
+      _this.canvasId = _;
       return stage;
     };
     stage.width = function(_) {
@@ -364,6 +404,62 @@
     return stage;
   };
 
+  QuandlismContext_.xaxis = function() {
+    var xaxis,
+      _this = this;
+    this.context = this;
+    this.width = this.context.w() * quandlism_xaxis.w;
+    this.height = this.context.h() * quandlism_xaxis.h;
+    this.scale = d3.time.scale().range([0, this.width]);
+    this.axis_ = d3.svg.axis().scale(this.scale);
+    this.extent = [];
+    this.active = false;
+    this.lines = [];
+    this.id = null;
+    xaxis = function(selection) {
+      _this.id = selection.attr('id');
+      _this.lines = selection.datum();
+      _this.update = function() {
+        var g;
+        xaxis.remove();
+        g = selection.append('svg');
+        g.attr('width', this.width);
+        g.attr('height', this.height);
+        g.append('g');
+        g.attr('transform', 'translate(0, 27)');
+        return g.call(this.axis_);
+      };
+      _this.changeScale = function() {
+        var parseDate;
+        _this.extent = [_this.lines[0].dateAt(0), _this.lines[0].dateAt(_this.lines[0].length() - 1)];
+        parseDate = _this.context.utility().parseDate(_this.lines[0].dateAt(0));
+        _this.scale.domain([parseDate(_this.extent[0]), parseDate(_this.extent[1])]);
+        _this.axis_.tickFormat(d3.time.format('%b %d, %Y'));
+        _this.axis_.ticks(Math.floor(_this.width / 150, 0, 0));
+        return _this.scale.range([0, _this.width]);
+      };
+      _this.changeScale();
+      return _this.update();
+    };
+    this.context.on("respond.xaxis-" + this.id, function() {
+      _this.width = _this.context.w() * quandlism_xaxis.w;
+      _this.axis_.ticks(Math.floor(_this.width / 150, 0, 0));
+      _this.scale.range([0, _this.width]);
+      return _this.update();
+    });
+    xaxis.remove = function() {
+      return d3.select("#" + _this.id).selectAll("svg").remove();
+    };
+    xaxis.active = function(_) {
+      if (!_) {
+        return _this.active;
+      }
+      _this.active = _;
+      return xaxis;
+    };
+    return d3.rebind(xaxis, this.axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  };
+
   QuandlismContext_.utility = function() {
     var utility,
       _this = this;
@@ -407,6 +503,26 @@
       var s;
       s = _this.context.colorScale();
       return s(i);
+    };
+    utility.dateFormat = function(date) {
+      var dateString, hyphenCount;
+      hyphenCount = date.split('-').length - 1;
+      switch (hyphenCount) {
+        case -1:
+          dateString = '%Y';
+          break;
+        case 2:
+          dateString = '%Y-%m-%d';
+          break;
+        default:
+          throw "Unknown date format: " + hyphenCount + " " + date;
+      }
+      return dateString;
+    };
+    utility.parseDate = function(date) {
+      var dateString;
+      dateString = this.dateFormat(date);
+      return d3.time.format(dateString).parse;
     };
     return utility;
   };
