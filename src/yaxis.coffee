@@ -1,53 +1,53 @@
 QuandlismContext_.yaxis = () ->
-  @context    = this
-  @width      = @context.w() * quandlism_yaxis.w
-  @height     = @context.h() * quandlism_yaxis.h
-  @scale      = d3.scale.linear().range [@height, 0]
-  @axis_      = d3.svg.axis().scale @scale
-  @lines      = []
-  @extent     = []
-  @xStart     = null
-  @xEnd       = null
-  @id         = null
+  context    = @
+  width      = context.w() * quandlism_yaxis.w
+  height     = context.h() * quandlism_yaxis.h
+  scale      = d3.scale.linear().range [height, 0]
+  axis_      = d3.svg.axis().scale scale
+  lines      = []
+  extent     = []
+  xStart     = null
+  xEnd       = null
+  id         = null
   
 
   yaxis = (selection) =>
-    @id = selection.attr 'id'
-    @lines = selection.datum()
+    id = selection.attr 'id'
+    lines = selection.datum()
     
     # set ticks
-    @axis_.ticks Math.floor @height / 50, 0, 0
+    axis_.ticks Math.floor height / 50, 0, 0
     
-    @update = () =>
-      @extent = @context.utility().getExtent @lines, @xStart, @xEnd
-      @scale.domain [@extent[0], @extent[1]]
+    update = () =>
+      extent = context.utility().getExtent lines, xStart, xEnd
+      scale.domain [extent[0], extent[1]]
       yaxis.remove()
       
       g = selection.append 'svg'
-      g.attr('width', @width).attr('height', @height)
+      g.attr('width', width).attr('height', height)
       a = g.append 'g'
-      a.attr('transform', "translate(#{@width*0.75}, 0)")
-      a.attr('width', @width).attr('height', @height)
-      a.call(@axis_)
+      a.attr('transform', "translate(#{width*0.75}, 0)")
+      a.attr('width', width).attr('height', height)
+      a.call(axis_)
       
-    @setEndPoints = () =>
-      @xEnd = @lines[0].length()-1
-      @xStart = Math.floor @lines[0].length() * @context.endPercent()
+    setEndPoints = () =>
+      xEnd = lines[0].length()-1
+      xStart = Math.floor lines[0].length() * context.endPercent()
   
-    @setEndPoints()
-    @update()
+    setEndPoints()
+    update()
   
-  # Event listeners and callbacks
+    # Event listeners and callbacks
   
-  @context.on "respond.y-axis-#{@id}", () =>
-    @width = @context.w() * quandlism_yaxis.w
-    @height = @context.h() * quandlism_yaxis.h
-    @axis_.ticks Math.floor @height / 50, 0, 0
-    @scale.range [@height, 0]
-    @update()
+    context.on "respond.y-axis-#{id}", () =>
+      width = context.w() * quandlism_yaxis.w
+      height = context.h() * quandlism_yaxis.h
+      axis_.ticks Math.floor height / 50, 0, 0
+      scale.range [height, 0]
+      update()
 
-    
+    return
   yaxis.remove = (_) =>
-    d3.select("##{@id}").selectAll("svg").remove();
+    d3.select("##{id}").selectAll("svg").remove();
   
-  return d3.rebind(yaxis, @axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
+  return d3.rebind(yaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
