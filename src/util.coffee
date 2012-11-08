@@ -43,6 +43,18 @@ QuandlismContext_.utility = () ->
     s = @context.colorScale()
     s i
   
+
+  # Get the RGB value of the pixel at position m in canvas space
+  #
+  # m     - The mouse position relative to the canvas
+  # ctx   - The canvas drawing context
+  #
+  # Returns a string represneting a hex color code
+  utility.getPixelRGB = (m, ctx) =>
+    px = ctx.getImageData(m[0], m[1], 1, 1).data
+    rgb = d3.rgb px[0], px[1], px[2]
+    rgb.toString()
+  
   
   # Returns a string that can be parsed in the same format as the dates in the active graph.
   # The number of - present indicate one of two date formats available.

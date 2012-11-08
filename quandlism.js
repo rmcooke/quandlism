@@ -317,7 +317,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var draw;
+      var clearTooltip, draw, drawTooltip, lineHit;
       lines = selection.datum();
       canvasId = "canvas-stage-" + (++quandlism_id_ref);
       if (!(yAxis != null)) {
@@ -360,7 +360,6 @@
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           if (xEnd - xStart <= threshold) {
-            console.log('hi');
             line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth);
             _results.push((function() {
               var _j, _results1;
@@ -377,6 +376,49 @@
           }
         }
         return _results;
+      };
+      lineHit = function(m) {
+        var hex, hitMatrix, i, j, k, n, _i, _j, _k, _ref, _ref1, _ref2, _ref3, _ref4;
+        hex = context.utility().getPixelRGB(m, ctx);
+        i = _.indexOf(context.colorScale().range(), hex);
+        if (i !== -1) {
+          return {
+            x: m[0],
+            color: hex,
+            line: lines[i]
+          };
+        }
+        hitMatrix = [];
+        for (j = _i = _ref = m[0] - 3, _ref1 = m[0] + 3; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; j = _ref <= _ref1 ? ++_i : --_i) {
+          for (k = _j = _ref2 = m[1] - 3, _ref3 = m[1] + 3; _ref2 <= _ref3 ? _j <= _ref3 : _j >= _ref3; k = _ref2 <= _ref3 ? ++_j : --_j) {
+            if (j !== m[0] || k !== m[1]) {
+              hitMatrix.push([j, k]);
+            }
+          }
+        }
+        for (n = _k = 0, _ref4 = hitMatrix.length - 1; 0 <= _ref4 ? _k <= _ref4 : _k >= _ref4; n = 0 <= _ref4 ? ++_k : --_k) {
+          hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
+          i = _.indexOf(context.colorScale().range(), hex);
+          if (i !== -1) {
+            return {
+              x: hitMatrix[n][0],
+              color: hex,
+              line: lines[i]
+            };
+          }
+        }
+        return false;
+      };
+      drawTooltip = function(x, line, hex) {
+        var pointSize;
+        $(context.domtooltip()).html("<span style='color: " + hex + ";'>line</span>: " + (line.valueAt(x)));
+        draw(line.id());
+        pointSize = xEnd - xStart <= threshold ? 5 : 3;
+        line.drawPoint(hex, ctx, xScale, yScale, x, pointSize);
+      };
+      clearTooltip = function() {
+        $(context.domtooltip()).text('');
+        draw();
       };
       draw();
       context.on('respond.stage', function() {
@@ -395,6 +437,17 @@
       context.on('toggle.stage', function() {
         draw();
       });
+      if (context.domtooltip() != null) {
+        d3.select("#" + canvasId).on('mousemove', function(e) {
+          var hit;
+          hit = lineHit(d3.mouse(this));
+          if (hit !== false) {
+            return drawTooltip(Math.round(xScale.invert(hit.x)), hit.line, hit.color);
+          } else {
+            return clearTooltip();
+          }
+        });
+      }
     };
     stage.padding = function(_) {
       if (!(_ != null)) {
@@ -827,6 +880,12 @@
       var s;
       s = _this.context.colorScale();
       return s(i);
+    };
+    utility.getPixelRGB = function(m, ctx) {
+      var px, rgb;
+      px = ctx.getImageData(m[0], m[1], 1, 1).data;
+      rgb = d3.rgb(px[0], px[1], px[2]);
+      return rgb.toString();
     };
     utility.dateFormat = function(date) {
       var dateString, hyphenCount;

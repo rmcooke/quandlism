@@ -91,10 +91,61 @@ QuandlismContext_.stage = () ->
           line.drawPoint context.utility().getColor(j), ctx, xScale, yScale, xStart, 3
         else
           line.drawPath context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth
+        
+      
+      
+    # Detects line hit
+    # Analyzed color under the mouse cursor and try to match to a line
+    #
+    # m - The mouse position, in canvas space
+    #
+    # Returns false, or an object with keys x, color and line, if a match was found
+    lineHit = (m) ->
+      
+      # Check for a direct match under cursor
+      hex = context.utility().getPixelRGB m, ctx
+      i = _.indexOf context.colorScale().range(), hex
+      return {x: m[0], color: hex, line: lines[i] } if i isnt -1
+
+      # If no match, check the immediate area for fuzzy matching
+      hitMatrix = []
+      for j in [m[0]-3..m[0]+3]
+        for k in [m[1]-3..m[1]+3]
+          if j isnt m[0] or k isnt m[1]
+            hitMatrix.push [j, k]
+            
+      for n in [0..(hitMatrix.length-1)]
+        hex = context.utility().getPixelRGB hitMatrix[n], ctx
+        i = _.indexOf context.colorScale().range(), hex
+        return {x: hitMatrix[n][0], color: hex, line: lines[i]} if i isnt -1
+        
+      false
+      
+    # Render the tooltip data, from a mouseover event on a line, and highlight the moused over point
+    #
+    # x     - The x index of the data point
+    # line  - The line that was highlighted
+    # hex   - The color
+    # 
+    # Returns null
+    drawTooltip = (x, line, hex) ->
+      $(context.domtooltip()).html "<span style='color: #{hex};'>line</span>: #{line.valueAt(x)}"
+      draw line.id()
+      pointSize = if (xEnd - xStart <= threshold) then 5 else 3
+      line.drawPoint hex, ctx, xScale, yScale, x, pointSize
+      return
+      
+      
+    # Remove toolitp data and graph highlighting
+    clearTooltip = () ->
+      $(context.domtooltip()).text ''
+      draw()
+      return
 
     draw()  
       
     # Callbacks / Event bindings
+    # Listen for events dispatched from context, or listen for events in canvas
   
     # Respond to page resize
     # Resize, clear and re-draw
@@ -118,7 +169,13 @@ QuandlismContext_.stage = () ->
     context.on 'toggle.stage', () =>
       draw()
       return
-    
+      
+    # If the tooltip dom is defined, track mousemovement on stage for tooltip
+    if context.domtooltip()?
+      d3.select("##{canvasId}").on 'mousemove', (e) ->
+        hit = lineHit d3.mouse @ 
+        if hit isnt false then drawTooltip Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
+ 
     return
     
     
