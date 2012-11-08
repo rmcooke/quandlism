@@ -512,7 +512,7 @@
       setScales();
       dispatchAdjust();
       setInterval(update, 50);
-      return context.on("respond.brush", function() {
+      context.on("respond.brush", function() {
         height0 = height;
         width0 = width;
         height = context.h() * quandlism_brush.h;
@@ -520,6 +520,49 @@
         xStart = Math.ceil(xStart / width0 * width);
         xStart0 = Math.ceil(xStart0 / width0 * width);
         return setScales();
+      });
+      canvas.on('mousedown', function(e) {
+        var m;
+        m = d3.mouse(this);
+        if (m[0] >= xStart && m[0] <= (xStart + handleWidth)) {
+          stretching = true;
+          activeHandle = -1;
+          return touchPoint = m[0];
+        } else if (m[0] >= (xStart + brushWidth) && m[0] <= (xStart + brushWidth + handleWidth)) {
+          stretching = true;
+          activeHandle = 1;
+          return touchPoint = m[0];
+        } else if (m[0] <= (brushWidth + xStart) && m[0] >= xStart) {
+          dragging = true;
+          return touchPoint = m[0];
+        }
+      });
+      canvas.on('mouseup', function(e) {
+        dragging = false;
+        stretching = false;
+        activeHandle = 0;
+        xStart0 = xStart;
+        return brushWidth0 = brushWidth;
+      });
+      return canvas.on('mousemove', function(e) {
+        var dragDiff, m;
+        m = d3.mouse(this);
+        if (dragging || stretching) {
+          if (dragging) {
+            xStart = xStart0 + (m[0] - touchPoint);
+          } else if (stretching) {
+            dragDiff = m[0] - touchPoint;
+            if (activeHandle === -1) {
+              xStart = xStart0 + dragDiff;
+              brushWidth = brushWidth0 - dragDiff;
+            } else if (activeHandle === 1) {
+              brushWidth = brushWidth0 + dragDiff;
+            } else {
+              throw "Error: Unknown stretchign direction";
+            }
+          }
+          return dispatchAdjust();
+        }
       });
     };
     brush.xAxis = function(_) {

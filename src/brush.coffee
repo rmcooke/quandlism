@@ -96,6 +96,7 @@ QuandlismContext_.brush = () ->
 
     # Event listners
   
+    # Respond to resized browser by recalculating key points and redrawing
     context.on "respond.brush", () =>
       height0 = height
       width0 = width
@@ -105,7 +106,51 @@ QuandlismContext_.brush = () ->
       xStart0 = Math.ceil xStart0/width0*width
       setScales()
       
+    # Listen for mousedown event to track mouse clicks before dragging or stretching control
+    canvas.on 'mousedown', (e) ->
+      m = d3.mouse @
       
+      if m[0] >= xStart and m[0] <= (xStart + handleWidth)
+        # If click on left handle
+        stretching = true
+        activeHandle = -1
+        touchPoint = m[0]
+      else if m[0] >= (xStart + brushWidth) and m[0] <= (xStart + brushWidth + handleWidth)
+        # If click on right handle
+        stretching = true
+        activeHandle = 1
+        touchPoint = m[0]
+      else if m[0] <= (brushWidth + xStart) and m[0] >= xStart
+        dragging = true
+        touchPoint = m[0]
+        
+    # On mouseup save the new state of the control
+    canvas.on 'mouseup', (e) ->
+      dragging = false
+      stretching = false
+      activeHandle = 0
+      xStart0 = xStart
+      brushWidth0 = brushWidth
+      
+    canvas.on 'mousemove', (e) ->
+      m = d3.mouse @
+      
+      if dragging or stretching
+        if dragging
+          xStart = xStart0 + (m[0] - touchPoint)
+        else if stretching
+          dragDiff = m[0] - touchPoint
+          if activeHandle is -1
+            xStart = xStart0 + dragDiff
+            brushWidth = brushWidth0 - dragDiff
+          else if activeHandle is 1
+            brushWidth = brushWidth0 + dragDiff
+          else
+            throw("Error: Unknown stretchign direction")
+        
+        dispatchAdjust()
+
+
   brush.xAxis = (_) =>
     if not _ then return xAxis
     xAxis = _
