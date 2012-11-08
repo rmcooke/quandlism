@@ -9,18 +9,18 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         src: [
-          'src/index.js', 
-          'src/context.js', 
-          'src/id.js', 
-          'src/line.js', 
-          'src/stage.js', 
-          'src/brush.js', 
-          'src/axis.js', 
-          'src/yaxis.js', 
-          'src/legend.js', 
-          'src/util.js'
+          'src/index.coffee', 
+          'src/context.coffee', 
+          'src/id.coffee', 
+          'src/line.coffee', 
+          'src/stage.coffee', 
+          'src/brush.coffee', 
+          'src/axis.coffee', 
+          'src/yaxis.coffee', 
+          'src/legend.coffee', 
+          'src/util.coffee'
         ],
-        dest: 'quandlism.js'
+        dest: 'build/quandlism.coffee'
       }
     },
     lint: {
@@ -33,8 +33,9 @@ module.exports = function(grunt) {
     coffee: {
       compile: {
         files: {
-          'build/*.js': ['src/*.coffee']
-        }
+          'quandlism.js': 'build/quandlism.coffee'
+        },
+        bare: true
       }
     },
     jshint: {
@@ -74,8 +75,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-coffee');
   
   // Default task.
-  grunt.registerTask('cof', 'coffee');
-  grunt.registerTask('default', 'concat wrap');
+  grunt.registerTask('default', 'concat coffee wrap');
   grunt.registerTask('production', 'concat wrap min');
   /**
    * Register wrap helper
