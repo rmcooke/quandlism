@@ -24,7 +24,8 @@ QuandlismContext_.yaxis = () ->
       yaxis.remove()
       
       g = selection.append 'svg'
-      g.attr('width', width).attr('height', height)
+      g.attr 'width', width
+      g.attr 'height', '100%'
       a = g.append 'g'
       a.attr 'transform', "translate(#{width*0.75}, 0)"
       a.attr 'width', width
