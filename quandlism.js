@@ -710,6 +710,9 @@
       };
       setEndPoints();
       update();
+      context.on("toggle.y-axis-" + id, function() {
+        return update();
+      });
       context.on("respond.y-axis-" + id, function() {
         width = context.w() * quandlism_yaxis.w;
         height = context.h() * quandlism_yaxis.h;
