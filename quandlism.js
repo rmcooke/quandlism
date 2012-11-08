@@ -238,7 +238,7 @@
         return null;
       }
     };
-    line.drawPoint = function(color, ctx, xS, yX, index, radius) {
+    line.drawPoint = function(color, ctx, xS, yS, index, radius) {
       if (this.visible()) {
         ctx.beginPath();
         ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
@@ -360,6 +360,7 @@
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           if (xEnd - xStart <= threshold) {
+            console.log('hi');
             line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth);
             _results.push((function() {
               var _j, _results1;

@@ -66,7 +66,7 @@ QuandlismContext_.line = (data) ->
   # radius  - The radius of the point
   #
   # Returns null
-  line.drawPoint = (color, ctx, xS, yX, index, radius) ->
+  line.drawPoint = (color, ctx, xS, yS, index, radius) ->
       # do something\
     if @.visible()
       ctx.beginPath()
