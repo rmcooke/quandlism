@@ -1,12 +1,12 @@
 class QuandlismLine
 
 QuandlismContext_.line = (data) ->
-  line          = new QuandlismLine(@context)
-  @context      = this
-  @name         = data.name
-  @values       = data.values.reverse()
-  @id           = quandlism_line_id++
-  @visible      = true
+  line          = new QuandlismLine(context)
+  context      = @
+  name         = data.name
+  values       = data.values.reverse()
+  id           = quandlism_line_id++
+  visible      = true
   
   
   # Instance methods
@@ -37,7 +37,7 @@ QuandlismContext_.line = (data) ->
     
   # Return the number of datapoints in the line
   line.length = () =>
-    @values.length
+    values.length
     
   # Get the value for the line at a given array index
   #
@@ -45,7 +45,7 @@ QuandlismContext_.line = (data) ->
   #
   # Returns an number value
   line.valueAt = (i) =>
-    if @values[i]? then @values[i].num else null
+    if values[i]? then values[i].num else null
   
   # Get the date associated with an array index
   #
@@ -53,7 +53,7 @@ QuandlismContext_.line = (data) ->
   #
   # Returns a string representing a date
   line.dateAt = (i) =>
-    if @values[i]? then @values[i].date else null
+    if values[i]? then values[i].date else null
     
   
   # Renders an individual point on the canvas
@@ -101,23 +101,23 @@ QuandlismContext_.line = (data) ->
   
   #
   line.id = (_) =>
-    if not _ then return @id
-    @id = _
+    if not _ then return id
+    id = _
     line
     
   line.name = (_) =>
-    if not _ then return @name
-    @name = _
+    if not _ then return name
+    name = _
     line
     
   line.values = (_) =>
-    if not _ then return @values
-    @values = _
+    if not _ then return values
+    values = _
     line
     
   line.visible = (_) =>
-    if not _ then return @visible
-    @visible = _
+    if not _ then return visible
+    visible = _
     line
     
   line

@@ -172,14 +172,14 @@
   })();
 
   QuandlismContext_.line = function(data) {
-    var line,
+    var context, id, line, name, values, visible,
       _this = this;
-    line = new QuandlismLine(this.context);
-    this.context = this;
-    this.name = data.name;
-    this.values = data.values.reverse();
-    this.id = quandlism_line_id++;
-    this.visible = true;
+    line = new QuandlismLine(context);
+    context = this;
+    name = data.name;
+    values = data.values.reverse();
+    id = quandlism_line_id++;
+    visible = true;
     line.extent = function(start, end) {
       var i, max, min, n, val;
       i = start != null ? start : 0;
@@ -206,18 +206,18 @@
       return [min, max];
     };
     line.length = function() {
-      return _this.values.length;
+      return values.length;
     };
     line.valueAt = function(i) {
-      if (_this.values[i] != null) {
-        return _this.values[i].num;
+      if (values[i] != null) {
+        return values[i].num;
       } else {
         return null;
       }
     };
     line.dateAt = function(i) {
-      if (_this.values[i] != null) {
-        return _this.values[i].date;
+      if (values[i] != null) {
+        return values[i].date;
       } else {
         return null;
       }
@@ -246,30 +246,30 @@
     };
     line.id = function(_) {
       if (!_) {
-        return _this.id;
+        return id;
       }
-      _this.id = _;
+      id = _;
       return line;
     };
     line.name = function(_) {
       if (!_) {
-        return _this.name;
+        return name;
       }
-      _this.name = _;
+      name = _;
       return line;
     };
     line.values = function(_) {
       if (!_) {
-        return _this.values;
+        return values;
       }
-      _this.values = _;
+      values = _;
       return line;
     };
     line.visible = function(_) {
       if (!_) {
-        return _this.visible;
+        return visible;
       }
-      _this.visible = _;
+      visible = _;
       return line;
     };
     return line;
@@ -351,7 +351,6 @@
         width = Math.floor(context.w() * quandlism_stage.w);
         height = Math.floor(context.h() * quandlism_stage.h);
         canvas.attr('width', width).attr('height', height);
-        console.log(canvas);
         draw();
       });
     };
