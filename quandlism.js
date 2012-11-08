@@ -193,7 +193,7 @@
   };
 
   quandlism_yaxis = {
-    w: 0.10,
+    w: 0.15,
     h: 0.60
   };
 
@@ -666,17 +666,15 @@
       canvas.on('mousedown', function(e) {
         var m;
         m = d3.mouse(this);
+        touchPoint = m[0];
         if (m[0] >= xStart && m[0] <= (xStart + handleWidth)) {
           stretching = true;
-          activeHandle = -1;
-          return touchPoint = m[0];
+          return activeHandle = -1;
         } else if (m[0] >= (xStart + brushWidth) && m[0] <= (xStart + brushWidth + handleWidth)) {
           stretching = true;
-          activeHandle = 1;
-          return touchPoint = m[0];
+          return activeHandle = 1;
         } else if (m[0] <= (brushWidth + xStart) && m[0] >= xStart) {
-          dragging = true;
-          return touchPoint = m[0];
+          return dragging = true;
         }
       });
       canvas.on('mouseup', function(e) {
@@ -822,7 +820,8 @@
         g.attr('width', width).attr('height', height);
         a = g.append('g');
         a.attr('transform', "translate(" + (width * 0.75) + ", 0)");
-        a.attr('width', width).attr('height', height);
+        a.attr('width', width);
+        a.attr('height', height);
         return a.call(axis_);
       };
       setEndPoints = function() {

@@ -26,8 +26,9 @@ QuandlismContext_.yaxis = () ->
       g = selection.append 'svg'
       g.attr('width', width).attr('height', height)
       a = g.append 'g'
-      a.attr('transform', "translate(#{width*0.75}, 0)")
-      a.attr('width', width).attr('height', height)
+      a.attr 'transform', "translate(#{width*0.75}, 0)"
+      a.attr 'width', width
+      a.attr 'height', height
       a.call(axis_)
       
     setEndPoints = () =>

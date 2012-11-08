@@ -137,21 +137,19 @@ QuandlismContext_.brush = () ->
     # Listen for mousedown event to track mouse clicks before dragging or stretching control
     canvas.on 'mousedown', (e) ->
       m = d3.mouse @
+      touchPoint = m[0]
       
       if m[0] >= xStart and m[0] <= (xStart + handleWidth)
         # If click on left handle
         stretching = true
         activeHandle = -1
-        touchPoint = m[0]
       else if m[0] >= (xStart + brushWidth) and m[0] <= (xStart + brushWidth + handleWidth)
         # If click on right handle
         stretching = true
         activeHandle = 1
-        touchPoint = m[0]
       else if m[0] <= (brushWidth + xStart) and m[0] >= xStart
         # if dragging
         dragging = true
-        touchPoint = m[0]
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
