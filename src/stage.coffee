@@ -24,25 +24,34 @@ QuandlismContext_.stage = () ->
     
     # If no y axis is defined, create it
     if not yAxis?
-      yAxis = selection.append('div').datum(lines)
-      yAxis.attr('height', context.h()).attr('width', context.w()).attr('class', 'axis y').attr('id', "y-axis-#{canvasId}")
+      yAxis = selection.append 'div'
+      yAxis.datum lines
+      yAxis.attr 'height', context.h()*quandlism_yaxis.h
+      yAxis.attr 'width', context.w()*quandlism_yaxis.w
+      yAxis.attr 'class', 'axis y'
+      yAxis.attr 'id', "y-axis-#{canvasId}"
       yAxis.call context.yaxis().orient('left')
        
-    selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId)
+    # Create canvas element and get reference to drawing context
+    canvas = selection.append 'canvas'
+    canvas.attr 'width', width
+    canvas.attr 'height', height
+    canvas.attr 'class', 'stage'
+    canvas.attr 'id', canvasId
     
-    # Get reference to canvas selection and drawing context
-    canvas = selection.select("##{canvasId}")
     ctx = canvas.node().getContext '2d'
     
     # If there is not x-axis defined, create one for the stage
     if not xAxis?
-      xAxis = selection.append('div').datum(lines)
-      xAxis.attr('width', context.w() * quandlism_xaxis.w).attr('height', context.h() * quandlism_xaxis.h).attr('class', 'x axis').attr('id', "x-axis-#{canvasId}")
+      xAxis = selection.append('div')
+      xAxis.datum lines
+      xAxis.attr 'width', context.w()*quandlism_xaxis.w
+      xAxis.attr 'height', context.h()*quandlism_xaxis.h
+      xAxis.attr 'class', 'x axis'
+      xAxis.attr 'id', "x-axis-#{canvasId}"
       xAxis.call context.xaxis().active true
       
 
-
-    
     # Set start and end indexes, if they have not already been set
     xStart = if not xStart then Math.floor lines[0].length() * context.endPercent() else xStart
     xEnd =  if not xEnd then lines[0].length() else xEnd
@@ -52,7 +61,7 @@ QuandlismContext_.stage = () ->
     draw = (lineId) =>
       
       # Calculate the extent for the area between xStart and xEnd
-      extent = context.utility().getExtent(lines, xStart, xEnd)
+      extent = context.utility().getExtent lines, xStart, xEnd
       
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
@@ -90,11 +99,11 @@ QuandlismContext_.stage = () ->
     # Respond to page resize
     # Resize, clear and re-draw
     context.on 'respond.stage', () =>
-      console.log "respond stage"
       ctx.clearRect 0, 0, width, height
       width = Math.floor context.w() * quandlism_stage.w
       height = Math.floor context.h() * quandlism_stage.h
-      canvas.attr('width', width).attr('height', height)
+      canvas.attr 'width', width
+      canvas.attr 'height', height
       draw()
       return
  
@@ -103,10 +112,12 @@ QuandlismContext_.stage = () ->
       xStart = if x1 > 0 then x1 else 0
       xEnd = if lines[0].length() > 2 then x2 else lines[0].length()-1
       draw()
+      return
       
     # Respond to toggle event by re-drawing
     context.on 'toggle.stage', () =>
       draw()
+      return
     
     return
     

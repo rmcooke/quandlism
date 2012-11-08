@@ -49,59 +49,66 @@
       return _this.context;
     };
     this.context.colorScale = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.colorScale;
       }
       _this.colorScale = _;
       return _this.context;
     };
     this.context.endPercent = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.endPercent;
       }
       _this.endPercent = _;
       return _this.context;
     };
     this.context.w = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.w;
       }
       _this.w = _;
       return _this.context;
     };
     this.context.h = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.h;
       }
       _this.h = _;
       return _this.context;
     };
     this.context.dom = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.dom;
       }
       _this.dom = _;
       return _this.context;
     };
     this.context.domstage = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.domstage;
       }
       _this.domstage = _;
       return _this.context;
     };
     this.context.dombrush = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.dombrush;
       }
       _this.dombrush = _;
       return _this.context;
     };
     this.context.domlegend = function(_) {
-      if (!_) {
+      if (!(_ != null)) {
         return _this.domlegend;
       }
       _this.domlegend = _;
+      return _this.context;
+    };
+    this.context.domtooltip = function(_) {
+      if (!(_ != null)) {
+        return _this.domtooltip;
+      }
+      _this.domtooltip = _;
       return _this.context;
     };
     this.context.respond = _.throttle(function() {
@@ -314,16 +321,27 @@
       lines = selection.datum();
       canvasId = "canvas-stage-" + (++quandlism_id_ref);
       if (!(yAxis != null)) {
-        yAxis = selection.append('div').datum(lines);
-        yAxis.attr('height', context.h()).attr('width', context.w()).attr('class', 'axis y').attr('id', "y-axis-" + canvasId);
+        yAxis = selection.append('div');
+        yAxis.datum(lines);
+        yAxis.attr('height', context.h() * quandlism_yaxis.h);
+        yAxis.attr('width', context.w() * quandlism_yaxis.w);
+        yAxis.attr('class', 'axis y');
+        yAxis.attr('id', "y-axis-" + canvasId);
         yAxis.call(context.yaxis().orient('left'));
       }
-      selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'stage').attr('id', canvasId);
-      canvas = selection.select("#" + canvasId);
+      canvas = selection.append('canvas');
+      canvas.attr('width', width);
+      canvas.attr('height', height);
+      canvas.attr('class', 'stage');
+      canvas.attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
       if (!(xAxis != null)) {
-        xAxis = selection.append('div').datum(lines);
-        xAxis.attr('width', context.w() * quandlism_xaxis.w).attr('height', context.h() * quandlism_xaxis.h).attr('class', 'x axis').attr('id', "x-axis-" + canvasId);
+        xAxis = selection.append('div');
+        xAxis.datum(lines);
+        xAxis.attr('width', context.w() * quandlism_xaxis.w);
+        xAxis.attr('height', context.h() * quandlism_xaxis.h);
+        xAxis.attr('class', 'x axis');
+        xAxis.attr('id', "x-axis-" + canvasId);
         xAxis.call(context.xaxis().active(true));
       }
       xStart = !xStart ? Math.floor(lines[0].length() * context.endPercent()) : xStart;
@@ -361,20 +379,20 @@
       };
       draw();
       context.on('respond.stage', function() {
-        console.log("respond stage");
         ctx.clearRect(0, 0, width, height);
         width = Math.floor(context.w() * quandlism_stage.w);
         height = Math.floor(context.h() * quandlism_stage.h);
-        canvas.attr('width', width).attr('height', height);
+        canvas.attr('width', width);
+        canvas.attr('height', height);
         draw();
       });
       context.on('adjust.stage', function(x1, x2) {
         xStart = x1 > 0 ? x1 : 0;
         xEnd = lines[0].length() > 2 ? x2 : lines[0].length() - 1;
-        return draw();
+        draw();
       });
       context.on('toggle.stage', function() {
-        return draw();
+        draw();
       });
     };
     stage.padding = function(_) {

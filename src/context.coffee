@@ -38,43 +38,48 @@ quandlism.context = () ->
   # Expose attributes via getters and settesr
   
   @context.colorScale = (_) =>
-    if not _ then return @colorScale
+    if not _? then return @colorScale
     @colorScale = _
     @context
     
   @context.endPercent = (_) =>
-    if not _ then return @endPercent
+    if not _? then return @endPercent
     @endPercent = _
     @context
   
   @context.w = (_) =>
-    if not _ then return @w
+    if not _? then return @w
     @w = _
     @context
     
   @context.h = (_) =>
-    if not _ then return @h
+    if not _? then return @h
     @h = _
     @context
     
   @context.dom = (_) =>
-    if not _ then return @dom
+    if not _? then return @dom
     @dom = _
     @context
     
   @context.domstage = (_) =>
-    if not _ then return @domstage
+    if not _? then return @domstage
     @domstage = _
     @context
     
   @context.dombrush = (_) =>
-    if not _ then return @dombrush
+    if not _? then return @dombrush
     @dombrush = _
     @context
     
   @context.domlegend = (_) =>
-    if not _ then return @domlegend
+    if not _? then return @domlegend
     @domlegend = _
+    @context
+    
+  @context.domtooltip = (_) =>
+    if not _? then return @domtooltip
+    @domtooltip = _
     @context
     
     

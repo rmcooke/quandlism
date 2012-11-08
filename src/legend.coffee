@@ -29,7 +29,7 @@ QuandlismContext_.legend = () ->
       e.preventDefault()
       id = e.target.getAttribute 'data-line-id'
       if lines[id]?
-        lines[id].toggle() 
+        lines[id].toggle()
         context.toggle()
       return
 
