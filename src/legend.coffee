@@ -28,8 +28,9 @@ QuandlismContext_.legend = () ->
       e = d3.event
       e.preventDefault()
       id = e.target.getAttribute 'data-line-id'
-      lines[id].toggle() if lines[id]?
-      context.toggle() if lines[id]?
+      if lines[id]?
+        lines[id].toggle() 
+        context.toggle()
       return
 
 

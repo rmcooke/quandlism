@@ -77,6 +77,8 @@ module.exports = function(grunt) {
   // Default task.
   grunt.registerTask('default', 'concat coffee wrap');
   grunt.registerTask('production', 'concat wrap min');
+  grunt.registerTask('all', 'concat coffee wrap min');
+  
   /**
    * Register wrap helper
    */

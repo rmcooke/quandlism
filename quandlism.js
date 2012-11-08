@@ -738,11 +738,7 @@
     legend_ = null;
     lines = [];
     legend = function(selection) {
-      var itemBuilder,
-        _this = this;
-      itemBuilder = function(sel) {
-        return console.log(sel.datum());
-      };
+      var _this = this;
       lines = selection.datum();
       selection.selectAll('li').remove();
       legend_ = selection.selectAll('li').data(lines).enter().append('li').append('a').attr('href', 'javascript:;').attr('style', function(line) {
@@ -762,8 +758,6 @@
         id = e.target.getAttribute('data-line-id');
         if (lines[id] != null) {
           lines[id].toggle();
-        }
-        if (lines[id] != null) {
           context.toggle();
         }
       });
