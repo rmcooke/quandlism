@@ -20,11 +20,21 @@
     this.event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     this.colorScale = d3.scale.category20();
     this.context.attachData = function(lines) {
+      var brush, stage;
       if (_this.domstage) {
-        d3.select(_this.domstage).datum(lines);
+        stage = d3.select(_this.domstage).datum(lines);
+      }
+      if (stage && stage.select('.x')) {
+        stage.select('.x').datum(lines);
+      }
+      if (stage && stage.select('.y')) {
+        stage.select('.y').datum(lines);
       }
       if (_this.dombrush) {
-        d3.select(_this.dombrush).datum(lines);
+        brush = d3.select(_this.dombrush).datum(lines);
+      }
+      if (brush && brush.select('.x')) {
+        brush.select('.x').datum(lines);
       }
       if (_this.domlegend) {
         d3.select(_this.domlegend).datum(lines);
@@ -46,6 +56,11 @@
     this.context.build = function() {
       _this.w = $(_this.dom).width();
       _this.h = $(_this.dom).height();
+      return _this.context;
+    };
+    this.context.prepare = function() {
+      var quandlism_line_id;
+      quandlism_line_id = 0;
       return _this.context;
     };
     this.context.colorScale = function(_) {
@@ -119,6 +134,9 @@
     };
     this.context.toggle = function() {
       return _this.event.toggle.call(_this.context);
+    };
+    this.context.refresh = function() {
+      return _this.event.refresh.call(_this.context);
     };
     this.context.on = function(type, listener) {
       if (!(listener != null)) {
@@ -437,6 +455,12 @@
       context.on('toggle.stage', function() {
         draw();
       });
+      context.on('refresh.stage', function() {
+        lines = selection.datum();
+        xEnd = lines[0].length();
+        xStart = Math.floor(lines[0].length() * context.endPercent());
+        draw();
+      });
       if (context.domtooltip() != null) {
         d3.select("#" + canvasId).on('mousemove', function(e) {
           var hit;
@@ -723,6 +747,11 @@
         scale.range([0, width]);
         return update();
       });
+      context.on("refresh.xaxis-" + id, function() {
+        lines = selection.datum();
+        changeScale();
+        return update();
+      });
       if (active) {
         context.on("adjust.xaxis-" + id, function(x1, x2) {
           x2 = x2 > lines[0].length() - 1 ? lines[0].length() - 1 : x2;
@@ -783,6 +812,11 @@
       setEndPoints();
       update();
       context.on("toggle.y-axis-" + id, function() {
+        return update();
+      });
+      context.on("refresh.y-axis-" + id, function() {
+        lines = selection.datum();
+        setEndPoints();
         return update();
       });
       context.on("respond.y-axis-" + id, function() {

@@ -16,11 +16,16 @@ quandlism.context = () ->
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
   @context.attachData = (lines) =>
-    d3.select(@domstage).datum lines if @domstage
-    d3.select(@dombrush).datum lines if @dombrush
+    stage = d3.select(@domstage).datum lines if @domstage
+    stage.select('.x').datum lines if stage and stage.select('.x')
+    stage.select('.y').datum lines if stage and stage.select('.y')
+    
+    brush = d3.select(@dombrush).datum lines if @dombrush
+    brush.select('.x').datum lines if brush and brush.select('.x')
+
     d3.select(@domlegend).datum lines if @domlegend
     @context
-  
+
   # render
   # Conveneince method for calling method for each declared DOM element
   @context.render = () =>
@@ -34,6 +39,13 @@ quandlism.context = () ->
     @w = $(@dom).width()
     @h = $(@dom).height()
     @context
+    
+    
+  # Prepare for update. Reset line counter
+  @context.prepare = () =>
+    quandlism_line_id = 0
+    @context
+    
     
   # Expose attributes via getters and settesr
   
@@ -91,13 +103,15 @@ quandlism.context = () ->
   
   # Respond to adjust event
   @context.adjust = (x1, x2) =>
-    @event.adjust.call @context, x1, x2
-    
+    @event.adjust.call @context, x1, x2  
     
   # Responds to toggle event
   @context.toggle = () =>
     @event.toggle.call @context
     
+  # Responds to refresh event.
+  @context.refresh =() =>
+    @event.refresh.call @context
     
   @context.on = (type, listener) =>
     if not listener? then return @event.on type

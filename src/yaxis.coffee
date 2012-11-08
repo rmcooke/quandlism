@@ -43,6 +43,13 @@ QuandlismContext_.yaxis = () ->
     context.on "toggle.y-axis-#{id}", () ->
       update()
       
+      
+    # Respond to refresh event.
+    context.on "refresh.y-axis-#{id}", () ->
+      lines = selection.datum()
+      setEndPoints()
+      update()
+      
     # Respond to resize of browser
     context.on "respond.y-axis-#{id}", () ->
       width = context.w() * quandlism_yaxis.w

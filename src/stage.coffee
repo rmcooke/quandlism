@@ -149,7 +149,7 @@ QuandlismContext_.stage = () ->
   
     # Respond to page resize
     # Resize, clear and re-draw
-    context.on 'respond.stage', () =>
+    context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
       width = Math.floor context.w() * quandlism_stage.w
       height = Math.floor context.h() * quandlism_stage.h
@@ -159,14 +159,22 @@ QuandlismContext_.stage = () ->
       return
  
     # Respond to adjsut events from the brush
-    context.on 'adjust.stage', (x1, x2) =>
+    context.on 'adjust.stage', (x1, x2) ->
       xStart = if x1 > 0 then x1 else 0
       xEnd = if lines[0].length() > 2 then x2 else lines[0].length()-1
       draw()
       return
       
     # Respond to toggle event by re-drawing
-    context.on 'toggle.stage', () =>
+    context.on 'toggle.stage', () ->
+      draw()
+      return
+      
+    # Respond to refresh event. Update line data and re-draw
+    context.on 'refresh.stage', () ->
+      lines = selection.datum()
+      xEnd = lines[0].length()
+      xStart = Math.floor lines[0].length()*context.endPercent()
       draw()
       return
       
