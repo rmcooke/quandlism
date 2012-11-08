@@ -23,11 +23,17 @@
       if (_this.domstage) {
         d3.select(_this.domstage).datum(lines);
       }
+      if (_this.dombrush) {
+        d3.select(_this.dombrush).datum(lines);
+      }
       return _this.context;
     };
     this.context.render = function() {
       if (_this.domstage) {
         d3.select(_this.domstage).call(_this.context.stage());
+      }
+      if (_this.dombrush) {
+        d3.select(_this.dombrush).call(_this.context.brush());
       }
       return _this.context;
     };
@@ -95,6 +101,9 @@
     this.context.respond = _.throttle(function() {
       return _this.event.respond.call(_this.context, 500);
     });
+    this.context.adjust = function(x1, x2) {
+      return _this.event.adjust.call(_this.context, x1, x2);
+    };
     this.context.on = function(type, listener) {
       if (arguments.length < 2) {
         return _this.event.on(type);
@@ -174,7 +183,7 @@
     line.extent = function(start, end) {
       var i, max, min, n, val;
       i = start != null ? start : 0;
-      n = end != null ? end : this.length()(-1);
+      n = end != null ? end : this.length() - 1;
       min = Infinity;
       max = -Infinity;
       if (!this.visible()) {
@@ -408,6 +417,118 @@
       return stage;
     };
     return stage;
+  };
+
+  QuandlismContext_.brush = function() {
+    var brush,
+      _this = this;
+    this.context = this;
+    this.height = this.context.h() * quandlism_brush.h;
+    this.height0 = this.height;
+    this.width = this.context.w() * quandlism_brush.w;
+    this.width0 = this.width;
+    this.brushWidth = Math.ceil(this.width * 0.2);
+    this.brushWidth0 = this.brushWidth;
+    this.handleWidth = 10;
+    this.xStart = this.width * this.context.endPercent();
+    this.xStart0 = this.xStart;
+    this.xScale = d3.scale.linear();
+    this.yScale = d3.scale.linear();
+    this.canvas = null;
+    this.ctx = null;
+    this.xAxis = null;
+    this.canvasId = null;
+    this.extent = [];
+    this.lines = [];
+    this.threshold = 10;
+    this.dragging = false;
+    this.stretching = false;
+    this.activeHandle = 0;
+    this.touchPoint = 0;
+    brush = function(selection) {
+      _this.lines = selection.datum();
+      _this.canvasId = "canvas-brush-" + (++quandlism_id_ref);
+      selection.append('canvas').attr('width', _this.width).attr('height', _this.height).attr('class', 'brush').attr('id', _this.canvasId);
+      _this.canvas = selection.select("#" + _this.canvasId);
+      _this.ctx = _this.canvas.node().getContext('2d');
+      if (!(_this.xAxis != null)) {
+        _this.xAxis = selection.append('div').datum(_this.lines);
+        _this.xAxis.attr('class', 'x axis').attr('width', _this.context.w() * quandlism_xaxis.w).attr('height', _this.context.h() * quandlism_xaxis.h).attr('id', "x-axis-" + _this.canvasId);
+        _this.xAxis.call(_this.context.xaxis());
+      }
+      _this.setScales = function() {
+        _this.extent = _this.context.utility().getExtent(_this.lines, null, null);
+        _this.yScale.domain([_this.extent[0], _this.extent[1]]);
+        _this.yScale.range([_this.height, 0]);
+        _this.xScale.domain([0, _this.lines[0].length() - 1]);
+        return _this.xScale.range([0, _this.width]);
+      };
+      _this.update = function() {
+        _this.clearCanvas();
+        _this.draw();
+        return _this.drawBrush();
+      };
+      _this.clearCanvas = function() {
+        _this.ctx.clearRect(0, 0, _this.width0, _this.height0);
+        return _this.canvas.attr('width', _this.width).attr('height', _this.height);
+      };
+      _this.draw = function() {
+        var j, line, showPoints, _i, _len, _ref, _results;
+        showPoints = _this.lines[0].length() <= _this.threshold;
+        _ref = _this.lines;
+        _results = [];
+        for (j = _i = 0, _len = _ref.length; _i < _len; j = ++_i) {
+          line = _ref[j];
+          line.drawPath(_this.context.utility().getColor(j), _this.ctx, _this.xScale, _this.yScale, 0, _this.lines[0].length(), 1);
+          if (showPoints) {
+            _results.push(line.drawPoint(_this.context.utility().getColor(j), _this.ctx, _this.xScale, _this.yScale, j, 2));
+          } else {
+            _results.push(void 0);
+          }
+        }
+        return _results;
+      };
+      _this.drawBrush = function() {
+        _this.ctx.strokeStyle = 'rgba(207, 207, 207, 0.55)';
+        _this.ctx.beginPath();
+        _this.ctx.fillStyle = 'rgba(207, 207, 207, 0.55)';
+        _this.ctx.fillRect(_this.xStart, 0, _this.brushWidth, _this.height);
+        _this.ctx.lineWidth = 1;
+        _this.ctx.lineTo(_this.xStart, _this.height);
+        _this.ctx.closePath();
+        _this.ctx.beginPath();
+        _this.ctx.lineWidth = _this.handleWidth;
+        _this.ctx.strokeStyle = "#CFCFCF";
+        _this.ctx.strokeRect(_this.xStart, 0, _this.brushWidth, _this.height);
+        return _this.ctx.closePath();
+      };
+      _this.dispatchAdjust = function() {
+        var x1, x2;
+        x1 = _this.xScale.invert(_this.xStart);
+        x2 = _this.xScale.invert(_this.xStart + _this.brushWidth);
+        return _this.context.adjust(Math.ceil(x1), Math.ceil(x2));
+      };
+      _this.setScales();
+      _this.dispatchAdjust();
+      setInterval(_this.update, 50);
+      return _this.context.on("respond.brush", function() {
+        _this.height0 = _this.height;
+        _this.width0 = _this.width;
+        _this.height = _this.context.h() * quandlism_brush.h;
+        _this.width = _this.context.w() * quandlism_brush.w;
+        _this.xStart = Math.ceil(_this.start / _this.width0 * _this.width);
+        _this.xStart0 = Math.ceil(_this.start0 / _this.width0 * _this.width);
+        return _this.setScales();
+      });
+    };
+    brush.xAxis = function(_) {
+      if (!_) {
+        return _this.xAxis;
+      }
+      _this.xAxis = _;
+      return brush;
+    };
+    return brush;
   };
 
   QuandlismContext_.xaxis = function() {

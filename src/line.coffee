@@ -19,7 +19,7 @@ QuandlismContext_.line = (data) ->
   # Returns an array of two values
   line.extent = (start, end) ->
     i = if start? then start else 0
-    n = if end? then end else (@.length() -1)
+    n = if end? then end else (@.length()-1)
     min = Infinity
     max = -Infinity
     return [min, max] if not @.visible()

@@ -16,8 +16,8 @@ quandlism.context = () ->
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
   @context.attachData = (lines) =>
-    if @domstage
-      d3.select(@domstage).datum lines
+    d3.select(@domstage).datum lines if @domstage
+    d3.select(@dombrush).datum lines if @dombrush
 
     @context
   
@@ -25,6 +25,7 @@ quandlism.context = () ->
   # Conveneince method for calling method for each declared DOM element
   @context.render = () =>
     d3.select(@domstage).call @context.stage() if @domstage
+    d3.select(@dombrush).call @context.brush() if @dombrush
     @context
   
   
@@ -81,6 +82,10 @@ quandlism.context = () ->
   # Respond to page resize no more than once every 500ms
   @context.respond = _.throttle () => @event.respond.call @context, 500
   
+  # Respond to adjust event
+  @context.adjust = (x1, x2) =>
+    @event.adjust.call @context, x1, x2
+    
   @context.on = (type, listener) =>
     if arguments.length < 2 then return @event.on type
     @event.on type, listener
