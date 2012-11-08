@@ -87,7 +87,7 @@ QuandlismContext_.stage = () ->
       
     # Callbacks / Event bindings
   
-    # Resond to page resize
+    # Respond to page resize
     # Resize, clear and re-draw
     context.on 'respond.stage', () =>
       console.log "respond stage"
@@ -98,7 +98,11 @@ QuandlismContext_.stage = () ->
       draw()
       return
  
-
+    # Respond to adjsut events from the brush
+    context.on 'adjust.stage', (x1, x2) =>
+      xStart = if x1 > 0 then x1 else 0
+      xEnd = if lines[0].length() > 2 then x2 else lines[0].length()-1
+      draw()
     
     return
     

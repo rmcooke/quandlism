@@ -353,6 +353,11 @@
         canvas.attr('width', width).attr('height', height);
         draw();
       });
+      context.on('adjust.stage', function(x1, x2) {
+        xStart = x1 > 0 ? x1 : 0;
+        xEnd = lines[0].length() > 2 ? x2 : lines[0].length() - 1;
+        return draw();
+      });
     };
     stage.padding = function(_) {
       if (!_) {
@@ -583,7 +588,7 @@
   };
 
   QuandlismContext_.xaxis = function() {
-    var active, axis_, context, extent, height, id, lines, scale, width, xaxis,
+    var active, axis_, context, extent, height, id, lines, parseDate, scale, width, xaxis,
       _this = this;
     context = this;
     width = context.w() * quandlism_xaxis.w;
@@ -594,6 +599,7 @@
     active = false;
     lines = [];
     id = null;
+    parseDate = null;
     xaxis = function(selection) {
       var changeScale, update;
       id = selection.attr('id');
@@ -609,7 +615,6 @@
         return g.call(axis_);
       };
       changeScale = function() {
-        var parseDate;
         extent = [lines[0].dateAt(0), lines[0].dateAt(lines[0].length() - 1)];
         parseDate = context.utility().parseDate(lines[0].dateAt(0));
         scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
@@ -625,6 +630,15 @@
         scale.range([0, width]);
         return update();
       });
+      if (active) {
+        context.on("adjust.xaxis-" + id, function(x1, x2) {
+          x2 = x2 > lines[0].length() - 1 ? lines[0].length() - 1 : x2;
+          x1 = x1 < 0 ? 0 : x1;
+          extent = [lines[0].dateAt(x1), lines[0].dateAt(x2)];
+          scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
+          return update();
+        });
+      }
     };
     xaxis.remove = function() {
       return d3.select("#" + id).selectAll("svg").remove();
@@ -680,6 +694,11 @@
         height = context.h() * quandlism_yaxis.h;
         axis_.ticks(Math.floor(height / 50, 0, 0));
         scale.range([height, 0]);
+        return update();
+      });
+      context.on("adjust.y-axis-" + id + "}", function(x1, x2) {
+        xStart = x1 > 0 ? x1 : 0;
+        xEnd = x2 < lines[0].length() ? x2 : lines[0].length();
         return update();
       });
     };
