@@ -871,10 +871,10 @@
       var _this = this;
       lines = selection.datum();
       selection.selectAll('li').remove();
-      legend_ = selection.selectAll('li').data(lines).enter().append('li').append('a').attr('href', 'javascript:;').attr('style', function(line) {
-        return "background-color: " + (context.utility().getColor(line.id()));
-      }).attr('data-line-id', function(line) {
+      legend_ = selection.selectAll('li').data(lines).enter().append('li').append('a').attr('href', 'javascript:;').attr('data-line-id', function(line) {
         return line.id();
+      }).attr('style', function(line) {
+        return "background-color: " + (context.utility().getColor(line.id()));
       }).text(function(line) {
         return line.name();
       });
@@ -882,12 +882,17 @@
         return lines = selection.datum();
       });
       return selection.selectAll('a').on("click", function(d, i) {
-        var e, id;
+        var e, el, id;
         e = d3.event;
+        el = e.target;
+        id = el.getAttribute('data-line-id');
         e.preventDefault();
-        id = e.target.getAttribute('data-line-id');
         if (lines[id] != null) {
-          lines[id].toggle();
+          if (lines[id].toggle()) {
+            $(el).addClass('off').attr("style", 'background-color: none;');
+          } else {
+            $(el).removeClass('off').attr("style", "background-color: " + (context.utility().getColor(id)));
+          }
           context.toggle();
         }
       });
