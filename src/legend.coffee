@@ -30,7 +30,7 @@ QuandlismContext_.legend = () ->
       id = el.getAttribute 'data-line-id'
       e.preventDefault()
       if lines[id]?
-        if lines[id].toggle() then $(el).addClass('off').attr("style", 'background-color: none;') else $(el).removeClass('off').attr("style", "background-color: #{context.utility().getColor id}")
+        if lines[id].toggle() == false then $(el).addClass('off').attr("style", 'background-color: none;') else $(el).removeClass('off').attr("style", "background-color: #{context.utility().getColor id}")
         context.toggle()
       return
 
