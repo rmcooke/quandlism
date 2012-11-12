@@ -129,7 +129,7 @@ QuandlismContext_.stage = () ->
     # 
     # Returns null
     drawTooltip = (x, line, hex) ->
-      $(context.domtooltip()).html "<span style='color: #{hex};'>#{line.name()}</span>: #{line.valueAt(x)}"
+      $(context.domtooltip()).html "<span style='color: #{hex};'>#{line.name()}</span>: #{context.utility().formatNumberAsString line.valueAt(x)}"
       draw line.id()
       pointSize = if (xEnd - xStart <= threshold) then 5 else 3
       line.drawPoint hex, ctx, xScale, yScale, x, pointSize

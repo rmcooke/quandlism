@@ -427,7 +427,7 @@
       };
       drawTooltip = function(x, line, hex) {
         var pointSize;
-        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>: " + (line.valueAt(x)));
+        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>: " + (context.utility().formatNumberAsString(line.valueAt(x))));
         draw(line.id());
         pointSize = xEnd - xStart <= threshold ? 5 : 3;
         line.drawPoint(hex, ctx, xScale, yScale, x, pointSize);
@@ -954,6 +954,9 @@
       var s;
       s = _this.context.colorScale();
       return s(i);
+    };
+    utility.formatNumberAsString = function(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
     utility.getPixelRGB = function(m, ctx) {
       var px, rgb;

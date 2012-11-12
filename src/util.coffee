@@ -51,7 +51,14 @@ QuandlismContext_.utility = () ->
   utility.getColor = (i) =>
     s = @context.colorScale()
     s i
-  
+    
+  # Formats a number with commas
+  #
+  # num - The number to format
+  #
+  # Returns a string formatted numbers
+  utility.formatNumberAsString = (num) =>
+    num.toString().replace /\B(?=(\d{3})+(?!\d))/g, ","
 
   # Get the RGB value of the pixel at position m in canvas space
   #
