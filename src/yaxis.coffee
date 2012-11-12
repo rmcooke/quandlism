@@ -27,7 +27,7 @@ QuandlismContext_.yaxis = () ->
       g.attr 'width', width
       g.attr 'height', '100%'
       a = g.append 'g'
-      a.attr 'transform', "translate(#{width*0.75}, 0)"
+      a.attr 'transform', "translate(#{width-1}, 0)"
       a.attr 'width', width
       a.attr 'height', height
       a.call(axis_)

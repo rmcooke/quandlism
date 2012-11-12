@@ -182,22 +182,22 @@
   quandlism_id_ref = 0;
 
   quandlism_stage = {
-    w: 0.85,
+    w: 0.84,
     h: 0.60
   };
 
   quandlism_brush = {
-    w: 0.85,
+    w: 0.84,
     h: 0.10
   };
 
   quandlism_xaxis = {
-    w: 0.85,
+    w: 0.84,
     h: 0.15
   };
 
   quandlism_yaxis = {
-    w: 0.14,
+    w: 0.15,
     h: 0.60
   };
 
@@ -833,7 +833,7 @@
         g.attr('width', width);
         g.attr('height', '100%');
         a = g.append('g');
-        a.attr('transform', "translate(" + (width * 0.75) + ", 0)");
+        a.attr('transform', "translate(" + (width - 1) + ", 0)");
         a.attr('width', width);
         a.attr('height', height);
         return a.call(axis_);
