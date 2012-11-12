@@ -93,8 +93,7 @@
   var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
       
   d3.json('/data/uhero.json', function(data) {    
-    context.frequency(data.frequency);
-    context.attachData(context.utility().createLines(data)).render();
+    context.attachData(context.utility().createLines(data)).build().render();
   }); 
 
 

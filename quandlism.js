@@ -544,7 +544,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lastPoint, lines, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -568,9 +568,10 @@
     dragging = false;
     stretching = false;
     activeHandle = 0;
-    touchPoint = 0;
+    touchPoint = null;
+    lastPoint = null;
     brush = function(selection) {
-      var clearCanvas, dispatchAdjust, draw, drawBrush, setScales, update;
+      var clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
@@ -644,6 +645,13 @@
         x2 = xScale.invert(xStart + brushWidth);
         return context.adjust(Math.ceil(x1), Math.ceil(x2));
       };
+      resetState = function() {
+        dragging = false;
+        stretching = false;
+        activeHandle = 0;
+        xStart0 = xStart;
+        return brushWidth0 = brushWidth;
+      };
       setScales();
       dispatchAdjust();
       setInterval(update, 50);
@@ -682,16 +690,16 @@
         }
       });
       canvas.on('mouseup', function(e) {
-        dragging = false;
-        stretching = false;
-        activeHandle = 0;
-        xStart0 = xStart;
-        return brushWidth0 = brushWidth;
+        resetState();
       });
       return canvas.on('mousemove', function(e) {
         var dragDiff, m;
         m = d3.mouse(this);
         if (dragging || stretching) {
+          if ((lastPoint != null) && Math.abs(lastPoint - m[0]) >= 100) {
+            resetState();
+            return;
+          }
           if (dragging) {
             xStart = xStart0 + (m[0] - touchPoint);
           } else if (stretching) {
@@ -705,8 +713,9 @@
               throw "Error: Unknown stretchign direction";
             }
           }
-          return dispatchAdjust();
+          dispatchAdjust();
         }
+        lastPoint = m[0];
       });
     };
     brush.xAxis = function(_) {

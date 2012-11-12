@@ -21,7 +21,8 @@ QuandlismContext_.brush = () ->
   dragging     = false
   stretching   = false
   activeHandle = 0
-  touchPoint   = 0 
+  touchPoint   = null
+  lastPoint    = null
 
 
 
@@ -101,6 +102,14 @@ QuandlismContext_.brush = () ->
       x1 = xScale.invert xStart
       x2 = xScale.invert xStart + brushWidth
       context.adjust Math.ceil(x1), Math.ceil(x2)
+      
+    # Reset the state of the brush
+    resetState = () =>
+      dragging = false
+      stretching = false
+      activeHandle = 0
+      xStart0 = xStart
+      brushWidth0 = brushWidth
 
     setScales()
     dispatchAdjust()
@@ -153,16 +162,20 @@ QuandlismContext_.brush = () ->
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
-      dragging = false
-      stretching = false
-      activeHandle = 0
-      xStart0 = xStart
-      brushWidth0 = brushWidth
+      resetState()
+      return
       
     canvas.on 'mousemove', (e) ->
+  
       m = d3.mouse @
-      
+  
       if dragging or stretching
+        
+        # Detect if user moved off brush canvas, then back on. Stop dragging and streching events.
+        if lastPoint? and Math.abs(lastPoint-m[0]) >= 100
+          resetState()
+          return
+            
         if dragging
           xStart = xStart0 + (m[0] - touchPoint)
         else if stretching
@@ -176,6 +189,10 @@ QuandlismContext_.brush = () ->
             throw("Error: Unknown stretchign direction")
         
         dispatchAdjust()
+        
+      # Keep track of last x-point
+      lastPoint = m[0]
+      return
 
 
   brush.xAxis = (_) =>
