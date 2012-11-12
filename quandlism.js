@@ -369,7 +369,7 @@
       xStart = !xStart ? Math.floor(lines[0].length() * context.endPercent()) : xStart;
       xEnd = !xEnd ? lines[0].length() : xEnd;
       draw = function(lineId) {
-        var i, j, line, lineWidth, _i, _len, _results;
+        var i, j, line, lineWidth, _i, _j, _len;
         extent = context.utility().getExtent(lines, xStart, xEnd);
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - padding, padding]);
@@ -377,27 +377,20 @@
         xScale.range([padding, width - padding]);
         ctx.clearRect(0, 0, width, height);
         lineId = lineId != null ? lineId : -1;
-        _results = [];
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           if (xEnd - xStart <= threshold) {
             line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth);
-            _results.push((function() {
-              var _j, _results1;
-              _results1 = [];
-              for (i = _j = xStart; xStart <= xEnd ? _j <= xEnd : _j >= xEnd; i = xStart <= xEnd ? ++_j : --_j) {
-                _results1.push(line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, i, 3));
-              }
-              return _results1;
-            })());
+            for (i = _j = xStart; xStart <= xEnd ? _j <= xEnd : _j >= xEnd; i = xStart <= xEnd ? ++_j : --_j) {
+              line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, i, 3);
+            }
           } else if (xEnd === xStart) {
-            _results.push(line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, xStart, 3));
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, xStart, 3);
           } else {
-            _results.push(line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth));
+            line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth);
           }
         }
-        return _results;
       };
       lineHit = function(m) {
         var hex, hitMatrix, i, j, k, n, _i, _j, _k, _ref, _ref1, _ref2, _ref3, _ref4;
@@ -590,31 +583,27 @@
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height, 0]);
         xScale.domain([0, lines[0].length() - 1]);
-        return xScale.range([0, width]);
+        xScale.range([0, width]);
       };
       update = function() {
         clearCanvas();
         draw();
-        return drawBrush();
+        drawBrush();
       };
       clearCanvas = function() {
         ctx.clearRect(0, 0, width0, height0);
-        return canvas.attr('width', width).attr('height', height);
+        canvas.attr('width', width).attr('height', height);
       };
       draw = function() {
-        var j, line, showPoints, _i, _len, _results;
+        var j, line, showPoints, _i, _len;
         showPoints = lines[0].length() <= threshold;
-        _results = [];
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
           line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1);
           if (showPoints) {
-            _results.push(line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, j, 2));
-          } else {
-            _results.push(void 0);
+            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, j, 2);
           }
         }
-        return _results;
       };
       drawBrush = function() {
         ctx.strokeStyle = 'rgba(207, 207, 207, 0.55)';
@@ -637,20 +626,20 @@
         ctx.moveTo(xStart + brushWidth, 0);
         ctx.lineTo(xStart + brushWidth, height);
         ctx.stroke();
-        return ctx.closePath();
+        ctx.closePath();
       };
       dispatchAdjust = function() {
         var x1, x2;
         x1 = xScale.invert(xStart);
         x2 = xScale.invert(xStart + brushWidth);
-        return context.adjust(Math.ceil(x1), Math.ceil(x2));
+        context.adjust(Math.ceil(x1), Math.ceil(x2));
       };
       resetState = function() {
         dragging = false;
         stretching = false;
         activeHandle = 0;
         xStart0 = xStart;
-        return brushWidth0 = brushWidth;
+        brushWidth0 = brushWidth;
       };
       setScales();
       dispatchAdjust();
@@ -662,7 +651,7 @@
         width = context.w() * quandlism_brush.w;
         xStart = Math.ceil(xStart / width0 * width);
         xStart0 = Math.ceil(xStart0 / width0 * width);
-        return setScales();
+        setScales();
       });
       context.on('refresh.brush', function() {
         lines = selection.datum();
@@ -670,10 +659,10 @@
         xStart0 = xStart;
         brushWidth = Math.ceil(width * 0.2);
         brushWidth0 = brushWidth;
-        return setScales();
+        setScales();
       });
       context.on("toggle.brush", function() {
-        return setScales();
+        setScales();
       });
       canvas.on('mousedown', function(e) {
         var m;
@@ -681,12 +670,12 @@
         touchPoint = m[0];
         if (m[0] >= xStart && m[0] <= (xStart + handleWidth)) {
           stretching = true;
-          return activeHandle = -1;
+          activeHandle = -1;
         } else if (m[0] >= (xStart + brushWidth) && m[0] <= (xStart + brushWidth + handleWidth)) {
           stretching = true;
-          return activeHandle = 1;
+          activeHandle = 1;
         } else if (m[0] <= (brushWidth + xStart) && m[0] >= xStart) {
-          return dragging = true;
+          dragging = true;
         }
       });
       canvas.on('mouseup', function(e) {
@@ -842,33 +831,33 @@
       };
       setEndPoints = function() {
         xEnd = lines[0].length() - 1;
-        return xStart = Math.floor(lines[0].length() * context.endPercent());
+        xStart = Math.floor(lines[0].length() * context.endPercent());
       };
       setEndPoints();
       update();
       context.on("toggle.y-axis-" + id, function() {
-        return update();
+        update();
       });
       context.on("refresh.y-axis-" + id, function() {
         lines = selection.datum();
         setEndPoints();
-        return update();
+        update();
       });
       context.on("respond.y-axis-" + id, function() {
         width = context.w() * quandlism_yaxis.w;
         height = context.h() * quandlism_yaxis.h;
         axis_.ticks(Math.floor(height / 50, 0, 0));
         scale.range([height, 0]);
-        return update();
+        update();
       });
       context.on("adjust.y-axis-" + id + "}", function(x1, x2) {
         xStart = x1 > 0 ? x1 : 0;
         xEnd = x2 < lines[0].length() ? x2 : lines[0].length();
-        return update();
+        update();
       });
     };
     yaxis.remove = function(_) {
-      return d3.select("#" + id).selectAll("svg").remove();
+      d3.select("#" + id).selectAll("svg").remove();
     };
     return d3.rebind(yaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
   };

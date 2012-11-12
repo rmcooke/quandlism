@@ -35,6 +35,7 @@ QuandlismContext_.yaxis = () ->
     setEndPoints = () =>
       xEnd = lines[0].length()-1
       xStart = Math.floor lines[0].length() * context.endPercent()
+      return
   
     setEndPoints()
     update()
@@ -44,6 +45,7 @@ QuandlismContext_.yaxis = () ->
     # Respond to toggle by re-drawing
     context.on "toggle.y-axis-#{id}", () ->
       update()
+      return
       
       
     # Respond to refresh event.
@@ -51,6 +53,7 @@ QuandlismContext_.yaxis = () ->
       lines = selection.datum()
       setEndPoints()
       update()
+      return
       
     # Respond to resize of browser
     context.on "respond.y-axis-#{id}", () ->
@@ -59,16 +62,19 @@ QuandlismContext_.yaxis = () ->
       axis_.ticks Math.floor height / 50, 0, 0
       scale.range [height, 0]
       update()
+      return
       
     # Respond to adjust event from brush
     context.on "adjust.y-axis-#{id}}", (x1, x2) ->
       xStart = if x1 > 0 then x1 else 0
       xEnd = if x2 < lines[0].length() then x2 else lines[0].length()
       update()
+      return
       
     return
     
   yaxis.remove = (_) =>
     d3.select("##{id}").selectAll("svg").remove();
+    return
   
   return d3.rebind(yaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');

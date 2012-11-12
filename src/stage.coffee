@@ -92,7 +92,7 @@ QuandlismContext_.stage = () ->
         else
           line.drawPath context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth
         
-      
+      return
       
     # Detects line hit
     # Analyzed color under the mouse cursor and try to match to a line

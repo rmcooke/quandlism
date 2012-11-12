@@ -52,25 +52,29 @@ QuandlismContext_.brush = () ->
       yScale.range [height, 0]
       xScale.domain [0, lines[0].length()-1]
       xScale.range [0, width]
-        
+      return
+      
     # Update
     update = () =>
       clearCanvas()
       draw()
       drawBrush()
+      return
       
     # Clear the drawing canvas
     clearCanvas = () =>
       ctx.clearRect 0, 0, width0, height0
       canvas.attr('width', width).attr('height', height)
- 
+      return
+      
     # Draw the paths and points
     draw = () =>
       showPoints = (lines[0].length() <= threshold)
       for line, j in lines
         line.drawPath context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1
         line.drawPoint context.utility().getColor(j), ctx, xScale, yScale, j, 2 if showPoints
-
+      return
+      
     # Draw the brush control
     drawBrush = () =>
       ctx.strokeStyle = 'rgba(207, 207, 207, 0.55)'
@@ -96,12 +100,14 @@ QuandlismContext_.brush = () ->
       ctx.lineTo (xStart + brushWidth), height
       ctx.stroke()
       ctx.closePath()
+      return
       
     # Send the adjust event to the context
     dispatchAdjust = () =>
       x1 = xScale.invert xStart
       x2 = xScale.invert xStart + brushWidth
       context.adjust Math.ceil(x1), Math.ceil(x2)
+      return
       
     # Reset the state of the brush
     resetState = () =>
@@ -110,7 +116,8 @@ QuandlismContext_.brush = () ->
       activeHandle = 0
       xStart0 = xStart
       brushWidth0 = brushWidth
-
+      return
+      
     setScales()
     dispatchAdjust()
     
@@ -128,6 +135,7 @@ QuandlismContext_.brush = () ->
       xStart = Math.ceil xStart/width0*width
       xStart0 = Math.ceil xStart0/width0*width
       setScales()
+      return
       
     # Respond to refresh event
     context.on 'refresh.brush', () ->
@@ -137,11 +145,13 @@ QuandlismContext_.brush = () ->
       brushWidth = Math.ceil width*0.2
       brushWidth0 = brushWidth
       setScales()
+      return
       
       
     # Respond to toggle by re-setting extents to account for newly hidden or visible columns
     context.on "toggle.brush", () ->
       setScales()
+      return
       
     # Listen for mousedown event to track mouse clicks before dragging or stretching control
     canvas.on 'mousedown', (e) ->
@@ -159,6 +169,7 @@ QuandlismContext_.brush = () ->
       else if m[0] <= (brushWidth + xStart) and m[0] >= xStart
         # if dragging
         dragging = true
+      return
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
