@@ -623,18 +623,12 @@
         ctx.lineTo(xStart, height);
         ctx.closePath();
         ctx.beginPath();
-        ctx.lineWidth = handleWidth;
-        ctx.strokeStyle = "#CFCFCF";
-        ctx.moveTo(xStart, 0);
-        ctx.lineTo(xStart, height);
-        ctx.stroke();
+        ctx.fillStyle = '#CFCFCF';
+        ctx.fillRect(xStart - handleWidth, 0, handleWidth, height);
         ctx.closePath();
         ctx.beginPath();
-        ctx.lineWidth = handleWidth;
-        ctx.strokeStyle = "#CFCFCF";
-        ctx.moveTo(xStart + brushWidth, 0);
-        ctx.lineTo(xStart + brushWidth, height);
-        ctx.stroke();
+        ctx.fillStyle = '#CFCFCF';
+        ctx.fillRect(xStart + brushWidth, 0, handleWidth, height);
         ctx.closePath();
       };
       dispatchAdjust = function() {
@@ -678,10 +672,10 @@
         d3.event.preventDefault();
         m = d3.mouse(this);
         touchPoint = m[0];
-        if (m[0] >= xStart && m[0] <= (xStart + handleWidth)) {
+        if (m[0] >= (xStart - handleWidth) && m[0] < xStart) {
           stretching = true;
           activeHandle = -1;
-        } else if (m[0] >= (xStart + brushWidth) && m[0] <= (xStart + brushWidth + handleWidth)) {
+        } else if (m[0] > (xStart + brushWidth) && m[0] <= (xStart + brushWidth + handleWidth)) {
           stretching = true;
           activeHandle = 1;
         } else if (m[0] <= (brushWidth + xStart) && m[0] >= xStart) {
@@ -705,13 +699,17 @@
             if (activeHandle === -1) {
               xStart = xStart0 + dragDiff;
               brushWidth = brushWidth0 - dragDiff;
+              console.log("start " + xStart);
               if (dragDiff > 0) {
                 xCurr = xScale.invert(m[0]);
                 xRightHandle = xScale.invert(xStart0 + brushWidth0);
+                console.log("" + xCurr + " " + xRightHandle);
                 if (Math.abs((xRightHandle - xCurr) <= stretchLimit)) {
                   xStart = Math.ceil(xScale(xRightHandle - stretchLimit));
                   brushWidth = xScale(stretchLimit);
                 }
+                console.log("end " + xStart);
+                console.log(brushWidth);
               }
             } else if (activeHandle === 1) {
               brushWidth = brushWidth0 + dragDiff;

@@ -94,21 +94,15 @@ QuandlismContext_.brush = () ->
       ctx.lineWidth = 1
       ctx.lineTo xStart, height
       ctx.closePath()
-      
+    
       ctx.beginPath()
-      ctx.lineWidth = handleWidth
-      ctx.strokeStyle = "#CFCFCF"
-      ctx.moveTo xStart, 0
-      ctx.lineTo xStart, height
-      ctx.stroke()
+      ctx.fillStyle = '#CFCFCF'
+      ctx.fillRect xStart-handleWidth, 0, handleWidth, height
       ctx.closePath()
       
       ctx.beginPath()
-      ctx.lineWidth = handleWidth
-      ctx.strokeStyle = "#CFCFCF"
-      ctx.moveTo (xStart + brushWidth), 0
-      ctx.lineTo (xStart + brushWidth), height
-      ctx.stroke()
+      ctx.fillStyle = '#CFCFCF'
+      ctx.fillRect xStart + brushWidth, 0, handleWidth, height
       ctx.closePath()
       return
       
@@ -169,11 +163,11 @@ QuandlismContext_.brush = () ->
       m = d3.mouse @
       touchPoint = m[0]
       
-      if m[0] >= xStart and m[0] <= (xStart + handleWidth)
+      if m[0] >= (xStart-handleWidth) and m[0] < (xStart)
         # If click on left handle
         stretching = true
         activeHandle = -1
-      else if m[0] >= (xStart + brushWidth) and m[0] <= (xStart + brushWidth + handleWidth)
+      else if m[0] > (xStart + brushWidth) and m[0] <= (xStart + brushWidth + handleWidth)
         # If click on right handle
         stretching = true
         activeHandle = 1
@@ -195,6 +189,8 @@ QuandlismContext_.brush = () ->
     # Calculate various points for animating dragging and stretching
     canvas.on 'mousemove', (e) ->
       m = d3.mouse @
+
+      
       if dragging or stretching
         if dragging
           xStart = xStart0 + (m[0]-touchPoint)
