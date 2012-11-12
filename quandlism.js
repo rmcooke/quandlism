@@ -706,20 +706,20 @@
               xStart = xStart0 + dragDiff;
               brushWidth = brushWidth0 - dragDiff;
               if (dragDiff > 0) {
-                xCurr = Math.ceil(xScale.invert(m[0]));
-                xRightHandle = Math.ceil(xScale.invert(xStart0 + brushWidth0));
+                xCurr = xScale.invert(m[0]);
+                xRightHandle = xScale.invert(xStart0 + brushWidth0);
                 if (Math.abs((xRightHandle - xCurr) <= stretchLimit)) {
-                  xStart = Math.floor(xScale(xRightHandle - stretchLimit));
-                  brushWidth = Math.floor(xScale(stretchLimit));
+                  xStart = Math.ceil(xScale(xRightHandle - stretchLimit));
+                  brushWidth = xScale(stretchLimit);
                 }
               }
             } else if (activeHandle === 1) {
               brushWidth = brushWidth0 + dragDiff;
               if (dragDiff < 0) {
-                xCurr = Math.ceil(xScale.invert(m[0]));
-                xLeftHandle = Math.ceil(xScale.invert(xStart0));
+                xCurr = xScale.invert(m[0]);
+                xLeftHandle = xScale.invert(xStart0);
                 if (Math.abs((xCurr - xLeftHandle) <= stretchLimit)) {
-                  brushWidth = Math.floor(xScale(stretchLimit));
+                  brushWidth = xScale(stretchLimit);
                 }
               }
             } else {

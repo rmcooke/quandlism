@@ -204,22 +204,21 @@ QuandlismContext_.brush = () ->
           if activeHandle is -1
             xStart = xStart0 + dragDiff
             brushWidth = brushWidth0 - dragDiff
+            # Ensure that xStart and brushWidth values don't result in less than stretchLimit datasets being shown on stage
             if dragDiff > 0
-              # Get the data index of the current x value and the x value of the right handle before dragging started
-              # The current index should always be <= strechLimit 
-              # Reset values if necessary
-              xCurr = Math.ceil xScale.invert m[0]
-              xRightHandle = Math.ceil xScale.invert xStart0+brushWidth0
+              xCurr =  xScale.invert m[0]
+              xRightHandle =  xScale.invert xStart0+brushWidth0
               if Math.abs (xRightHandle-xCurr) <= stretchLimit
-                xStart = Math.floor xScale xRightHandle-stretchLimit
-                brushWidth = Math.floor xScale stretchLimit
+                xStart =  Math.ceil xScale xRightHandle-stretchLimit
+                brushWidth =  xScale stretchLimit
           else if activeHandle is 1
             brushWidth = brushWidth0 + dragDiff
+            # Ensure brushWidth value doesn't result in less than stretchlimit datasets being shown on the stage
             if dragDiff < 0
-              xCurr = Math.ceil xScale.invert m[0]
-              xLeftHandle = Math.ceil xScale.invert xStart0
+              xCurr =  xScale.invert m[0]
+              xLeftHandle =  xScale.invert xStart0
               if Math.abs (xCurr-xLeftHandle) <= stretchLimit
-                brushWidth = Math.floor xScale stretchLimit
+                brushWidth =  xScale stretchLimit
           else
             throw("Error: Unknown stretching direction")
         
