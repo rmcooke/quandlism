@@ -666,6 +666,7 @@
       });
       canvas.on('mousedown', function(e) {
         var m;
+        d3.event.preventDefault();
         m = d3.mouse(this);
         touchPoint = m[0];
         if (m[0] >= xStart && m[0] <= (xStart + handleWidth)) {

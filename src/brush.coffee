@@ -154,6 +154,7 @@ QuandlismContext_.brush = () ->
       
     # Listen for mousedown event to track mouse clicks before dragging or stretching control
     canvas.on 'mousedown', (e) ->
+      d3.event.preventDefault()
       m = d3.mouse @
       touchPoint = m[0]
       
