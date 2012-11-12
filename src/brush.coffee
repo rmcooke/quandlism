@@ -1,27 +1,31 @@
 QuandlismContext_.brush = () ->
-  context      = @
-  height       = context.h() * quandlism_brush.h
-  height0      = height
-  width        = context.w() * quandlism_brush.w
-  width0       = width
-  brushWidth   = Math.ceil width * 0.2
-  brushWidth0  = brushWidth
-  handleWidth  = 10
-  xStart       = width * context.endPercent()
-  xStart0      = xStart
-  xScale       = d3.scale.linear()
-  yScale       = d3.scale.linear()
-  canvas       = null
-  ctx          = null
-  xAxis        = null
-  canvasId     = null
-  extent       = []
-  lines        = []
-  threshold    = 10
-  dragging     = false
-  stretching   = false
-  activeHandle = 0
-  touchPoint   = null
+  context       = @
+  height        = context.h() * quandlism_brush.h
+  height0       = height
+  width         = context.w() * quandlism_brush.w
+  width0        = width
+  brushWidth    = Math.ceil width * 0.2
+  brushWidth0   = brushWidth
+  handleWidth   = 10
+  xStart        = width * context.endPercent()
+  xStart0       = xStart
+  xScale        = d3.scale.linear()
+  yScale        = d3.scale.linear()
+  canvas        = null
+  ctx           = null
+  xAxis         = null
+  canvasId      = null
+  extent        = []
+  lines         = []
+  threshold     = 10
+  dragging      = false
+  strechLimit   = 6
+  stretching    = false
+  stretchLocked = false
+  stretchLimit  = 6
+  activeHandle  = 0
+  touchPoint    = null
+  
 
 
 
@@ -59,6 +63,13 @@ QuandlismContext_.brush = () ->
       draw()
       drawBrush()
       return
+      
+    # Checks the number of dataset points that are going to be displayed. If below the stretching threshold
+    # then lock contiued stretching
+    checkStretchState = () =>
+      x1 = Math.ceil xScale.invert xStart
+      x2 = Math.ceil xScale.invert (xStart+brushWidth)
+      stretchLocked = Math.abs (x2-x1) <= stretchLimit
       
     # Clear the drawing canvas
     clearCanvas = () =>
@@ -179,31 +190,45 @@ QuandlismContext_.brush = () ->
     # Detect movement off of the canvas. Reset state
     canvas.on 'mouseout', (e) ->
       resetState()  
+      return
       
     # Calculate various points for animating dragging and stretching
     canvas.on 'mousemove', (e) ->
-  
       m = d3.mouse @
-  
       if dragging or stretching
-            
         if dragging
-          xStart = xStart0 + (m[0] - touchPoint)
+          xStart = xStart0 + (m[0]-touchPoint)
         else if stretching
+          # Check stretchLocked value. Only allow stretching if it is to make the brushWidth larger
           dragDiff = m[0] - touchPoint
           if activeHandle is -1
             xStart = xStart0 + dragDiff
             brushWidth = brushWidth0 - dragDiff
+            if dragDiff > 0
+              # Get the data index of the current x value and the x value of the right handle before dragging started
+              # The current index should always be <= strechLimit 
+              # Reset values if necessary
+              xCurr = Math.ceil xScale.invert m[0]
+              xRightHandle = Math.ceil xScale.invert xStart0+brushWidth0
+              if Math.abs (xRightHandle-xCurr) <= stretchLimit
+                xStart = Math.floor xScale xRightHandle-stretchLimit
+                brushWidth = Math.floor xScale stretchLimit
           else if activeHandle is 1
             brushWidth = brushWidth0 + dragDiff
+            if dragDiff < 0
+              xCurr = Math.ceil xScale.invert m[0]
+              xLeftHandle = Math.ceil xScale.invert xStart0
+              if Math.abs (xCurr-xLeftHandle) <= stretchLimit
+                brushWidth = Math.floor xScale stretchLimit
           else
-            throw("Error: Unknown stretchign direction")
+            throw("Error: Unknown stretching direction")
         
         dispatchAdjust()
 
       return
 
-
+  # Geters and setters
+  
   brush.xAxis = (_) =>
     if not _? then return xAxis
     xAxis = _
@@ -214,9 +239,11 @@ QuandlismContext_.brush = () ->
     threshold = _
     brush
     
-
+  brush.stretchLimit = (_) =>
+    if not _? then return stretchLimit
+    stretchLimit = _
+    brush
     
-  # set timeout for drawing
   
   brush
       

@@ -426,9 +426,7 @@
         return false;
       };
       drawTooltip = function(x, line, hex) {
-        var pointSize, tooltipDate;
-        tooltipDate = new Date(line.dateAt(x));
-        console.log(tooltipDate.toString('dddd, MMMM ,yyyy'));
+        var pointSize;
         $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>: " + (context.utility().formatNumberAsString(line.valueAt(x))) + "  on " + (line.dateAt(x)));
         draw(line.id());
         pointSize = xEnd - xStart <= threshold ? 5 : 3;
@@ -540,7 +538,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, strechLimit, stretchLimit, stretchLocked, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -562,11 +560,14 @@
     lines = [];
     threshold = 10;
     dragging = false;
+    strechLimit = 6;
     stretching = false;
+    stretchLocked = false;
+    stretchLimit = 6;
     activeHandle = 0;
     touchPoint = null;
     brush = function(selection) {
-      var clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
+      var checkStretchState, clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
@@ -591,6 +592,12 @@
         clearCanvas();
         draw();
         drawBrush();
+      };
+      checkStretchState = function() {
+        var x1, x2;
+        x1 = Math.ceil(xScale.invert(xStart));
+        x2 = Math.ceil(xScale.invert(xStart + brushWidth));
+        return stretchLocked = Math.abs((x2 - x1) <= stretchLimit);
       };
       clearCanvas = function() {
         ctx.clearRect(0, 0, width0, height0);
@@ -685,10 +692,10 @@
         resetState();
       });
       canvas.on('mouseout', function(e) {
-        return resetState();
+        resetState();
       });
       return canvas.on('mousemove', function(e) {
-        var dragDiff, m;
+        var dragDiff, m, xCurr, xLeftHandle, xRightHandle;
         m = d3.mouse(this);
         if (dragging || stretching) {
           if (dragging) {
@@ -698,10 +705,25 @@
             if (activeHandle === -1) {
               xStart = xStart0 + dragDiff;
               brushWidth = brushWidth0 - dragDiff;
+              if (dragDiff > 0) {
+                xCurr = Math.ceil(xScale.invert(m[0]));
+                xRightHandle = Math.ceil(xScale.invert(xStart0 + brushWidth0));
+                if (Math.abs((xRightHandle - xCurr) <= stretchLimit)) {
+                  xStart = Math.floor(xScale(xRightHandle - stretchLimit));
+                  brushWidth = Math.floor(xScale(stretchLimit));
+                }
+              }
             } else if (activeHandle === 1) {
               brushWidth = brushWidth0 + dragDiff;
+              if (dragDiff < 0) {
+                xCurr = Math.ceil(xScale.invert(m[0]));
+                xLeftHandle = Math.ceil(xScale.invert(xStart0));
+                if (Math.abs((xCurr - xLeftHandle) <= stretchLimit)) {
+                  brushWidth = Math.floor(xScale(stretchLimit));
+                }
+              }
             } else {
-              throw "Error: Unknown stretchign direction";
+              throw "Error: Unknown stretching direction";
             }
           }
           dispatchAdjust();
@@ -720,6 +742,13 @@
         return threshold;
       }
       threshold = _;
+      return brush;
+    };
+    brush.stretchLimit = function(_) {
+      if (!(_ != null)) {
+        return stretchLimit;
+      }
+      stretchLimit = _;
       return brush;
     };
     return brush;
