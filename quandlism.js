@@ -426,8 +426,10 @@
         return false;
       };
       drawTooltip = function(x, line, hex) {
-        var pointSize;
-        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>: " + (context.utility().formatNumberAsString(line.valueAt(x))));
+        var pointSize, tooltipDate;
+        tooltipDate = new Date(line.dateAt(x));
+        console.log(tooltipDate.toString('dddd, MMMM ,yyyy'));
+        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>: " + (context.utility().formatNumberAsString(line.valueAt(x))) + "  on " + (line.dateAt(x)));
         draw(line.id());
         pointSize = xEnd - xStart <= threshold ? 5 : 3;
         line.drawPoint(hex, ctx, xScale, yScale, x, pointSize);
