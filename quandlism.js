@@ -7,24 +7,25 @@
   };
 
   quandlism.context = function() {
-    var _this = this;
-    this.context = new QuandlismContext();
-    this.w = null;
-    this.h = null;
-    this.dom = null;
-    this.domstage = null;
-    this.dombrush = null;
-    this.domlegend = null;
-    this.domtooltip = null;
-    this.endPercent = 0.8;
-    this.event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
-    this.colorScale = d3.scale.category20();
-    this.lines = [];
-    this.context.attachData = function(lines) {
+    var colorScale, context, dom, dombrush, domlegend, domstage, domtooltip, endPercent, event, h, lines, w,
+      _this = this;
+    context = new QuandlismContext();
+    w = null;
+    h = null;
+    dom = null;
+    domstage = null;
+    dombrush = null;
+    domlegend = null;
+    domtooltip = null;
+    endPercent = 0.8;
+    event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
+    colorScale = d3.scale.category20();
+    lines = [];
+    context.attachData = function(lines) {
       var brush, stage;
-      _this.lines = lines;
-      if (_this.domstage) {
-        stage = d3.select(_this.domstage).datum(lines);
+      lines = lines;
+      if (domstage) {
+        stage = d3.select(domstage).datum(lines);
       }
       if (stage && stage.select('.x')) {
         stage.select('.x').datum(lines);
@@ -32,137 +33,137 @@
       if (stage && stage.select('.y')) {
         stage.select('.y').datum(lines);
       }
-      if (_this.dombrush) {
-        brush = d3.select(_this.dombrush).datum(lines);
+      if (dombrush) {
+        brush = d3.select(dombrush).datum(lines);
       }
       if (brush && brush.select('.x')) {
         brush.select('.x').datum(lines);
       }
-      if (_this.domlegend) {
-        d3.select(_this.domlegend).datum(lines);
+      if (domlegend) {
+        d3.select(domlegend).datum(lines);
       }
-      return _this.context;
+      return context;
     };
-    this.context.render = function() {
-      if (_this.domstage) {
-        d3.select(_this.domstage).call(_this.context.stage());
+    context.render = function() {
+      if (domstage) {
+        d3.select(domstage).call(context.stage());
       }
-      if (_this.dombrush) {
-        d3.select(_this.dombrush).call(_this.context.brush());
+      if (dombrush) {
+        d3.select(dombrush).call(context.brush());
       }
-      if (_this.domlegend) {
-        d3.select(_this.domlegend).call(_this.context.legend());
+      if (domlegend) {
+        d3.select(domlegend).call(context.legend());
       }
-      return _this.context;
+      return context;
     };
-    this.context.build = function() {
-      _this.w = $(_this.dom).width();
-      _this.h = $(_this.dom).height();
-      return _this.context;
+    context.build = function() {
+      w = $(dom).width();
+      h = $(dom).height();
+      return context;
     };
-    this.context.lines = function(_) {
+    context.lines = function(_) {
       if (!(_ != null)) {
-        return _this.lines;
+        return lines;
       }
-      _this.lines = _;
-      return _this.context;
+      lines = _;
+      return context;
     };
-    this.context.colorScale = function(_) {
+    context.colorScale = function(_) {
       if (!(_ != null)) {
-        return _this.colorScale;
+        return colorScale;
       }
-      _this.colorScale = _;
-      return _this.context;
+      colorScale = _;
+      return context;
     };
-    this.context.endPercent = function(_) {
+    context.endPercent = function(_) {
       if (!(_ != null)) {
-        return _this.endPercent;
+        return endPercent;
       }
-      _this.endPercent = _;
-      return _this.context;
+      endPercent = _;
+      return context;
     };
-    this.context.w = function(_) {
+    context.w = function(_) {
       if (!(_ != null)) {
-        return _this.w;
+        return w;
       }
-      _this.w = _;
-      return _this.context;
+      w = _;
+      return context;
     };
-    this.context.h = function(_) {
+    context.h = function(_) {
       if (!(_ != null)) {
-        return _this.h;
+        return h;
       }
-      _this.h = _;
-      return _this.context;
+      h = _;
+      return context;
     };
-    this.context.dom = function(_) {
+    context.dom = function(_) {
       if (!(_ != null)) {
-        return _this.dom;
+        return dom;
       }
-      _this.dom = _;
-      return _this.context;
+      dom = _;
+      return context;
     };
-    this.context.domstage = function(_) {
+    context.domstage = function(_) {
       if (!(_ != null)) {
-        return _this.domstage;
+        return domstage;
       }
-      _this.domstage = _;
-      return _this.context;
+      domstage = _;
+      return context;
     };
-    this.context.dombrush = function(_) {
+    context.dombrush = function(_) {
       if (!(_ != null)) {
-        return _this.dombrush;
+        return dombrush;
       }
-      _this.dombrush = _;
-      return _this.context;
+      dombrush = _;
+      return context;
     };
-    this.context.domlegend = function(_) {
+    context.domlegend = function(_) {
       if (!(_ != null)) {
-        return _this.domlegend;
+        return domlegend;
       }
-      _this.domlegend = _;
-      return _this.context;
+      domlegend = _;
+      return context;
     };
-    this.context.domtooltip = function(_) {
+    context.domtooltip = function(_) {
       if (!(_ != null)) {
-        return _this.domtooltip;
+        return domtooltip;
       }
-      _this.domtooltip = _;
-      return _this.context;
+      domtooltip = _;
+      return context;
     };
-    this.context.respond = _.throttle(function() {
-      return _this.event.respond.call(_this.context, 500);
+    context.respond = _.throttle(function() {
+      return event.respond.call(context, 500);
     });
-    this.context.adjust = function(x1, x2) {
-      return _this.event.adjust.call(_this.context, x1, x2);
+    context.adjust = function(x1, x2) {
+      return event.adjust.call(context, x1, x2);
     };
-    this.context.toggle = function() {
-      return _this.event.toggle.call(_this.context);
+    context.toggle = function() {
+      return event.toggle.call(context);
     };
-    this.context.refresh = function() {
-      return _this.event.refresh.call(_this.context);
+    context.refresh = function() {
+      return event.refresh.call(context);
     };
-    this.context.on = function(type, listener) {
+    context.on = function(type, listener) {
       if (!(listener != null)) {
-        return _this.event.on(type);
+        return event.on(type);
       }
-      _this.event.on(type, listener);
-      return _this.context;
+      event.on(type, listener);
+      return context;
     };
     d3.select(window).on('resize', function() {
       var h0, w0;
       d3.event.preventDefault();
-      if (_this.dom) {
-        w0 = $(_this.dom).width();
-        h0 = $(_this.dom).height();
-        if (_this.w !== w0 || _this.h !== h0) {
-          _this.w = w0;
-          _this.h = h0;
-          _this.context.respond();
+      if (dom) {
+        w0 = $(dom).width();
+        h0 = $(dom).height();
+        if (w !== w0 || h !== h0) {
+          w = w0;
+          h = h0;
+          context.respond();
         }
       }
     });
-    return this.context;
+    return context;
   };
 
   QuandlismContext = (function() {
