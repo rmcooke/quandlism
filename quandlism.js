@@ -538,7 +538,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lastPoint, lines, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -563,7 +563,6 @@
     stretching = false;
     activeHandle = 0;
     touchPoint = null;
-    lastPoint = null;
     brush = function(selection) {
       var clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
       lines = selection.datum();
@@ -682,14 +681,13 @@
       canvas.on('mouseup', function(e) {
         resetState();
       });
+      canvas.on('mouseout', function(e) {
+        return resetState();
+      });
       return canvas.on('mousemove', function(e) {
         var dragDiff, m;
         m = d3.mouse(this);
         if (dragging || stretching) {
-          if ((lastPoint != null) && Math.abs(lastPoint - m[0]) >= 100) {
-            resetState();
-            return;
-          }
           if (dragging) {
             xStart = xStart0 + (m[0] - touchPoint);
           } else if (stretching) {
@@ -705,7 +703,6 @@
           }
           dispatchAdjust();
         }
-        lastPoint = m[0];
       });
     };
     brush.xAxis = function(_) {
