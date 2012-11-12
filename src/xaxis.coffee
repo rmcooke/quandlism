@@ -16,6 +16,8 @@ QuandlismContext_.xaxis = () ->
     id = selection.attr 'id';      
     lines = selection.datum();
     
+    axis_.tickSize 5, 3, 0
+    
     update = () ->
       xaxis.remove()
       g = selection.append 'svg'

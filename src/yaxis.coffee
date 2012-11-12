@@ -17,7 +17,7 @@ QuandlismContext_.yaxis = () ->
     
     # set ticks
     axis_.ticks Math.floor height / 50, 0, 0
-    
+    axis_.tickSize 5, 3, 0
     update = () =>
       extent = context.utility().getExtent lines, xStart, xEnd
       scale.domain [extent[0], extent[1]]

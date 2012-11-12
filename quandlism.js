@@ -752,6 +752,7 @@
       var changeScale, update;
       id = selection.attr('id');
       lines = selection.datum();
+      axis_.tickSize(5, 3, 0);
       update = function() {
         var g;
         xaxis.remove();
@@ -824,6 +825,7 @@
       id = selection.attr('id');
       lines = selection.datum();
       axis_.ticks(Math.floor(height / 50, 0, 0));
+      axis_.tickSize(5, 3, 0);
       update = function() {
         var a, g;
         extent = context.utility().getExtent(lines, xStart, xEnd);
