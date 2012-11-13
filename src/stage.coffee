@@ -10,8 +10,8 @@ QuandlismContext_.stage = () ->
   yAxis      = null
   padding    = 10
   extent     = []
-  xStart     = null
-  xEnd       = null
+  xStart     = 0
+  xEnd       = width
   threshold  = 10
   canvas     = null
   ctx        = null
@@ -50,16 +50,10 @@ QuandlismContext_.stage = () ->
       xAxis.attr 'class', 'x axis'
       xAxis.attr 'id', "x-axis-#{canvasId}"
       xAxis.call context.xaxis().active true
-      
-
-    # Set start and end indexes, if they have not already been set
-    xStart = if not xStart then Math.floor lines[0].length() * context.endPercent() else xStart
-    xEnd =  if not xEnd then lines[0].length() else xEnd
-
     
-    # Draws the stage data
-    draw = (lineId) =>
-      
+
+    # Calculate the range and domain of the x and y scales
+    setScales = () =>
       # Calculate the extent for the area between xStart and xEnd
       extent = context.utility().getExtent lines, xStart, xEnd
       
@@ -69,7 +63,11 @@ QuandlismContext_.stage = () ->
 
       xScale.domain [xStart, xEnd]
       xScale.range [padding, (width - padding)]
-
+      return
+      
+    # Draws the stage data
+    draw = (lineId) =>
+    
       # Clear canvas before drawing
       ctx.clearRect 0, 0, width, height
       
@@ -141,8 +139,11 @@ QuandlismContext_.stage = () ->
       $(context.domtooltip()).text ''
       draw()
       return
-
-    draw()  
+      
+    # Initial draw
+    setScales()
+    # If no brush, then draw.
+    draw() if not context.dombrush()
       
     # Callbacks / Event bindings
     # Listen for events dispatched from context, or listen for events in canvas
@@ -155,6 +156,7 @@ QuandlismContext_.stage = () ->
       height = Math.floor context.h() * quandlism_stage.h
       canvas.attr 'width', width
       canvas.attr 'height', height
+      setScales()
       draw()
       return
  
@@ -162,20 +164,21 @@ QuandlismContext_.stage = () ->
     context.on 'adjust.stage', (x1, x2) ->
       xStart = if x1 > 0 then x1 else 0
       xEnd = if lines[0].length() > 2 then x2 else lines[0].length()-1
+      setScales()
       draw()
       return
       
     # Respond to toggle event by re-drawing
     context.on 'toggle.stage', () ->
+      setScales()
       draw()
       return
       
     # Respond to refresh event. Update line data and re-draw
     context.on 'refresh.stage', () ->
       lines = selection.datum()
-      xEnd = lines[0].length()
-      xStart = Math.floor lines[0].length()*context.endPercent()
-      draw()
+      # Only draw if there is no brush to dispatch the adjust event
+      draw() if not context.dombrush()
       return
       
     # If the tooltip dom is defined, track mousemovement on stage for tooltip

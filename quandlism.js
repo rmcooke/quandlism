@@ -348,7 +348,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawTooltip, lineHit;
+      var clearTooltip, draw, drawTooltip, lineHit, setScales;
       lines = selection.datum();
       canvasId = "canvas-stage-" + (++quandlism_id_ref);
       if (!(yAxis != null)) {
@@ -375,15 +375,15 @@
         xAxis.attr('id', "x-axis-" + canvasId);
         xAxis.call(context.xaxis().active(true));
       }
-      xStart = !xStart ? Math.floor(lines[0].length() * context.endPercent()) : xStart;
-      xEnd = !xEnd ? lines[0].length() : xEnd;
-      draw = function(lineId) {
-        var i, j, line, lineWidth, _i, _j, _len;
+      setScales = function() {
         extent = context.utility().getExtent(lines, xStart, xEnd);
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - padding, padding]);
         xScale.domain([xStart, xEnd]);
         xScale.range([padding, width - padding]);
+      };
+      draw = function(lineId) {
+        var i, j, line, lineWidth, _i, _j, _len;
         ctx.clearRect(0, 0, width, height);
         lineId = lineId != null ? lineId : -1;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
@@ -444,28 +444,36 @@
         $(context.domtooltip()).text('');
         draw();
       };
-      draw();
+      xStart = 0;
+      xEnd = width;
+      setScales();
+      if (!context.dombrush()) {
+        draw();
+      }
       context.on('respond.stage', function() {
         ctx.clearRect(0, 0, width, height);
         width = Math.floor(context.w() * quandlism_stage.w);
         height = Math.floor(context.h() * quandlism_stage.h);
         canvas.attr('width', width);
         canvas.attr('height', height);
+        setScales();
         draw();
       });
       context.on('adjust.stage', function(x1, x2) {
         xStart = x1 > 0 ? x1 : 0;
         xEnd = lines[0].length() > 2 ? x2 : lines[0].length() - 1;
+        setScales();
         draw();
       });
       context.on('toggle.stage', function() {
+        setScales();
         draw();
       });
       context.on('refresh.stage', function() {
         lines = selection.datum();
-        xEnd = lines[0].length();
-        xStart = Math.floor(lines[0].length() * context.endPercent());
-        draw();
+        if (!context.dombrush()) {
+          draw();
+        }
       });
       if (context.domtooltip() != null) {
         d3.select("#" + canvasId).on('mousemove', function(e) {
