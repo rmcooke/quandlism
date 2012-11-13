@@ -666,11 +666,13 @@
       });
       context.on('refresh.brush', function() {
         lines = selection.datum();
-        xStart = Math.ceil(width * context.endPercent());
+        checkDatasetLength();
+        xStart = dragEnabled ? Math.ceil(width * context.endPercent()) : 0;
         xStart0 = xStart;
-        brushWidth = Math.ceil(width * 0.2);
+        brushWidth = dragEnabled ? Math.ceil(width * 0.2) : width;
         brushWidth0 = brushWidth;
         setScales();
+        dispatchAdjust();
       });
       context.on("toggle.brush", function() {
         setScales();

@@ -156,11 +156,13 @@ QuandlismContext_.brush = () ->
     # Respond to refresh event
     context.on 'refresh.brush', () ->
       lines = selection.datum()
-      xStart = Math.ceil width*context.endPercent()
+      checkDatasetLength()
+      xStart = if dragEnabled then Math.ceil width*context.endPercent() else 0
       xStart0 = xStart
-      brushWidth = Math.ceil width*0.2
+      brushWidth = if dragEnabled then Math.ceil width*0.2 else width
       brushWidth0 = brushWidth
       setScales()
+      dispatchAdjust()      
       return
       
       
