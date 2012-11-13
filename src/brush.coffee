@@ -19,6 +19,7 @@ QuandlismContext_.brush = () ->
   lines         = []
   threshold     = 10
   dragging      = false
+  dragEnabled   = true
   stretching    = false
   stretchLimit   = 6
   stretchMin    = 0
@@ -101,6 +102,17 @@ QuandlismContext_.brush = () ->
       ctx.closePath()
       return
       
+    # If the number of points in the dataset is less than stretchLimit then do not allow
+    # user to re-size the area
+    checkDatasetLength = () =>
+      if (lines[0].length()-1) <= stretchLimit
+        xStart = 0
+        brushWidth0 = width
+        brushWidth = width
+        dragEnabled = false
+      else
+        dragEnabled = true
+        
     # Send the adjust event to the context
     dispatchAdjust = () =>
       x1 = xScale.invert xStart
@@ -118,6 +130,7 @@ QuandlismContext_.brush = () ->
       return
       
     setScales()
+    checkDatasetLength()
     dispatchAdjust()
     
     # Set drawing interval
@@ -126,13 +139,17 @@ QuandlismContext_.brush = () ->
     # Event listners
   
     # Respond to resized browser by recalculating key points and redrawing
+    # If dragEnabled is false, then reset xStart and brushWidth values to extremes
     context.on "respond.brush", () ->
       height0 = height
       width0 = width
       height = context.h()*quandlism_brush.h
       width = context.w()*quandlism_brush.w
-      xStart = Math.ceil xStart/width0*width
-      xStart0 = Math.ceil xStart0/width0*width
+      
+      xStart = if dragEnabled then Math.ceil xStart/width0*width else 0
+      xStart0 = if dragEnabled then Math.ceil xStart0/width0*width else xStart
+      brushWidth = if dragEnabled then Math.ceil brushWidth/width0*width else width
+      brushWidth0 = brushWidth
       setScales()
       return
       
@@ -184,12 +201,11 @@ QuandlismContext_.brush = () ->
     # Calculate various points for animating dragging and stretching
     canvas.on 'mousemove', (e) ->
       m = d3.mouse @
-    
       if dragging or stretching
         dragDiff = m[0]-touchPoint
-        if dragging
+        if dragging and dragEnabled
           xStart = xStart0 + dragDiff
-        else 
+        else if stretching
           # Calculate new brushWidth and xStart values, ensuring the the brush does not have a width less than stretchMin
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
           brushWidth = if activeHandle is -1 then brushWidth0 - dragDiff else brushWidth0 + dragDiff

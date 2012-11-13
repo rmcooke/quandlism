@@ -538,7 +538,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -560,13 +560,14 @@
     lines = [];
     threshold = 10;
     dragging = false;
+    dragEnabled = true;
     stretching = false;
     stretchLimit = 6;
     stretchMin = 0;
     activeHandle = 0;
     touchPoint = null;
     brush = function(selection) {
-      var clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
+      var checkDatasetLength, clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
@@ -625,6 +626,16 @@
         ctx.fillRect(xStart + brushWidth, 0, handleWidth, height);
         ctx.closePath();
       };
+      checkDatasetLength = function() {
+        if ((lines[0].length() - 1) <= stretchLimit) {
+          xStart = 0;
+          brushWidth0 = width;
+          brushWidth = width;
+          return dragEnabled = false;
+        } else {
+          return dragEnabled = true;
+        }
+      };
       dispatchAdjust = function() {
         var x1, x2;
         x1 = xScale.invert(xStart);
@@ -639,6 +650,7 @@
         brushWidth0 = brushWidth;
       };
       setScales();
+      checkDatasetLength();
       dispatchAdjust();
       setInterval(update, 50);
       context.on("respond.brush", function() {
@@ -646,8 +658,10 @@
         width0 = width;
         height = context.h() * quandlism_brush.h;
         width = context.w() * quandlism_brush.w;
-        xStart = Math.ceil(xStart / width0 * width);
-        xStart0 = Math.ceil(xStart0 / width0 * width);
+        xStart = dragEnabled ? Math.ceil(xStart / width0 * width) : 0;
+        xStart0 = dragEnabled ? Math.ceil(xStart0 / width0 * width) : xStart;
+        brushWidth = dragEnabled ? Math.ceil(brushWidth / width0 * width) : width;
+        brushWidth0 = brushWidth;
         setScales();
       });
       context.on('refresh.brush', function() {
@@ -687,9 +701,9 @@
         m = d3.mouse(this);
         if (dragging || stretching) {
           dragDiff = m[0] - touchPoint;
-          if (dragging) {
+          if (dragging && dragEnabled) {
             xStart = xStart0 + dragDiff;
-          } else {
+          } else if (stretching) {
             if (activeHandle !== 0 && activeHandle !== (-1) && activeHandle !== 1) {
               throw "Error: Unknown stretching direction";
             }
