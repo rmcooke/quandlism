@@ -1,20 +1,21 @@
 QuandlismContext_.stage = () ->
-  context    = @
-  canvasId   = null
-  lines      = []
-  width      = Math.floor context.w() * quandlism_stage.w
-  height     = Math.floor context.h() * quandlism_stage.h
-  xScale     = d3.scale.linear()
-  yScale     = d3.scale.linear()
-  xAxis      = null
-  yAxis      = null
-  padding    = 10
-  extent     = []
-  xStart     = 0
-  xEnd       = width
-  threshold  = 10
-  canvas     = null
-  ctx        = null
+  context     = @
+  canvasId    = null
+  lines       = []
+  width       = Math.floor context.w() * quandlism_stage.w
+  height      = Math.floor context.h() * quandlism_stage.h
+  xScale      = d3.scale.linear()
+  yScale      = d3.scale.linear()
+  xAxis       = null
+  yAxis       = d3.svg.axis().orient('left').scale yScale
+  yAxisDOM    = null
+  padding     = 10
+  extent      = []
+  xStart      = 0
+  xEnd        = width
+  threshold   = 10
+  canvas      = null
+  ctx         = null
   
   
   stage = (selection) =>
@@ -23,14 +24,13 @@ QuandlismContext_.stage = () ->
     canvasId = "canvas-stage-#{++quandlism_id_ref}"
     
     # If no y axis is defined, create it
-    if not yAxis?
-      yAxis = selection.append 'div'
-      yAxis.datum lines
-      yAxis.attr 'height', context.h()*quandlism_yaxis.h
-      yAxis.attr 'width', context.w()*quandlism_yaxis.w
-      yAxis.attr 'class', 'axis y'
-      yAxis.attr 'id', "y-axis-#{canvasId}"
-      yAxis.call context.yaxis().orient('left')
+    if not yAxisDOM?
+      yAxisDOM = selection.append 'svg'
+      yAxisDOM.attr 'class', 'y axis'
+      yAxisDOM.attr 'id', "y-axis-#{canvasId}"
+      yAxisDOM.attr 'width', context.w()*quandlism_yaxis.w
+      yAxisDOM.attr 'height', "100%"
+
        
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -52,6 +52,9 @@ QuandlismContext_.stage = () ->
       xAxis.call context.xaxis().active true
     
 
+    # Axis setups
+    yAxis.tickSize 5, 3, 0
+
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       # Calculate the extent for the area between xStart and xEnd
@@ -64,10 +67,20 @@ QuandlismContext_.stage = () ->
       xScale.domain [xStart, xEnd]
       xScale.range [padding, (width - padding)]
       return
+    
+    # Draw axis
+    drawAxis = () =>
+      # Remove old yAxis and redraw
+      yAxisDOM.selectAll('*').remove()
+      yg = yAxisDOM.append 'g'
+      yg.attr 'transform', "translate(#{context.w()*quandlism_yaxis.w-1}, 10)"
+      yg.call yAxis
       
     # Draws the stage data
     draw = (lineId) =>
     
+      drawAxis()
+      
       # Clear canvas before drawing
       ctx.clearRect 0, 0, width, height
       
@@ -157,6 +170,7 @@ QuandlismContext_.stage = () ->
       height = Math.floor context.h() * quandlism_stage.h
       canvas.attr 'width', width
       canvas.attr 'height', height
+      yAxisDOM.attr 'width', Math.floor context.w()*quandlism_yaxis.w
       setScales()
       draw()
       return
