@@ -538,7 +538,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, strechLimit, stretchLimit, stretchLocked, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -560,14 +560,13 @@
     lines = [];
     threshold = 10;
     dragging = false;
-    strechLimit = 6;
     stretching = false;
-    stretchLocked = false;
     stretchLimit = 6;
+    stretchMin = 0;
     activeHandle = 0;
     touchPoint = null;
     brush = function(selection) {
-      var checkStretchState, clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
+      var clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
@@ -587,17 +586,12 @@
         yScale.range([height, 0]);
         xScale.domain([0, lines[0].length() - 1]);
         xScale.range([0, width]);
+        stretchMin = Math.floor(xScale(stretchLimit));
       };
       update = function() {
         clearCanvas();
         draw();
         drawBrush();
-      };
-      checkStretchState = function() {
-        var x1, x2;
-        x1 = Math.ceil(xScale.invert(xStart));
-        x2 = Math.ceil(xScale.invert(xStart + brushWidth));
-        return stretchLocked = Math.abs((x2 - x1) <= stretchLimit);
       };
       clearCanvas = function() {
         ctx.clearRect(0, 0, width0, height0);
@@ -689,35 +683,25 @@
         resetState();
       });
       return canvas.on('mousemove', function(e) {
-        var dragDiff, m, xCurr, xLeftHandle, xRightHandle;
+        var dragDiff, m;
         m = d3.mouse(this);
         if (dragging || stretching) {
           if (dragging) {
             xStart = xStart0 + (m[0] - touchPoint);
-          } else if (stretching) {
+          } else {
+            if (activeHandle !== 0 && activeHandle !== (-1) && activeHandle !== 1) {
+              throw "Error: Unknown stretching direction";
+            }
             dragDiff = m[0] - touchPoint;
+            brushWidth = activeHandle === -1 ? brushWidth0 - dragDiff : brushWidth0 + dragDiff;
             if (activeHandle === -1) {
               xStart = xStart0 + dragDiff;
-              brushWidth = brushWidth0 - dragDiff;
-              if (dragDiff > 0) {
-                xCurr = xScale.invert(m[0]);
-                xRightHandle = xScale.invert(xStart0 + brushWidth0);
-                if (Math.abs((xRightHandle - xCurr) <= stretchLimit)) {
-                  xStart = Math.ceil(xScale(xRightHandle - stretchLimit));
-                  brushWidth = xScale(stretchLimit);
-                }
+            }
+            if (brushWidth <= stretchMin) {
+              if (activeHandle === -1) {
+                xStart = xStart + (brushWidth - stretchMin);
               }
-            } else if (activeHandle === 1) {
-              brushWidth = brushWidth0 + dragDiff;
-              if (dragDiff < 0) {
-                xCurr = xScale.invert(m[0]);
-                xLeftHandle = xScale.invert(xStart0);
-                if (Math.abs((xCurr - xLeftHandle) <= stretchLimit)) {
-                  brushWidth = xScale(stretchLimit);
-                }
-              }
-            } else {
-              throw "Error: Unknown stretching direction";
+              brushWidth = stretchMin;
             }
           }
           dispatchAdjust();
@@ -743,6 +727,13 @@
         return stretchLimit;
       }
       stretchLimit = _;
+      return brush;
+    };
+    brush.handleWidth = function(_) {
+      if (!(_ != null)) {
+        return handleWidth;
+      }
+      handleWidth = _;
       return brush;
     };
     return brush;

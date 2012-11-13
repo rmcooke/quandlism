@@ -19,10 +19,9 @@ QuandlismContext_.brush = () ->
   lines         = []
   threshold     = 10
   dragging      = false
-  strechLimit   = 6
   stretching    = false
-  stretchLocked = false
-  stretchLimit  = 6
+  stretchLimit   = 6
+  stretchMin    = 0
   activeHandle  = 0
   touchPoint    = null
   
@@ -55,6 +54,9 @@ QuandlismContext_.brush = () ->
       yScale.range [height, 0]
       xScale.domain [0, lines[0].length()-1]
       xScale.range [0, width]
+      
+      # Set the minimum brush size when scale is calculated
+      stretchMin = Math.floor xScale stretchLimit
       return
       
     # Update
@@ -63,13 +65,6 @@ QuandlismContext_.brush = () ->
       draw()
       drawBrush()
       return
-      
-    # Checks the number of dataset points that are going to be displayed. If below the stretching threshold
-    # then lock contiued stretching
-    checkStretchState = () =>
-      x1 = Math.ceil xScale.invert xStart
-      x2 = Math.ceil xScale.invert (xStart+brushWidth)
-      stretchLocked = Math.abs (x2-x1) <= stretchLimit
       
     # Clear the drawing canvas
     clearCanvas = () =>
@@ -189,34 +184,19 @@ QuandlismContext_.brush = () ->
     # Calculate various points for animating dragging and stretching
     canvas.on 'mousemove', (e) ->
       m = d3.mouse @
-
-      
+    
       if dragging or stretching
         if dragging
           xStart = xStart0 + (m[0]-touchPoint)
-        else if stretching
-          # Check stretchLocked value. Only allow stretching if it is to make the brushWidth larger
+        else 
+          # Calculate new brushWidth and xStart values, ensuring the the brush does not have a width less than stretchMin
+          throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
           dragDiff = m[0] - touchPoint
-          if activeHandle is -1
-            xStart = xStart0 + dragDiff
-            brushWidth = brushWidth0 - dragDiff
-            # Ensure that xStart and brushWidth values don't result in less than stretchLimit datasets being shown on stage
-            if dragDiff > 0
-              xCurr =  xScale.invert m[0]
-              xRightHandle =  xScale.invert xStart0+brushWidth0
-              if Math.abs (xRightHandle-xCurr) <= stretchLimit
-                xStart =  Math.ceil xScale xRightHandle-stretchLimit
-                brushWidth =  xScale stretchLimit
-          else if activeHandle is 1
-            brushWidth = brushWidth0 + dragDiff
-            # Ensure brushWidth value doesn't result in less than stretchlimit datasets being shown on the stage
-            if dragDiff < 0
-              xCurr =  xScale.invert m[0]
-              xLeftHandle =  xScale.invert xStart0
-              if Math.abs (xCurr-xLeftHandle) <= stretchLimit
-                brushWidth =  xScale stretchLimit
-          else
-            throw("Error: Unknown stretching direction")
+          brushWidth = if activeHandle is -1 then brushWidth0 - dragDiff else brushWidth0 + dragDiff
+          xStart = xStart0 + dragDiff if activeHandle is -1
+          if brushWidth <= stretchMin
+            xStart = xStart + (brushWidth-stretchMin) if activeHandle is -1
+            brushWidth = stretchMin
         
         dispatchAdjust()
 
@@ -239,6 +219,10 @@ QuandlismContext_.brush = () ->
     stretchLimit = _
     brush
     
+  brush.handleWidth = (_) =>
+    if not _? then return handleWidth
+    handleWidth = _
+    brush
   
   brush
       
