@@ -1,18 +1,19 @@
    
 quandlism.context = () ->
-  context      = new QuandlismContext()
-  w            = null
-  h            = null
-  dom          = null
-  domstage     = null
-  dombrush     = null
-  domlegend    = null
-  domtooltip   = null
-  endPercent   = 0.80
-  startPoint   = 0.75
-  event        = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
-  colorScale   = d3.scale.category20()
-  lines        = []
+  context       = new QuandlismContext()
+  w             = null
+  h             = null
+  dom           = null
+  domstage      = null
+  dombrush      = null
+  domlegend     = null
+  domtooltip    = null
+  endPercent    = 0.80
+  padding       = 0 
+  startPoint    = 0.75
+  event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
+  colorScale    = d3.scale.category20()
+  lines         = []
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
@@ -97,6 +98,10 @@ quandlism.context = () ->
     domtooltip = _
     context
     
+  context.padding = (_) =>
+    if not _? then return padding
+    padding = _
+    context
     
   # Event listner and dispatchers
   

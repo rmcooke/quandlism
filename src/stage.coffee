@@ -11,7 +11,6 @@ QuandlismContext_.stage = () ->
   yAxis       = d3.svg.axis().orient('left').scale yScale
   yAxisDOM    = null
   xAxisDOM    = null
-  padding     = 10
   extent      = []
   xStart      = 0
   xEnd        = width
@@ -25,13 +24,15 @@ QuandlismContext_.stage = () ->
     lines = selection.datum()
     canvasId = "canvas-stage-#{++quandlism_id_ref}"
     
+
+    
     # If no y axis is defined, create it
     if not yAxisDOM?
-      yAxisDOM = selection.append 'svg'
+      yAxisDOM = selection.insert 'svg'
       yAxisDOM.attr 'class', 'y axis'
       yAxisDOM.attr 'id', "y-axis-#{canvasId}"
       yAxisDOM.attr 'width', context.w()*quandlism_yaxis.w
-      yAxisDOM.attr 'height', "100%"
+      yAxisDOM.attr 'height', context.h()*quandlism_yaxis.h
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -40,7 +41,8 @@ QuandlismContext_.stage = () ->
     canvas.attr 'class', 'stage'
     canvas.attr 'id', canvasId
     
-    ctx = canvas.node().getContext '2d'    
+    ctx = canvas.node().getContext '2d'
+   
 
     if not xAxisDOM?
       xAxisDOM = selection.append 'svg'
@@ -48,10 +50,14 @@ QuandlismContext_.stage = () ->
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
       xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
       xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
+      xAxisDOM.attr 'style', "margin-left: #{context.w()*quandlism_yaxis.w}"
       
     # Axis setups
     yAxis.tickSize 5, 3, 0
+    yAxis.ticks Math.floor context.h()*quandlism_yaxis.h / 40
     xAxis.tickSize 5, 3, 0
+    
+    xAxis.ticks 5
     xAxis.tickFormat d3.time.format "%b %d, %Y"
     
     # Calculate the range and domain of the x and y scales
@@ -62,12 +68,12 @@ QuandlismContext_.stage = () ->
       
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
-      yScale.range [(height - padding), padding]
+      yScale.range [(height - context.padding()), context.padding()]
 
       xScale.domain [xStart, xEnd]
-      xScale.range [padding, (width-padding)]
+      xScale.range [context.padding(), (width-context.padding())]
       xDateScale.domain [parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]
-      xDateScale.range [padding, (width-padding)]
+      xDateScale.range [context.padding(), (width-context.padding())]
    
       return
     
@@ -177,8 +183,14 @@ QuandlismContext_.stage = () ->
       height = Math.floor context.h() * quandlism_stage.h
       canvas.attr 'width', width
       canvas.attr 'height', height
+      
+      # Adjust y axis width
       yAxisDOM.attr 'width', Math.floor context.w()*quandlism_yaxis.w
+      
+      # Adjust x axis with and marign
       xAxisDOM.attr 'width', Math.floor context.w()*quandlism_xaxis.w
+      xAxisDOM.attr 'style', "margin-left: #{context.w()*quandlism_yaxis.w}"
+      
       setScales()
       draw()
       return
@@ -189,7 +201,6 @@ QuandlismContext_.stage = () ->
       xEnd = if lines[0].length() > x2 then x2 else lines[0].length()-1
       setScales()
       draw()
-      console.log xAxis.tickValues()
       return
       
     # Respond to toggle event by re-drawing
@@ -218,11 +229,6 @@ QuandlismContext_.stage = () ->
 
     
   # Expose attributes via getters/setters
-  stage.padding = (_) =>
-    if not _? then return padding
-    padding = _
-    stage
-    
   stage.canvasId = (_) =>
     if not _? then return canvasId
     canvasId = _

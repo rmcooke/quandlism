@@ -34,7 +34,7 @@
   
   #chart #stage {
     
-    float: left;
+    float: right;
   }
   
   #chart #stage .y.axis {
@@ -50,7 +50,7 @@
   }
 
   #chart #brush {
-    float: right;
+    float: left;
     
   }
   
@@ -91,7 +91,7 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip("#tooltip")
+  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend')  .domtooltip("#tooltip")
   
   d3.json('/data/oil.json', function(data) {    
     lines = context.utility().createLines(data);

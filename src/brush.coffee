@@ -36,7 +36,7 @@ QuandlismContext_.brush = () ->
     canvasId = "canvas-brush-#{++quandlism_id_ref}"
 
     # append canvas and get reference to element and drawing context
-    canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId)
+    canvas = selection.append('canvas').attr('id', canvasId)
     ctx = canvas.node().getContext '2d'
     
     # if xAxis not defined, create it
@@ -47,9 +47,14 @@ QuandlismContext_.brush = () ->
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
       xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
       xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
+      
     
     # Setup xAxis
     xAxis.tickSize 5, 3, 0
+    
+    console.log context.dombrush()
+    # set a margin for the brush element so the stage aligns
+    $("#{context.dombrush()}").css('marginLeft', "#{context.w()*quandlism_yaxis.w}px")
     
     # Set domain and range for x and y scales
     setScales = () =>
@@ -57,11 +62,11 @@ QuandlismContext_.brush = () ->
       parseDate = context.utility().parseDate lines[0].dateAt 0
     
       yScale.domain [extent[0], extent[1]]
-      yScale.range [height, 0]
+      yScale.range [height-context.padding(), context.padding()]
       xScale.domain [0, lines[0].length()-1]
-      xScale.range [0, width]
+      xScale.range [context.padding(), width-context.padding()]
       
-      xDateScale.range [0, width]
+      xDateScale.range [context.padding(), width-context.padding()]
       xDateScale.domain [parseDate(lines[0].dateAt(0)), parseDate(lines[0].dateAt(lines[0].length()-1))]
             
       # Set the minimum brush size when scale is calculated
@@ -99,6 +104,8 @@ QuandlismContext_.brush = () ->
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
+      
+    
       
     # Draw the paths and points
     draw = () =>
@@ -155,6 +162,8 @@ QuandlismContext_.brush = () ->
       xStart0 = xStart
       brushWidth0 = brushWidth
       return
+      
+    
      
     #  
     # Intial drawing of brush
@@ -180,7 +189,13 @@ QuandlismContext_.brush = () ->
       xStart0 = xStart0/width0*width
       brushWidth = brushWidth/width0*width
       brushWidth0 = brushWidth
+      
+      # 
+      xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
+      $("#{context.dombrush()}").css('marginLeft', "#{context.w()*quandlism_yaxis.w}px")
+      
       setScales()
+      drawAxis()
       return
       
     # Respond to refresh event

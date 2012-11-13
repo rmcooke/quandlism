@@ -7,7 +7,7 @@
   };
 
   quandlism.context = function() {
-    var colorScale, context, dom, dombrush, domlegend, domstage, domtooltip, endPercent, event, h, lines, startPoint, w,
+    var colorScale, context, dom, dombrush, domlegend, domstage, domtooltip, endPercent, event, h, lines, padding, startPoint, w,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -18,6 +18,7 @@
     domlegend = null;
     domtooltip = null;
     endPercent = 0.80;
+    padding = 0;
     startPoint = 0.75;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorScale = d3.scale.category20();
@@ -129,6 +130,13 @@
       domtooltip = _;
       return context;
     };
+    context.padding = function(_) {
+      if (!(_ != null)) {
+        return padding;
+      }
+      padding = _;
+      return context;
+    };
     context.respond = _.throttle(function() {
       return event.respond.call(context, 500);
     });
@@ -181,22 +189,22 @@
   quandlism_id_ref = 0;
 
   quandlism_stage = {
-    w: 0.87,
+    w: 0.90,
     h: 0.60
   };
 
   quandlism_brush = {
-    w: 0.87,
-    h: 0.10
+    w: 0.90,
+    h: 0.20
   };
 
   quandlism_xaxis = {
-    w: 0.87,
-    h: 0.15
+    w: 0.90,
+    h: 0.10
   };
 
   quandlism_yaxis = {
-    w: 0.12,
+    w: 0.10,
     h: 0.60
   };
 
@@ -329,7 +337,7 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, extent, height, lines, padding, stage, threshold, width, xAxis, xAxisDOM, xDateScale, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
+    var canvas, canvasId, context, ctx, extent, height, lines, stage, threshold, width, xAxis, xAxisDOM, xDateScale, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
       _this = this;
     context = this;
     canvasId = null;
@@ -343,7 +351,6 @@
     yAxis = d3.svg.axis().orient('left').scale(yScale);
     yAxisDOM = null;
     xAxisDOM = null;
-    padding = 10;
     extent = [];
     xStart = 0;
     xEnd = width;
@@ -355,11 +362,11 @@
       lines = selection.datum();
       canvasId = "canvas-stage-" + (++quandlism_id_ref);
       if (!(yAxisDOM != null)) {
-        yAxisDOM = selection.append('svg');
+        yAxisDOM = selection.insert('svg');
         yAxisDOM.attr('class', 'y axis');
         yAxisDOM.attr('id', "y-axis-" + canvasId);
         yAxisDOM.attr('width', context.w() * quandlism_yaxis.w);
-        yAxisDOM.attr('height', "100%");
+        yAxisDOM.attr('height', context.h() * quandlism_yaxis.h);
       }
       canvas = selection.append('canvas');
       canvas.attr('width', width);
@@ -373,20 +380,23 @@
         xAxisDOM.attr('id', "x-axis-" + canvasId);
         xAxisDOM.attr('width', context.w() * quandlism_xaxis.w);
         xAxisDOM.attr('height', context.h() * quandlism_xaxis.h);
+        xAxisDOM.attr('style', "margin-left: " + (context.w() * quandlism_yaxis.w));
       }
       yAxis.tickSize(5, 3, 0);
+      yAxis.ticks(Math.floor(context.h() * quandlism_yaxis.h / 40));
       xAxis.tickSize(5, 3, 0);
+      xAxis.ticks(5);
       xAxis.tickFormat(d3.time.format("%b %d, %Y"));
       setScales = function() {
         var parseDate;
         extent = context.utility().getExtent(lines, xStart, xEnd);
         parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
-        yScale.range([height - padding, padding]);
+        yScale.range([height - context.padding(), context.padding()]);
         xScale.domain([xStart, xEnd]);
-        xScale.range([padding, width - padding]);
+        xScale.range([context.padding(), width - context.padding()]);
         xDateScale.domain([parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]);
-        xDateScale.range([padding, width - padding]);
+        xDateScale.range([context.padding(), width - context.padding()]);
       };
       drawAxis = function() {
         var xg, yg;
@@ -472,6 +482,7 @@
         canvas.attr('height', height);
         yAxisDOM.attr('width', Math.floor(context.w() * quandlism_yaxis.w));
         xAxisDOM.attr('width', Math.floor(context.w() * quandlism_xaxis.w));
+        xAxisDOM.attr('style', "margin-left: " + (context.w() * quandlism_yaxis.w));
         setScales();
         draw();
       });
@@ -480,7 +491,6 @@
         xEnd = lines[0].length() > x2 ? x2 : lines[0].length() - 1;
         setScales();
         draw();
-        console.log(xAxis.tickValues());
       });
       context.on('toggle.stage', function() {
         setScales();
@@ -503,13 +513,6 @@
           }
         });
       }
-    };
-    stage.padding = function(_) {
-      if (!(_ != null)) {
-        return padding;
-      }
-      padding = _;
-      return stage;
     };
     stage.canvasId = function(_) {
       if (!(_ != null)) {
@@ -605,7 +608,7 @@
       var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, resetState, setBrushValues, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
-      canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
+      canvas = selection.append('canvas').attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
       if (!(xAxisDOM != null)) {
         xAxisDOM = selection.append('svg');
@@ -615,15 +618,17 @@
         xAxisDOM.attr('width', context.w() * quandlism_xaxis.w);
       }
       xAxis.tickSize(5, 3, 0);
+      console.log(context.dombrush());
+      $("" + (context.dombrush())).css('marginLeft', "" + (context.w() * quandlism_yaxis.w) + "px");
       setScales = function() {
         var parseDate;
         extent = context.utility().getExtent(lines, null, null);
         parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
-        yScale.range([height, 0]);
+        yScale.range([height - context.padding(), context.padding()]);
         xScale.domain([0, lines[0].length() - 1]);
-        xScale.range([0, width]);
-        xDateScale.range([0, width]);
+        xScale.range([context.padding(), width - context.padding()]);
+        xDateScale.range([context.padding(), width - context.padding()]);
         xDateScale.domain([parseDate(lines[0].dateAt(0)), parseDate(lines[0].dateAt(lines[0].length() - 1))]);
         stretchMin = Math.floor(xScale(stretchLimit));
       };
@@ -722,7 +727,10 @@
         xStart0 = xStart0 / width0 * width;
         brushWidth = brushWidth / width0 * width;
         brushWidth0 = brushWidth;
+        xAxisDOM.attr('width', context.w() * quandlism_xaxis.w);
+        $("" + (context.dombrush())).css('marginLeft', "" + (context.w() * quandlism_yaxis.w) + "px");
         setScales();
+        drawAxis();
       });
       context.on('refresh.brush', function() {
         lines = selection.datum();
