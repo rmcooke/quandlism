@@ -24,7 +24,7 @@ QuandlismContext_.utility = () ->
     else
       lines = context.lines()
       for line, i in lines
-        line.values lineData[i]
+        line.values lineData[i].reverse()
       
     lines
 

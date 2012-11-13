@@ -931,9 +931,7 @@
     utility = function() {};
     utility.createLines = function(data) {
       var i, keys, line, lineData, lines, _i, _len;
-      console.log(data);
       keys = data.columns.slice(1);
-      console.log(keys);
       lineData = _.map(keys, function(key, i) {
         return _.map(data.data, function(d) {
           return {
@@ -953,7 +951,7 @@
         lines = context.lines();
         for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
           line = lines[i];
-          line.values(lineData[i]);
+          line.values(lineData[i].reverse());
         }
       }
       return lines;
