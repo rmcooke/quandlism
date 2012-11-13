@@ -140,10 +140,11 @@ QuandlismContext_.stage = () ->
       draw()
       return
       
-    # Initial draw
-    setScales()
-    # If no brush, then draw.
-    draw() if not context.dombrush()
+    # 
+    # Intial draw. If there is a brush in the context, it will dispatch the adjust event and force the 
+    # stage to draw. If there isn't, force the stage to draw
+    #
+    setScales() and draw() if not context.dombrush()
       
     # Callbacks / Event bindings
     # Listen for events dispatched from context, or listen for events in canvas
@@ -186,6 +187,7 @@ QuandlismContext_.stage = () ->
       d3.select("##{canvasId}").on 'mousemove', (e) ->
         hit = lineHit d3.mouse @ 
         if hit isnt false then drawTooltip Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
+        return
  
     return
     

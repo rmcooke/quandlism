@@ -342,8 +342,8 @@
     yAxis = null;
     padding = 10;
     extent = [];
-    xStart = null;
-    xEnd = null;
+    xStart = 0;
+    xEnd = width;
     threshold = 10;
     canvas = null;
     ctx = null;
@@ -444,11 +444,8 @@
         $(context.domtooltip()).text('');
         draw();
       };
-      xStart = 0;
-      xEnd = width;
-      setScales();
       if (!context.dombrush()) {
-        draw();
+        draw() && setScales();
       }
       context.on('respond.stage', function() {
         ctx.clearRect(0, 0, width, height);
@@ -480,9 +477,9 @@
           var hit;
           hit = lineHit(d3.mouse(this));
           if (hit !== false) {
-            return drawTooltip(Math.round(xScale.invert(hit.x)), hit.line, hit.color);
+            drawTooltip(Math.round(xScale.invert(hit.x)), hit.line, hit.color);
           } else {
-            return clearTooltip();
+            clearTooltip();
           }
         });
       }
