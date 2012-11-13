@@ -252,6 +252,16 @@
       }
       return [min, max];
     };
+    line.dates = function(start, end) {
+      var v, _i, _len, _ref, _results;
+      _ref = values.slice(start, end + 1 || 9e9);
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        v = _ref[_i];
+        _results.push(v.date);
+      }
+      return _results;
+    };
     line.length = function() {
       return values.length;
     };
@@ -329,7 +339,7 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, extent, height, lines, padding, stage, threshold, width, xAxis, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
+    var canvas, canvasId, context, ctx, extent, height, lines, padding, stage, threshold, width, xAxis, xAxisDOM, xDateScale, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
       _this = this;
     context = this;
     canvasId = null;
@@ -337,10 +347,12 @@
     width = Math.floor(context.w() * quandlism_stage.w);
     height = Math.floor(context.h() * quandlism_stage.h);
     xScale = d3.scale.linear();
+    xDateScale = d3.time.scale();
     yScale = d3.scale.linear();
-    xAxis = null;
+    xAxis = d3.svg.axis().orient('bottom').scale(xDateScale);
     yAxis = d3.svg.axis().orient('left').scale(yScale);
     yAxisDOM = null;
+    xAxisDOM = null;
     padding = 10;
     extent = [];
     xStart = 0;
@@ -365,29 +377,36 @@
       canvas.attr('class', 'stage');
       canvas.attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
-      if (!(xAxis != null)) {
-        xAxis = selection.append('div');
-        xAxis.datum(lines);
-        xAxis.attr('width', context.w() * quandlism_xaxis.w);
-        xAxis.attr('height', context.h() * quandlism_xaxis.h);
-        xAxis.attr('class', 'x axis');
-        xAxis.attr('id', "x-axis-" + canvasId);
-        xAxis.call(context.xaxis().active(true));
+      if (!(xAxisDOM != null)) {
+        xAxisDOM = selection.append('svg');
+        xAxisDOM.attr('class', 'x axis');
+        xAxisDOM.attr('id', "x-axis-" + canvasId);
+        xAxisDOM.attr('width', context.w() * quandlism_xaxis.w);
+        xAxisDOM.attr('height', context.h() * quandlism_xaxis.h);
       }
       yAxis.tickSize(5, 3, 0);
+      xAxis.tickSize(5, 3, 0);
+      xAxis.tickFormat(d3.time.format("%b %d, %Y"));
       setScales = function() {
+        var parseDate;
         extent = context.utility().getExtent(lines, xStart, xEnd);
+        parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - padding, padding]);
         xScale.domain([xStart, xEnd]);
         xScale.range([padding, width - padding]);
+        xDateScale.domain([parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]);
+        xDateScale.range([padding, width - padding]);
       };
       drawAxis = function() {
-        var yg;
+        var xg, yg;
         yAxisDOM.selectAll('*').remove();
         yg = yAxisDOM.append('g');
         yg.attr('transform', "translate(" + (context.w() * quandlism_yaxis.w - 1) + ", 10)");
-        return yg.call(yAxis);
+        yg.call(yAxis);
+        xAxisDOM.selectAll('*').remove();
+        xg = xAxisDOM.append('g');
+        return xg.call(xAxis);
       };
       draw = function(lineId) {
         var i, j, line, lineWidth, _i, _j, _len;
@@ -462,6 +481,7 @@
         canvas.attr('width', width);
         canvas.attr('height', height);
         yAxisDOM.attr('width', Math.floor(context.w() * quandlism_yaxis.w));
+        xAxisDOM.attr('width', Math.floor(context.w() * quandlism_xaxis.w));
         setScales();
         draw();
       });
@@ -470,6 +490,7 @@
         xEnd = lines[0].length() > x2 ? x2 : lines[0].length() - 1;
         setScales();
         draw();
+        console.log(xAxis.tickValues());
       });
       context.on('toggle.stage', function() {
         setScales();

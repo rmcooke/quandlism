@@ -35,6 +35,10 @@ QuandlismContext_.line = (data) ->
       
     [min, max]
     
+    
+  line.dates = (start, end) =>
+    (v.date for v in values[start..end])
+    
   # Return the number of datapoints in the line
   line.length = () =>
     values.length

@@ -5,10 +5,12 @@ QuandlismContext_.stage = () ->
   width       = Math.floor context.w() * quandlism_stage.w
   height      = Math.floor context.h() * quandlism_stage.h
   xScale      = d3.scale.linear()
+  xDateScale  = d3.time.scale()
   yScale      = d3.scale.linear()
-  xAxis       = null
+  xAxis       = d3.svg.axis().orient('bottom').scale xDateScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
   yAxisDOM    = null
+  xAxisDOM    = null
   padding     = 10
   extent      = []
   xStart      = 0
@@ -31,7 +33,6 @@ QuandlismContext_.stage = () ->
       yAxisDOM.attr 'width', context.w()*quandlism_yaxis.w
       yAxisDOM.attr 'height', "100%"
 
-       
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
     canvas.attr 'width', width
@@ -39,33 +40,35 @@ QuandlismContext_.stage = () ->
     canvas.attr 'class', 'stage'
     canvas.attr 'id', canvasId
     
-    ctx = canvas.node().getContext '2d'
-    
-    # If there is not x-axis defined, create one for the stage
-    if not xAxis?
-      xAxis = selection.append('div')
-      xAxis.datum lines
-      xAxis.attr 'width', context.w()*quandlism_xaxis.w
-      xAxis.attr 'height', context.h()*quandlism_xaxis.h
-      xAxis.attr 'class', 'x axis'
-      xAxis.attr 'id', "x-axis-#{canvasId}"
-      xAxis.call context.xaxis().active true
-    
+    ctx = canvas.node().getContext '2d'    
 
+    if not xAxisDOM?
+      xAxisDOM = selection.append 'svg'
+      xAxisDOM.attr 'class', 'x axis'
+      xAxisDOM.attr 'id', "x-axis-#{canvasId}"
+      xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
+      xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
+      
     # Axis setups
     yAxis.tickSize 5, 3, 0
-
+    xAxis.tickSize 5, 3, 0
+    xAxis.tickFormat d3.time.format "%b %d, %Y"
+    
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       # Calculate the extent for the area between xStart and xEnd
       extent = context.utility().getExtent lines, xStart, xEnd
+      parseDate = context.utility().parseDate lines[0].dateAt 0
       
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
       yScale.range [(height - padding), padding]
 
       xScale.domain [xStart, xEnd]
-      xScale.range [padding, (width - padding)]
+      xScale.range [padding, (width-padding)]
+      xDateScale.domain [parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]
+      xDateScale.range [padding, (width-padding)]
+   
       return
     
     # Draw axis
@@ -75,6 +78,10 @@ QuandlismContext_.stage = () ->
       yg = yAxisDOM.append 'g'
       yg.attr 'transform', "translate(#{context.w()*quandlism_yaxis.w-1}, 10)"
       yg.call yAxis
+      
+      xAxisDOM.selectAll('*').remove()
+      xg = xAxisDOM.append 'g'
+      xg.call xAxis
       
     # Draws the stage data
     draw = (lineId) =>
@@ -171,6 +178,7 @@ QuandlismContext_.stage = () ->
       canvas.attr 'width', width
       canvas.attr 'height', height
       yAxisDOM.attr 'width', Math.floor context.w()*quandlism_yaxis.w
+      xAxisDOM.attr 'width', Math.floor context.w()*quandlism_xaxis.w
       setScales()
       draw()
       return
@@ -181,6 +189,7 @@ QuandlismContext_.stage = () ->
       xEnd = if lines[0].length() > x2 then x2 else lines[0].length()-1
       setScales()
       draw()
+      console.log xAxis.tickValues()
       return
       
     # Respond to toggle event by re-drawing
