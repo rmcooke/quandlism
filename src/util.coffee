@@ -1,6 +1,6 @@
 QuandlismContext_.utility = () ->
   
-  @context = @
+  context = @
   
   utility = () -> return
 
@@ -18,16 +18,15 @@ QuandlismContext_.utility = () ->
           num: +d[(i+1)]
         }
         
-    if not @context.lines().length
+    if not context.lines().length
       lines = _.map keys, (key, i) =>
-        @context.line {name: key, values: lineData[i]}
+        context.line {name: key, values: lineData[i]}
     else
-      lines = @context.lines()
+      lines = context.lines()
       for line, i in lines
         line.values lineData[i]
       
     lines
-    # Before returning lines, check if line with that id already exists. Maintain the visiblity state 
 
       
   # Calculates the minimum and maxium values for all of the lines in the lines array
@@ -49,7 +48,7 @@ QuandlismContext_.utility = () ->
   # 
   # Returns a string hex code
   utility.getColor = (i) =>
-    s = @context.colorScale()
+    s = context.colorScale()
     s i
     
   # Formats a number with commas

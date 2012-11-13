@@ -21,9 +21,9 @@
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorScale = d3.scale.category20();
     lines = [];
-    context.attachData = function(lines) {
+    context.attachData = function(lines_) {
       var brush, stage;
-      lines = lines;
+      lines = lines_;
       if (domstage) {
         stage = d3.select(domstage).datum(lines);
       }
@@ -699,17 +699,13 @@
             if (activeHandle === -1) {
               xStart = xStart0 + dragDiff;
               brushWidth = brushWidth0 - dragDiff;
-              console.log("start " + xStart);
               if (dragDiff > 0) {
                 xCurr = xScale.invert(m[0]);
                 xRightHandle = xScale.invert(xStart0 + brushWidth0);
-                console.log("" + xCurr + " " + xRightHandle);
                 if (Math.abs((xRightHandle - xCurr) <= stretchLimit)) {
                   xStart = Math.ceil(xScale(xRightHandle - stretchLimit));
                   brushWidth = xScale(stretchLimit);
                 }
-                console.log("end " + xStart);
-                console.log(brushWidth);
               }
             } else if (activeHandle === 1) {
               brushWidth = brushWidth0 + dragDiff;
@@ -929,13 +925,15 @@
   };
 
   QuandlismContext_.utility = function() {
-    var utility,
+    var context, utility,
       _this = this;
-    this.context = this;
+    context = this;
     utility = function() {};
     utility.createLines = function(data) {
       var i, keys, line, lineData, lines, _i, _len;
+      console.log(data);
       keys = data.columns.slice(1);
+      console.log(keys);
       lineData = _.map(keys, function(key, i) {
         return _.map(data.data, function(d) {
           return {
@@ -944,15 +942,15 @@
           };
         });
       });
-      if (!_this.context.lines().length) {
+      if (!context.lines().length) {
         lines = _.map(keys, function(key, i) {
-          return _this.context.line({
+          return context.line({
             name: key,
             values: lineData[i]
           });
         });
       } else {
-        lines = _this.context.lines();
+        lines = context.lines();
         for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
           line = lines[i];
           line.values(lineData[i]);
@@ -981,7 +979,7 @@
     };
     utility.getColor = function(i) {
       var s;
-      s = _this.context.colorScale();
+      s = context.colorScale();
       return s(i);
     };
     utility.formatNumberAsString = function(num) {
