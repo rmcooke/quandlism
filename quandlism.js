@@ -686,13 +686,13 @@
         var dragDiff, m;
         m = d3.mouse(this);
         if (dragging || stretching) {
+          dragDiff = m[0] - touchPoint;
           if (dragging) {
-            xStart = xStart0 + (m[0] - touchPoint);
+            xStart = xStart0 + dragDiff;
           } else {
             if (activeHandle !== 0 && activeHandle !== (-1) && activeHandle !== 1) {
               throw "Error: Unknown stretching direction";
             }
-            dragDiff = m[0] - touchPoint;
             brushWidth = activeHandle === -1 ? brushWidth0 - dragDiff : brushWidth0 + dragDiff;
             if (activeHandle === -1) {
               xStart = xStart0 + dragDiff;

@@ -186,12 +186,12 @@ QuandlismContext_.brush = () ->
       m = d3.mouse @
     
       if dragging or stretching
+        dragDiff = m[0]-touchPoint
         if dragging
-          xStart = xStart0 + (m[0]-touchPoint)
+          xStart = xStart0 + dragDiff
         else 
           # Calculate new brushWidth and xStart values, ensuring the the brush does not have a width less than stretchMin
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
-          dragDiff = m[0] - touchPoint
           brushWidth = if activeHandle is -1 then brushWidth0 - dragDiff else brushWidth0 + dragDiff
           xStart = xStart0 + dragDiff if activeHandle is -1
           if brushWidth <= stretchMin
