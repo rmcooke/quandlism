@@ -445,7 +445,7 @@
         draw();
       };
       if (!context.dombrush()) {
-        draw() && setScales();
+        setScales() && draw();
       }
       context.on('respond.stage', function() {
         ctx.clearRect(0, 0, width, height);
@@ -458,7 +458,7 @@
       });
       context.on('adjust.stage', function(x1, x2) {
         xStart = x1 > 0 ? x1 : 0;
-        xEnd = lines[0].length() > 2 ? x2 : lines[0].length() - 1;
+        xEnd = lines[0].length() > x2 ? x2 : lines[0].length() - 1;
         setScales();
         draw();
       });

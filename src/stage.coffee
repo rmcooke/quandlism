@@ -164,7 +164,7 @@ QuandlismContext_.stage = () ->
     # Respond to adjsut events from the brush
     context.on 'adjust.stage', (x1, x2) ->
       xStart = if x1 > 0 then x1 else 0
-      xEnd = if lines[0].length() > 2 then x2 else lines[0].length()-1
+      xEnd = if lines[0].length() > x2 then x2 else lines[0].length()-1
       setScales()
       draw()
       return
