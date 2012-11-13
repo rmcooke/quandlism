@@ -16,7 +16,7 @@ QuandlismContext_.yaxis = () ->
     lines = selection.datum()
     
     # set ticks
-    axis_.ticks Math.floor height / 50, 0, 0
+    axis_.ticks Math.floor height / 25, 0, 0
     axis_.tickSize 5, 3, 0
     update = () =>
       extent = context.utility().getExtent lines, xStart, xEnd
@@ -59,7 +59,7 @@ QuandlismContext_.yaxis = () ->
     context.on "respond.y-axis-#{id}", () ->
       width = context.w() * quandlism_yaxis.w
       height = context.h() * quandlism_yaxis.h
-      axis_.ticks Math.floor height / 50, 0, 0
+      axis_.ticks Math.floor height / 25, 0, 0
       scale.range [height, 0]
       update()
       return
