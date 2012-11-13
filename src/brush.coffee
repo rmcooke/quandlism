@@ -10,10 +10,12 @@ QuandlismContext_.brush = () ->
   xStart        = null
   xStart0       = null
   xScale        = d3.scale.linear()
+  xDateScale    = d3.time.scale()
   yScale        = d3.scale.linear()
   canvas        = null
   ctx           = null
-  xAxis         = null
+  xAxis         = d3.svg.axis().orient('bottom').scale xDateScale
+  xAxisDOM      = null
   canvasId      = null
   extent        = []
   lines         = []
@@ -38,24 +40,30 @@ QuandlismContext_.brush = () ->
     ctx = canvas.node().getContext '2d'
     
     # if xAxis not defined, create it
-    if not xAxis?
-      xAxis = selection.append 'div'
-      xAxis.datum lines
-      xAxis.attr 'class', 'x axis'
-      xAxis.attr 'width', context.w()*quandlism_xaxis.w
-      xAxis.attr 'height', context.h()*quandlism_xaxis.h
-      xAxis.attr 'id', "x-axis-#{canvasId}"
-      xAxis.call context.xaxis()
-
+    
+    if not xAxisDOM?
+      xAxisDOM = selection.append 'svg'
+      xAxisDOM.attr 'class', 'x axis'
+      xAxisDOM.attr 'id', "x-axis-#{canvasId}"
+      xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
+      xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
+    
+    # Setup xAxis
+    xAxis.tickSize 5, 3, 0
     
     # Set domain and range for x and y scales
     setScales = () =>
       extent = context.utility().getExtent lines, null, null
+      parseDate = context.utility().parseDate lines[0].dateAt 0
+    
       yScale.domain [extent[0], extent[1]]
       yScale.range [height, 0]
       xScale.domain [0, lines[0].length()-1]
       xScale.range [0, width]
       
+      xDateScale.range [0, width]
+      xDateScale.domain [parseDate(lines[0].dateAt(0)), parseDate(lines[0].dateAt(lines[0].length()-1))]
+            
       # Set the minimum brush size when scale is calculated
       stretchMin = Math.floor xScale stretchLimit
       return
@@ -85,6 +93,12 @@ QuandlismContext_.brush = () ->
       ctx.clearRect 0, 0, width0, height0
       canvas.attr('width', width).attr('height', height)
       return
+      
+    # Draw axis
+    drawAxis = () =>
+      xAxisDOM.selectAll('*').remove()
+      xg = xAxisDOM.append 'g'
+      xg.call xAxis
       
     # Draw the paths and points
     draw = () =>
@@ -141,10 +155,14 @@ QuandlismContext_.brush = () ->
       xStart0 = xStart
       brushWidth0 = brushWidth
       return
-      
+     
+    #  
+    # Intial drawing of brush
+    #
     setScales()
     checkDragState()
     setBrushValues() if dragEnabled
+    drawAxis()
     dispatchAdjust()
     
     # Set drawing interval
@@ -170,7 +188,6 @@ QuandlismContext_.brush = () ->
       lines = selection.datum()
       setScales()
       checkDragState()
-      # If dragging is allowed, get the start and width of the brush, otherwise, the brush should fill the entire area
       setBrushValues() if dragEnabled
       dispatchAdjust()      
       return

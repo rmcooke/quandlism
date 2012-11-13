@@ -23,22 +23,12 @@
     colorScale = d3.scale.category20();
     lines = [];
     context.attachData = function(lines_) {
-      var brush, stage;
       lines = lines_;
       if (domstage) {
-        stage = d3.select(domstage).datum(lines);
-      }
-      if (stage && stage.select('.x')) {
-        stage.select('.x').datum(lines);
-      }
-      if (stage && stage.select('.y')) {
-        stage.select('.y').datum(lines);
+        d3.select(domstage).datum(lines);
       }
       if (dombrush) {
-        brush = d3.select(dombrush).datum(lines);
-      }
-      if (brush && brush.select('.x')) {
-        brush.select('.x').datum(lines);
+        d3.select(dombrush).datum(lines);
       }
       if (domlegend) {
         d3.select(domlegend).datum(lines);
@@ -581,7 +571,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xAxisDOM, xDateScale, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -594,10 +584,12 @@
     xStart = null;
     xStart0 = null;
     xScale = d3.scale.linear();
+    xDateScale = d3.time.scale();
     yScale = d3.scale.linear();
     canvas = null;
     ctx = null;
-    xAxis = null;
+    xAxis = d3.svg.axis().orient('bottom').scale(xDateScale);
+    xAxisDOM = null;
     canvasId = null;
     extent = [];
     lines = [];
@@ -610,26 +602,29 @@
     activeHandle = 0;
     touchPoint = null;
     brush = function(selection) {
-      var checkDragState, clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setBrushValues, setScales, update;
+      var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, resetState, setBrushValues, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
-      if (!(xAxis != null)) {
-        xAxis = selection.append('div');
-        xAxis.datum(lines);
-        xAxis.attr('class', 'x axis');
-        xAxis.attr('width', context.w() * quandlism_xaxis.w);
-        xAxis.attr('height', context.h() * quandlism_xaxis.h);
-        xAxis.attr('id', "x-axis-" + canvasId);
-        xAxis.call(context.xaxis());
+      if (!(xAxisDOM != null)) {
+        xAxisDOM = selection.append('svg');
+        xAxisDOM.attr('class', 'x axis');
+        xAxisDOM.attr('id', "x-axis-" + canvasId);
+        xAxisDOM.attr('height', context.h() * quandlism_xaxis.h);
+        xAxisDOM.attr('width', context.w() * quandlism_xaxis.w);
       }
+      xAxis.tickSize(5, 3, 0);
       setScales = function() {
+        var parseDate;
         extent = context.utility().getExtent(lines, null, null);
+        parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height, 0]);
         xScale.domain([0, lines[0].length() - 1]);
         xScale.range([0, width]);
+        xDateScale.range([0, width]);
+        xDateScale.domain([parseDate(lines[0].dateAt(0)), parseDate(lines[0].dateAt(lines[0].length() - 1))]);
         stretchMin = Math.floor(xScale(stretchLimit));
       };
       setBrushValues = function() {
@@ -652,6 +647,12 @@
       clearCanvas = function() {
         ctx.clearRect(0, 0, width0, height0);
         canvas.attr('width', width).attr('height', height);
+      };
+      drawAxis = function() {
+        var xg;
+        xAxisDOM.selectAll('*').remove();
+        xg = xAxisDOM.append('g');
+        return xg.call(xAxis);
       };
       draw = function() {
         var j, line, showPoints, _i, _len;
@@ -709,6 +710,7 @@
       if (dragEnabled) {
         setBrushValues();
       }
+      drawAxis();
       dispatchAdjust();
       setInterval(update, 50);
       context.on("respond.brush", function() {

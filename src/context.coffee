@@ -18,13 +18,8 @@ quandlism.context = () ->
   # Conveneince method for attaching lines datum for each declared DOM element
   context.attachData = (lines_) =>
     lines = lines_
-    stage = d3.select(domstage).datum lines if domstage
-    stage.select('.x').datum lines if stage and stage.select('.x')
-    stage.select('.y').datum lines if stage and stage.select('.y')
-    
-    brush = d3.select(dombrush).datum lines if dombrush
-    brush.select('.x').datum lines if brush and brush.select('.x')
-
+    d3.select(domstage).datum lines if domstage
+    d3.select(dombrush).datum lines if dombrush
     d3.select(domlegend).datum lines if domlegend
     context
 
