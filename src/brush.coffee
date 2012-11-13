@@ -4,11 +4,11 @@ QuandlismContext_.brush = () ->
   height0       = height
   width         = context.w() * quandlism_brush.w
   width0        = width
-  brushWidth    = Math.ceil width * 0.2
-  brushWidth0   = brushWidth
+  brushWidth    = null
+  brushWidth0   = null
   handleWidth   = 10
-  xStart        = width * context.endPercent()
-  xStart0       = xStart
+  xStart        = null
+  xStart0       = null
   xScale        = d3.scale.linear()
   yScale        = d3.scale.linear()
   canvas        = null
@@ -21,7 +21,7 @@ QuandlismContext_.brush = () ->
   dragging      = false
   dragEnabled   = true
   stretching    = false
-  stretchLimit   = 6
+  stretchLimit  = 6
   stretchMin    = 0
   activeHandle  = 0
   touchPoint    = null
@@ -58,6 +58,19 @@ QuandlismContext_.brush = () ->
       
       # Set the minimum brush size when scale is calculated
       stretchMin = Math.floor xScale stretchLimit
+      return
+    
+    # Calculate initial values for xStart and brushWidth
+    setBrushValues = () =>
+      xStart = xScale context.startPoint()*lines[0].length()
+      xStart0 = xStart
+      brushWidth = width - xStart
+      brushWidth0 = brushWidth
+      if brushWidth < stretchMin
+        brushWidth = stretchMin
+        brushWidth0 = brushWidth
+        xStart = width - brushWidth
+        xStart0 = xStart
       return
       
     # Update
@@ -104,7 +117,7 @@ QuandlismContext_.brush = () ->
       
     # If the number of points in the dataset is less than stretchLimit then do not allow
     # user to re-size the area
-    checkDatasetLength = () =>
+    checkDragState = () =>
       if (lines[0].length()-1) <= stretchLimit
         xStart = 0
         brushWidth0 = width
@@ -130,7 +143,8 @@ QuandlismContext_.brush = () ->
       return
       
     setScales()
-    checkDatasetLength()
+    checkDragState()
+    setBrushValues() if dragEnabled
     dispatchAdjust()
     
     # Set drawing interval
@@ -139,16 +153,14 @@ QuandlismContext_.brush = () ->
     # Event listners
   
     # Respond to resized browser by recalculating key points and redrawing
-    # If dragEnabled is false, then reset xStart and brushWidth values to extremes
     context.on "respond.brush", () ->
       height0 = height
       width0 = width
       height = context.h()*quandlism_brush.h
       width = context.w()*quandlism_brush.w
-      
-      xStart = if dragEnabled then Math.ceil xStart/width0*width else 0
-      xStart0 = if dragEnabled then Math.ceil xStart0/width0*width else xStart
-      brushWidth = if dragEnabled then Math.ceil brushWidth/width0*width else width
+      xStart = xStart/width0*width
+      xStart0 = xStart0/width0*width
+      brushWidth = brushWidth/width0*width
       brushWidth0 = brushWidth
       setScales()
       return
@@ -156,12 +168,10 @@ QuandlismContext_.brush = () ->
     # Respond to refresh event
     context.on 'refresh.brush', () ->
       lines = selection.datum()
-      checkDatasetLength()
-      xStart = if dragEnabled then Math.ceil width*context.endPercent() else 0
-      xStart0 = xStart
-      brushWidth = if dragEnabled then Math.ceil width*0.2 else width
-      brushWidth0 = brushWidth
       setScales()
+      checkDragState()
+      # If dragging is allowed, get the start and width of the brush, otherwise, the brush should fill the entire area
+      setBrushValues() if dragEnabled
       dispatchAdjust()      
       return
       

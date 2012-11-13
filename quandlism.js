@@ -7,7 +7,7 @@
   };
 
   quandlism.context = function() {
-    var colorScale, context, dom, dombrush, domlegend, domstage, domtooltip, endPercent, event, h, lines, w,
+    var colorScale, context, dom, dombrush, domlegend, domstage, domtooltip, endPercent, event, h, lines, startPoint, w,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -17,7 +17,8 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
-    endPercent = 0.8;
+    endPercent = 0.80;
+    startPoint = 0.75;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorScale = d3.scale.category20();
     lines = [];
@@ -80,6 +81,13 @@
         return endPercent;
       }
       endPercent = _;
+      return context;
+    };
+    context.startPoint = function(_) {
+      if (!(_ != null)) {
+        return startPoint;
+      }
+      startPoint = _;
       return context;
     };
     context.w = function(_) {
@@ -545,11 +553,11 @@
     height0 = height;
     width = context.w() * quandlism_brush.w;
     width0 = width;
-    brushWidth = Math.ceil(width * 0.2);
-    brushWidth0 = brushWidth;
+    brushWidth = null;
+    brushWidth0 = null;
     handleWidth = 10;
-    xStart = width * context.endPercent();
-    xStart0 = xStart;
+    xStart = null;
+    xStart0 = null;
     xScale = d3.scale.linear();
     yScale = d3.scale.linear();
     canvas = null;
@@ -567,7 +575,7 @@
     activeHandle = 0;
     touchPoint = null;
     brush = function(selection) {
-      var checkDatasetLength, clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setScales, update;
+      var checkDragState, clearCanvas, dispatchAdjust, draw, drawBrush, resetState, setBrushValues, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('width', width).attr('height', height).attr('class', 'brush').attr('id', canvasId);
@@ -588,6 +596,18 @@
         xScale.domain([0, lines[0].length() - 1]);
         xScale.range([0, width]);
         stretchMin = Math.floor(xScale(stretchLimit));
+      };
+      setBrushValues = function() {
+        xStart = xScale(context.startPoint() * lines[0].length());
+        xStart0 = xStart;
+        brushWidth = width - xStart;
+        brushWidth0 = brushWidth;
+        if (brushWidth < stretchMin) {
+          brushWidth = stretchMin;
+          brushWidth0 = brushWidth;
+          xStart = width - brushWidth;
+          xStart0 = xStart;
+        }
       };
       update = function() {
         clearCanvas();
@@ -626,7 +646,7 @@
         ctx.fillRect(xStart + brushWidth, 0, handleWidth, height);
         ctx.closePath();
       };
-      checkDatasetLength = function() {
+      checkDragState = function() {
         if ((lines[0].length() - 1) <= stretchLimit) {
           xStart = 0;
           brushWidth0 = width;
@@ -650,7 +670,10 @@
         brushWidth0 = brushWidth;
       };
       setScales();
-      checkDatasetLength();
+      checkDragState();
+      if (dragEnabled) {
+        setBrushValues();
+      }
       dispatchAdjust();
       setInterval(update, 50);
       context.on("respond.brush", function() {
@@ -658,20 +681,19 @@
         width0 = width;
         height = context.h() * quandlism_brush.h;
         width = context.w() * quandlism_brush.w;
-        xStart = dragEnabled ? Math.ceil(xStart / width0 * width) : 0;
-        xStart0 = dragEnabled ? Math.ceil(xStart0 / width0 * width) : xStart;
-        brushWidth = dragEnabled ? Math.ceil(brushWidth / width0 * width) : width;
+        xStart = xStart / width0 * width;
+        xStart0 = xStart0 / width0 * width;
+        brushWidth = brushWidth / width0 * width;
         brushWidth0 = brushWidth;
         setScales();
       });
       context.on('refresh.brush', function() {
         lines = selection.datum();
-        checkDatasetLength();
-        xStart = dragEnabled ? Math.ceil(width * context.endPercent()) : 0;
-        xStart0 = xStart;
-        brushWidth = dragEnabled ? Math.ceil(width * 0.2) : width;
-        brushWidth0 = brushWidth;
         setScales();
+        checkDragState();
+        if (dragEnabled) {
+          setBrushValues();
+        }
         dispatchAdjust();
       });
       context.on("toggle.brush", function() {

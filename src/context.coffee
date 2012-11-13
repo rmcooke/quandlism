@@ -8,7 +8,8 @@ quandlism.context = () ->
   dombrush     = null
   domlegend    = null
   domtooltip   = null
-  endPercent   = 0.8
+  endPercent   = 0.80
+  startPoint   = 0.75
   event        = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorScale   = d3.scale.category20()
   lines        = []
@@ -59,6 +60,11 @@ quandlism.context = () ->
   context.endPercent = (_) =>
     if not _? then return endPercent
     endPercent = _
+    context
+  
+  context.startPoint = (_) =>
+    if not _? then return startPoint
+    startPoint = _
     context
   
   context.w = (_) =>
