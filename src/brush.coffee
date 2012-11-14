@@ -26,7 +26,7 @@ QuandlismContext_.brush = () ->
   stretchMin    = 0
   activeHandle  = 0
   touchPoint    = null
-  
+  cursorClasses = {move: 'move', resize: 'resize'}
 
 
 
@@ -54,7 +54,10 @@ QuandlismContext_.brush = () ->
     # set a margin for the brush element so the stage aligns
     $("#{context.dombrush()}").css('marginLeft', "#{quandlism_yaxis_width}px")
     
-    # Set domain and range for x and y scales
+    # Calculate the y and x scales. Sets the domain and ranges of the
+    # scales and creates the x axis labelling functions
+    # 
+    # Returns null
     setScales = () =>
       extent = context.utility().getExtent lines, null, null    
       yScale.domain [extent[0], extent[1]]
@@ -71,11 +74,12 @@ QuandlismContext_.brush = () ->
         date = new Date (lines[0].dateAt(d))
         "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
       
-   
-      
       return
     
-    # Calculate initial values for xStart and brushWidth
+    # Calculates variables needed for drawing the brush (start, width)
+    # and re-calculates if the values are below the minimum allowed 
+    #
+    # Returns null
     setBrushValues = () =>
       xStart = xScale context.startPoint()*lines[0].length()
       xStart0 = xStart
@@ -88,28 +92,39 @@ QuandlismContext_.brush = () ->
         xStart0 = xStart
       return
       
-    # Update
+    # Update function drives the brush element. This is called on invertal
+    # Clears the canvas and draws the lines and control
+    #
+    # Returns null
     update = () =>
       clearCanvas()
       draw()
       drawBrush()
       return
       
-    # Clear the drawing canvas
+    # Wipes the drawing context of the canvas
+    # Clears the width and height of the preivously drawn area and sets
+    # the height and width of the DOM element to the new height and width
+    #
+    # Returns null
     clearCanvas = () =>
       ctx.clearRect 0, 0, width0, height0
       canvas.attr('width', width).attr('height', height)
       return
       
-    # Draw axis
+    # Removes the current xaxis, if it exists, and draws the xaxis by calling
+    # the xAxis function on the SVG selction
+    #
+    # Returns null
     drawAxis = () =>
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
-      
-    
-      
-    # Draw the paths and points
+      return
+       
+    # Draws the path of each line of the dataset, and the points, if the dataset has few rows
+    #
+    # Returns null
     draw = () =>
       showPoints = (lines[0].length() <= threshold)
       for line, j in lines
@@ -117,7 +132,10 @@ QuandlismContext_.brush = () ->
         line.drawPoint context.utility().getColor(j), ctx, xScale, yScale, j, 2 if showPoints
       return
       
-    # Draw the brush control
+    # Uses the xStart, handleWidth and brushWidth variables to draw the 
+    # the brush control on the canvas context 
+    #
+    # Returns null
     drawBrush = () =>
       ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)'
       ctx.beginPath()
@@ -138,8 +156,11 @@ QuandlismContext_.brush = () ->
       ctx.closePath()
       return
       
-    # If the number of points in the dataset is less than stretchLimit then do not allow
-    # user to re-size the area
+    # Determines if the there are enough points that in the dataset
+    # to allow dragging. If not, set the start and width of the brush
+    # to fill the entire canvas context
+    #
+    # Returns null
     checkDragState = () =>
       if (lines[0].length()-1) <= stretchLimit
         xStart = 0
@@ -149,14 +170,20 @@ QuandlismContext_.brush = () ->
       else
         dragEnabled = true
         
-    # Send the adjust event to the context
+    # Calculates the start and end points of the brushWidth and
+    # triggers the context.adjust event with those parameters
+    #
+    # Returns null
     dispatchAdjust = () =>
       x1 = xScale.invert xStart
       x2 = xScale.invert xStart + brushWidth
       context.adjust Math.ceil(x1), Math.ceil(x2)
       return
       
-    # Reset the state of the brush
+    # Resets the state of the brush control
+    # Sets dragging and stretching to to false and saves the xStart and brushWidth values
+    #
+    # Returns null
     resetState = () =>
       dragging = false
       stretching = false
@@ -165,6 +192,39 @@ QuandlismContext_.brush = () ->
       brushWidth0 = brushWidth
       return
       
+      
+    # Determines if the mouse cursor location corresponds to the draggable portion of the brush control
+    #
+    # x - The x coordinate of the mouse cursor
+    # 
+    # Returns boolean
+    isDraggingLocation = (x) =>
+      x <= (brushWidth + xStart) and x >= xStart
+
+    # Determines if the mouse cursor location corresponds to the left handle of the brush control
+    #
+    # x - The x coordinate of the mouse cursor
+    # 
+    # Returns boolean      
+    isLeftHandle = (x) =>
+      x >= (xStart-handleWidth) and x < (xStart)
+
+    # Determines if the mouse cursor location corresponds to the right handle of the brush control
+    #
+    # x - The x coordinate of the mouse cursor
+    # 
+    # Returns boolean      
+    isRightHandle = (x) =>
+      x > (xStart + brushWidth) and x <= (xStart + brushWidth + handleWidth)
+    
+      
+    # Add classes to the brush
+    # Removes any of the clases, defined in 'classes' variable before appending className
+    addBrushClass = (className) =>
+      classNames = (key for key of cursorClasses).reduce (a, b) -> "#{a} #{b}"
+      $(context.dombrush()).removeClass(classNames).addClass className
+      return
+  
     
      
     #  
@@ -221,17 +281,18 @@ QuandlismContext_.brush = () ->
       m = d3.mouse @
       touchPoint = m[0]
       
-      if m[0] >= (xStart-handleWidth) and m[0] < (xStart)
+      if isLeftHandle m[0]
         # If click on left handle
         stretching = true
         activeHandle = -1
-      else if m[0] > (xStart + brushWidth) and m[0] <= (xStart + brushWidth + handleWidth)
+      else if isRightHandle m[0]
         # If click on right handle
         stretching = true
         activeHandle = 1
-      else if m[0] <= (brushWidth + xStart) and m[0] >= xStart
+      else if isDraggingLocation m[0]
         # if dragging
         dragging = true
+        
       return
         
     # On mouseup save the new state of the control
@@ -261,7 +322,14 @@ QuandlismContext_.brush = () ->
             brushWidth = stretchMin
         
         dispatchAdjust()
-
+        
+      else
+        if isDraggingLocation m[0]
+          addBrushClass cursorClasses['move']
+        else if isLeftHandle(m[0]) or isRightHandle(m[0])
+          addBrushClass cursorClasses['resize']
+        else
+          addBrushClass ''
       return
 
   # Geters and setters
@@ -284,6 +352,11 @@ QuandlismContext_.brush = () ->
   brush.handleWidth = (_) =>
     if not _? then return handleWidth
     handleWidth = _
+    brush
+    
+  brush.cursorClasses = (_) =>
+    if not _? then return cursorClasses
+    cursorClasses = _
     brush
   
   brush

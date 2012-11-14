@@ -614,7 +614,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xAxisDOM, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, cursorClasses, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xAxisDOM, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -643,8 +643,12 @@
     stretchMin = 0;
     activeHandle = 0;
     touchPoint = null;
+    cursorClasses = {
+      move: 'move',
+      resize: 'resize'
+    };
     brush = function(selection) {
-      var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, resetState, setBrushValues, setScales, update;
+      var addBrushClass, checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, isDraggingLocation, isLeftHandle, isRightHandle, resetState, setBrushValues, setScales, update;
       lines = selection.datum();
       canvasId = "canvas-brush-" + (++quandlism_id_ref);
       canvas = selection.append('canvas').attr('id', canvasId);
@@ -697,7 +701,7 @@
         var xg;
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
-        return xg.call(xAxis);
+        xg.call(xAxis);
       };
       draw = function() {
         var j, line, showPoints, _i, _len;
@@ -750,6 +754,29 @@
         xStart0 = xStart;
         brushWidth0 = brushWidth;
       };
+      isDraggingLocation = function(x) {
+        return x <= (brushWidth + xStart) && x >= xStart;
+      };
+      isLeftHandle = function(x) {
+        return x >= (xStart - handleWidth) && x < xStart;
+      };
+      isRightHandle = function(x) {
+        return x > (xStart + brushWidth) && x <= (xStart + brushWidth + handleWidth);
+      };
+      addBrushClass = function(className) {
+        var classNames, key;
+        classNames = ((function() {
+          var _results;
+          _results = [];
+          for (key in cursorClasses) {
+            _results.push(key);
+          }
+          return _results;
+        })()).reduce(function(a, b) {
+          return "" + a + " " + b;
+        });
+        $(context.dombrush()).removeClass(classNames).addClass(className);
+      };
       setScales();
       checkDragState();
       if (dragEnabled) {
@@ -789,13 +816,13 @@
         d3.event.preventDefault();
         m = d3.mouse(this);
         touchPoint = m[0];
-        if (m[0] >= (xStart - handleWidth) && m[0] < xStart) {
+        if (isLeftHandle(m[0])) {
           stretching = true;
           activeHandle = -1;
-        } else if (m[0] > (xStart + brushWidth) && m[0] <= (xStart + brushWidth + handleWidth)) {
+        } else if (isRightHandle(m[0])) {
           stretching = true;
           activeHandle = 1;
-        } else if (m[0] <= (brushWidth + xStart) && m[0] >= xStart) {
+        } else if (isDraggingLocation(m[0])) {
           dragging = true;
         }
       });
@@ -828,6 +855,14 @@
             }
           }
           dispatchAdjust();
+        } else {
+          if (isDraggingLocation(m[0])) {
+            addBrushClass(cursorClasses['move']);
+          } else if (isLeftHandle(m[0]) || isRightHandle(m[0])) {
+            addBrushClass(cursorClasses['resize']);
+          } else {
+            addBrushClass('');
+          }
         }
       });
     };
@@ -857,6 +892,13 @@
         return handleWidth;
       }
       handleWidth = _;
+      return brush;
+    };
+    brush.cursorClasses = function(_) {
+      if (!(_ != null)) {
+        return cursorClasses;
+      }
+      cursorClasses = _;
       return brush;
     };
     return brush;
