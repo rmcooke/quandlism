@@ -2,7 +2,7 @@ QuandlismContext_.brush = () ->
   context       = @
   height        = context.h() * quandlism_brush.h
   height0       = height
-  width         = context.w() * quandlism_brush.w
+  width         = context.w()-quandlism_yaxis_width
   width0        = width
   brushWidth    = null
   brushWidth0   = null
@@ -46,14 +46,14 @@ QuandlismContext_.brush = () ->
       xAxisDOM.attr 'class', 'x axis'
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
       xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
+      xAxisDOM.attr 'width', context.w()-quandlism_yaxis_width
       
     
     # Setup xAxis
     xAxis.tickSize 5, 3, 0
     
     # set a margin for the brush element so the stage aligns
-    $("#{context.dombrush()}").css('marginLeft', "#{context.w()*quandlism_yaxis.w}px")
+    $("#{context.dombrush()}").css('marginLeft', "#{quandlism_yaxis_width}px")
     
     # Set domain and range for x and y scales
     setScales = () =>
@@ -183,15 +183,15 @@ QuandlismContext_.brush = () ->
       height0 = height
       width0 = width
       height = context.h()*quandlism_brush.h
-      width = context.w()*quandlism_brush.w
+      width = context.w()-quandlism_yaxis_width
       xStart = xStart/width0*width
       xStart0 = xStart0/width0*width
       brushWidth = brushWidth/width0*width
       brushWidth0 = brushWidth
       
       # 
-      xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
-      $("#{context.dombrush()}").css('marginLeft', "#{context.w()*quandlism_yaxis.w}px")
+      xAxisDOM.attr 'width', width
+      $("#{context.dombrush()}").css('marginLeft', "#{quandlism_yaxis_width}px")
       
       setScales()
       drawAxis()

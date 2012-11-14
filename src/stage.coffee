@@ -2,7 +2,7 @@ QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
   lines       = []
-  width       = Math.floor context.w() * quandlism_stage.w
+  width       = Math.floor (context.w()-quandlism_yaxis_width)
   height      = Math.floor context.h() * quandlism_stage.h
   xScale      = d3.scale.linear()
   xDateScale  = d3.time.scale()
@@ -31,8 +31,8 @@ QuandlismContext_.stage = () ->
       yAxisDOM = selection.insert 'svg'
       yAxisDOM.attr 'class', 'y axis'
       yAxisDOM.attr 'id', "y-axis-#{canvasId}"
-      yAxisDOM.attr 'width', context.w()*quandlism_yaxis.w
-      yAxisDOM.attr 'height', context.h()*quandlism_yaxis.h
+      yAxisDOM.attr 'width', quandlism_yaxis_width
+      yAxisDOM.attr 'height', context.h()*quandlism_stage.h
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -48,13 +48,13 @@ QuandlismContext_.stage = () ->
       xAxisDOM = selection.append 'svg'
       xAxisDOM.attr 'class', 'x axis'
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
-      xAxisDOM.attr 'width', context.w()*quandlism_xaxis.w
+      xAxisDOM.attr 'width', context.w()-quandlism_yaxis_width
       xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'style', "margin-left: #{context.w()*quandlism_yaxis.w}"
+      xAxisDOM.attr 'style', "margin-left: #{quandlism_yaxis_width}"
       
     # Axis setups
     yAxis.tickSize 5, 3, 0
-    yAxis.ticks Math.floor context.h()*quandlism_yaxis.h / 40
+    yAxis.ticks Math.floor context.h()*quandlism_stage.h / 40
     xAxis.tickSize 5, 3, 0
     
      # .tickFormat(function(d) { return Math.round(d / 1e6) + "M"; });
@@ -95,7 +95,7 @@ QuandlismContext_.stage = () ->
       # Remove old yAxis and redraw
       yAxisDOM.selectAll('*').remove()
       yg = yAxisDOM.append 'g'
-      yg.attr 'transform', "translate(#{context.w()*quandlism_yaxis.w-1}, 10)"
+      yg.attr 'transform', "translate(#{quandlism_yaxis_width-1}, 10)"
       yg.call yAxis
       
       xAxisDOM.selectAll('*').remove()
@@ -192,17 +192,17 @@ QuandlismContext_.stage = () ->
     # Resize, clear and re-draw
     context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
-      width = Math.floor context.w() * quandlism_stage.w
+      width = Math.floor context.w() - quandlism_yaxis_width
       height = Math.floor context.h() * quandlism_stage.h
       canvas.attr 'width', width
       canvas.attr 'height', height
       
       # Adjust y axis width
-      yAxisDOM.attr 'width', Math.floor context.w()*quandlism_yaxis.w
+      yAxisDOM.attr 'width', quandlism_yaxis_width
       
       # Adjust x axis with and marign
-      xAxisDOM.attr 'width', Math.floor context.w()*quandlism_xaxis.w
-      xAxisDOM.attr 'style', "margin-left: #{context.w()*quandlism_yaxis.w}"
+      xAxisDOM.attr 'width', Math.floor context.w() - quandlism_yaxis_width
+      xAxisDOM.attr 'style', "margin-left: #{quandlism_yaxis_width}"
       
       setScales()
       draw()
