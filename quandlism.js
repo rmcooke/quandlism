@@ -188,7 +188,7 @@
 
   quandlism_id_ref = 0;
 
-  quandlism_yaxis_width = 50;
+  quandlism_yaxis_width = 40;
 
   quandlism_xaxis = {
     h: 0.10
