@@ -54,11 +54,11 @@ QuandlismContext_.stage = () ->
       
     # Axis setups
     yAxis.tickSize 5, 3, 0
-    yAxis.ticks Math.floor context.h()*quandlism_stage.h / 40
-    xAxis.tickSize 5, 3, 0
+    yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
     
      # .tickFormat(function(d) { return Math.round(d / 1e6) + "M"; });
     xAxis.ticks 5
+    xAxis.tickSize 5, 3, 0
     xAxis.tickFormat d3.time.format "%b %d, %Y"
     
     # Calculate the range and domain of the x and y scales
@@ -95,20 +95,42 @@ QuandlismContext_.stage = () ->
       # Remove old yAxis and redraw
       yAxisDOM.selectAll('*').remove()
       yg = yAxisDOM.append 'g'
-      yg.attr 'transform', "translate(#{quandlism_yaxis_width-1}, 10)"
+      yg.attr 'transform', "translate(#{quandlism_yaxis_width-1}, 0)"
       yg.call yAxis
       
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
       
+    drawGridLines = () =>
+      for y in yScale.ticks Math.floor context.h()*quandlism_stage.h / 30
+        ctx.beginPath()
+        ctx.strokeStyle = '#EDEDED'
+        ctx.lineWidth = 1
+        ctx.moveTo 0, Math.floor yScale y
+        ctx.lineTo width, Math.floor yScale y
+        ctx.stroke()
+        ctx.closePath()
+        
+      for x in xScale.ticks 5
+        console.log "#{x} #{xScale x}"
+        ctx.beginPath()
+        ctx.strokeStyle = '#EDEDED'
+        ctx.lineWith = 1
+        ctx.moveTo xScale(x), height
+        ctx.lineTo xScale(x), 0
+        ctx.stroke()
+        ctx.closePath()
+        
     # Draws the stage data
     draw = (lineId) =>
     
       drawAxis()
-      
+          
       # Clear canvas before drawing
       ctx.clearRect 0, 0, width, height
+      
+      drawGridLines()
       
       # if lineId to highlight is not defined, set to an invalid index
       lineId = if lineId? then lineId else -1

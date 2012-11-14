@@ -352,7 +352,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawTooltip, lineHit, setScales;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales;
       lines = selection.datum();
       canvasId = "canvas-stage-" + (++quandlism_id_ref);
       if (!(yAxisDOM != null)) {
@@ -377,9 +377,9 @@
         xAxisDOM.attr('style', "margin-left: " + quandlism_yaxis_width);
       }
       yAxis.tickSize(5, 3, 0);
-      yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 40));
-      xAxis.tickSize(5, 3, 0);
+      yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
       xAxis.ticks(5);
+      xAxis.tickSize(5, 3, 0);
       xAxis.tickFormat(d3.time.format("%b %d, %Y"));
       setScales = function() {
         var divisor, parseDate, units;
@@ -411,16 +411,45 @@
         var xg, yg;
         yAxisDOM.selectAll('*').remove();
         yg = yAxisDOM.append('g');
-        yg.attr('transform', "translate(" + (quandlism_yaxis_width - 1) + ", 10)");
+        yg.attr('transform', "translate(" + (quandlism_yaxis_width - 1) + ", 0)");
         yg.call(yAxis);
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         return xg.call(xAxis);
       };
+      drawGridLines = function() {
+        var x, y, _i, _j, _len, _len1, _ref, _ref1, _results;
+        _ref = yScale.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          y = _ref[_i];
+          ctx.beginPath();
+          ctx.strokeStyle = '#EDEDED';
+          ctx.lineWidth = 1;
+          ctx.moveTo(0, Math.floor(yScale(y)));
+          ctx.lineTo(width, Math.floor(yScale(y)));
+          ctx.stroke();
+          ctx.closePath();
+        }
+        _ref1 = xScale.ticks(5);
+        _results = [];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          x = _ref1[_j];
+          console.log("" + x + " " + (xScale(x)));
+          ctx.beginPath();
+          ctx.strokeStyle = '#EDEDED';
+          ctx.lineWith = 1;
+          ctx.moveTo(xScale(x), height);
+          ctx.lineTo(xScale(x), 0);
+          ctx.stroke();
+          _results.push(ctx.closePath());
+        }
+        return _results;
+      };
       draw = function(lineId) {
         var i, j, line, lineWidth, _i, _j, _len;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
+        drawGridLines();
         lineId = lineId != null ? lineId : -1;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
