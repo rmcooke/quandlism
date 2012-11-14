@@ -86,8 +86,9 @@ QuandlismContext_.stage = () ->
       # Build the xAxis tick formatting function
       xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
       xAxis.tickFormat (d) =>
-        date = new Date (lines[0].dateAt(d))
-        "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
+        if date = lines[0].dateAt d
+          date = new Date date
+          "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
       
    
       return

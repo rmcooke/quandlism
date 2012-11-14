@@ -404,8 +404,10 @@
         xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
         xAxis.tickFormat(function(d) {
           var date;
-          date = new Date(lines[0].dateAt(d));
-          return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
+          if (date = lines[0].dateAt(d)) {
+            date = new Date(date);
+            return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
+          }
         });
       };
       drawAxis = function() {
