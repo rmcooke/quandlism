@@ -612,7 +612,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xAxisDOM, xDateScale, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xAxisDOM, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = context.h() * quandlism_brush.h;
@@ -625,11 +625,10 @@
     xStart = null;
     xStart0 = null;
     xScale = d3.scale.linear();
-    xDateScale = d3.time.scale();
     yScale = d3.scale.linear();
     canvas = null;
     ctx = null;
-    xAxis = d3.svg.axis().orient('bottom').scale(xDateScale);
+    xAxis = d3.svg.axis().orient('bottom').scale(xScale);
     xAxisDOM = null;
     canvasId = null;
     extent = [];
@@ -658,16 +657,18 @@
       xAxis.tickSize(5, 3, 0);
       $("" + (context.dombrush())).css('marginLeft', "" + quandlism_yaxis_width + "px");
       setScales = function() {
-        var parseDate;
         extent = context.utility().getExtent(lines, null, null);
-        parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
         xScale.domain([0, lines[0].length() - 1]);
         xScale.range([context.padding(), width - context.padding()]);
-        xDateScale.range([context.padding(), width - context.padding()]);
-        xDateScale.domain([parseDate(lines[0].dateAt(0)), parseDate(lines[0].dateAt(lines[0].length() - 1))]);
         stretchMin = Math.floor(xScale(stretchLimit));
+        xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
+        xAxis.tickFormat(function(d) {
+          var date;
+          date = new Date(lines[0].dateAt(d));
+          return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
+        });
       };
       setBrushValues = function() {
         xStart = xScale(context.startPoint() * lines[0].length());

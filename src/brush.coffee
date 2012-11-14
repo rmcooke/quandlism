@@ -10,11 +10,10 @@ QuandlismContext_.brush = () ->
   xStart        = null
   xStart0       = null
   xScale        = d3.scale.linear()
-  xDateScale    = d3.time.scale()
   yScale        = d3.scale.linear()
   canvas        = null
   ctx           = null
-  xAxis         = d3.svg.axis().orient('bottom').scale xDateScale
+  xAxis         = d3.svg.axis().orient('bottom').scale xScale
   xAxisDOM      = null
   canvasId      = null
   extent        = []
@@ -57,19 +56,23 @@ QuandlismContext_.brush = () ->
     
     # Set domain and range for x and y scales
     setScales = () =>
-      extent = context.utility().getExtent lines, null, null
-      parseDate = context.utility().parseDate lines[0].dateAt 0
-    
+      extent = context.utility().getExtent lines, null, null    
       yScale.domain [extent[0], extent[1]]
       yScale.range [height-context.padding(), context.padding()]
       xScale.domain [0, lines[0].length()-1]
       xScale.range [context.padding(), width-context.padding()]
-      
-      xDateScale.range [context.padding(), width-context.padding()]
-      xDateScale.domain [parseDate(lines[0].dateAt(0)), parseDate(lines[0].dateAt(lines[0].length()-1))]
             
       # Set the minimum brush size when scale is calculated
       stretchMin = Math.floor xScale stretchLimit
+      
+      # Determine x Axis formatting
+      xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
+      xAxis.tickFormat (d) =>
+        date = new Date (lines[0].dateAt(d))
+        "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
+      
+   
+      
       return
     
     # Calculate initial values for xStart and brushWidth
