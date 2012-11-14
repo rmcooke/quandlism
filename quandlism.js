@@ -189,23 +189,23 @@
   quandlism_id_ref = 0;
 
   quandlism_stage = {
-    w: 0.90,
-    h: 0.60
+    w: 0.95,
+    h: 0.65
   };
 
   quandlism_brush = {
-    w: 0.90,
-    h: 0.20
+    w: 0.95,
+    h: 0.15
   };
 
   quandlism_xaxis = {
-    w: 0.90,
+    w: 0.95,
     h: 0.10
   };
 
   quandlism_yaxis = {
-    w: 0.10,
-    h: 0.60
+    w: 0.05,
+    h: 0.65
   };
 
   QuandlismLine = (function() {
@@ -388,7 +388,7 @@
       xAxis.ticks(5);
       xAxis.tickFormat(d3.time.format("%b %d, %Y"));
       setScales = function() {
-        var parseDate;
+        var divisor, parseDate, units;
         extent = context.utility().getExtent(lines, xStart, xEnd);
         parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
@@ -397,6 +397,21 @@
         xScale.range([context.padding(), width - context.padding()]);
         xDateScale.domain([parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]);
         xDateScale.range([context.padding(), width - context.padding()]);
+        units = context.utility().getUnit(Math.round(extent[1]));
+        divisor = 1;
+        if (units === 'K') {
+          divisor = 1000;
+        }
+        if (units === 'M') {
+          divisor = 1000000;
+        }
+        yAxis.tickFormat(function(d) {
+          var n;
+          n = (d / divisor).toFixed(2);
+          n = n.replace(/0+$/, '');
+          n = n.replace(/\.$/, '');
+          return "" + n + " " + units;
+        });
       };
       drawAxis = function() {
         var xg, yg;
@@ -618,7 +633,6 @@
         xAxisDOM.attr('width', context.w() * quandlism_xaxis.w);
       }
       xAxis.tickSize(5, 3, 0);
-      console.log(context.dombrush());
       $("" + (context.dombrush())).css('marginLeft', "" + (context.w() * quandlism_yaxis.w) + "px");
       setScales = function() {
         var parseDate;
@@ -1062,6 +1076,17 @@
       px = ctx.getImageData(m[0], m[1], 1, 1).data;
       rgb = d3.rgb(px[0], px[1], px[2]);
       return rgb.toString();
+    };
+    utility.getUnit = function(extent) {
+      var len;
+      len = extent.toString().length;
+      if (len <= 3) {
+        return '';
+      } else if (len <= 6) {
+        return 'K';
+      } else {
+        return 'M';
+      }
     };
     utility.dateFormat = function(date) {
       var dateString, hyphenCount;

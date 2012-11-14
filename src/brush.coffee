@@ -52,7 +52,6 @@ QuandlismContext_.brush = () ->
     # Setup xAxis
     xAxis.tickSize 5, 3, 0
     
-    console.log context.dombrush()
     # set a margin for the brush element so the stage aligns
     $("#{context.dombrush()}").css('marginLeft', "#{context.w()*quandlism_yaxis.w}px")
     

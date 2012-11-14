@@ -57,6 +57,7 @@ QuandlismContext_.stage = () ->
     yAxis.ticks Math.floor context.h()*quandlism_yaxis.h / 40
     xAxis.tickSize 5, 3, 0
     
+     # .tickFormat(function(d) { return Math.round(d / 1e6) + "M"; });
     xAxis.ticks 5
     xAxis.tickFormat d3.time.format "%b %d, %Y"
     
@@ -74,6 +75,18 @@ QuandlismContext_.stage = () ->
       xScale.range [context.padding(), (width-context.padding())]
       xDateScale.domain [parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]
       xDateScale.range [context.padding(), (width-context.padding())]
+   
+      units = context.utility().getUnit Math.round(extent[1])
+      
+      divisor = 1
+      divisor = 1000 if units is 'K'
+      divisor = 1000000 if units is 'M'
+      yAxis.tickFormat (d) =>
+        n = (d/divisor).toFixed 2
+        n = n.replace(/0+$/, '')
+        n = n.replace(/\.$/, '')
+        "#{n} #{units}"
+      
    
       return
     

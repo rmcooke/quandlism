@@ -71,6 +71,20 @@ QuandlismContext_.utility = () ->
     rgb.toString()
   
   
+  # Returns a label to use for axis labelling
+  #
+  # extent - The largest value of the graph, rounded, with zero decimal places
+  # 
+  # Returns a string
+  utility.getUnit = (extent) =>
+    len = extent.toString().length
+    if len <= 3
+      return ''
+    else if len <= 6
+      return 'K'
+    else 
+      return 'M'
+  
   # Returns a string that can be parsed in the same format as the dates in the active graph.
   # The number of - present indicate one of two date formats available.
   # date - An example date
