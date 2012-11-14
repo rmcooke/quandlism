@@ -5,9 +5,8 @@ QuandlismContext_.stage = () ->
   width       = Math.floor (context.w()-quandlism_yaxis_width)
   height      = Math.floor context.h() * quandlism_stage.h
   xScale      = d3.scale.linear()
-  xDateScale  = d3.time.scale()
   yScale      = d3.scale.linear()
-  xAxis       = d3.svg.axis().orient('bottom').scale xDateScale
+  xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
   yAxisDOM    = null
   xAxisDOM    = null
@@ -24,9 +23,7 @@ QuandlismContext_.stage = () ->
     lines = selection.datum()
     canvasId = "canvas-stage-#{++quandlism_id_ref}"
     
-
-    
-    # If no y axis is defined, create it
+    # Build the yAxis
     if not yAxisDOM?
       yAxisDOM = selection.insert 'svg'
       yAxisDOM.attr 'class', 'y axis'
@@ -43,7 +40,7 @@ QuandlismContext_.stage = () ->
     
     ctx = canvas.node().getContext '2d'
    
-
+    # Build the xAxis
     if not xAxisDOM?
       xAxisDOM = selection.append 'svg'
       xAxisDOM.attr 'class', 'x axis'
@@ -52,20 +49,15 @@ QuandlismContext_.stage = () ->
       xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
       xAxisDOM.attr 'style', "margin-left: #{quandlism_yaxis_width}"
       
-    # Axis setups
+    # Axis tick size
     yAxis.tickSize 5, 3, 0
-    yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
-    
-     # .tickFormat(function(d) { return Math.round(d / 1e6) + "M"; });
-    xAxis.ticks 5
     xAxis.tickSize 5, 3, 0
-    xAxis.tickFormat d3.time.format "%b %d, %Y"
+
     
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       # Calculate the extent for the area between xStart and xEnd
       extent = context.utility().getExtent lines, xStart, xEnd
-      parseDate = context.utility().parseDate lines[0].dateAt 0
       
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
@@ -73,9 +65,12 @@ QuandlismContext_.stage = () ->
 
       xScale.domain [xStart, xEnd]
       xScale.range [context.padding(), (width-context.padding())]
-      xDateScale.domain [parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]
-      xDateScale.range [context.padding(), (width-context.padding())]
    
+      yAxis.tickSize 5, 3, 0
+      yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
+   
+   
+      # Build the yAxis tick formatting function
       units = context.utility().getUnit Math.round(extent[1])
       
       divisor = 1
@@ -86,6 +81,13 @@ QuandlismContext_.stage = () ->
         n = n.replace(/0+$/, '')
         n = n.replace(/\.$/, '')
         "#{n} #{units}"
+        
+        
+      # Build the xAxis tick formatting function
+      xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
+      xAxis.tickFormat (d) =>
+        date = new Date (lines[0].dateAt(d))
+        "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
       
    
       return
@@ -101,7 +103,9 @@ QuandlismContext_.stage = () ->
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
-      
+      return
+
+    # Draw y and x grid lines
     drawGridLines = () =>
       for y in yScale.ticks Math.floor context.h()*quandlism_stage.h / 30
         ctx.beginPath()
@@ -112,8 +116,7 @@ QuandlismContext_.stage = () ->
         ctx.stroke()
         ctx.closePath()
         
-      for x in xScale.ticks 5
-        console.log "#{x} #{xScale x}"
+      for x in xScale.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
         ctx.beginPath()
         ctx.strokeStyle = '#EDEDED'
         ctx.lineWith = 1

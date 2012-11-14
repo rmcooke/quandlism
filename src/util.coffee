@@ -42,6 +42,11 @@ QuandlismContext_.utility = () ->
     [d3.min(exes, (m) -> m[0]), d3.max(exes, (m) -> m[1])]
  
  
+  # Returns the name of the month
+  utility.getMonthName = (monthDigit) =>
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    months[monthDigit]
+    
   # Return a color
   #
   # i - The index of a line

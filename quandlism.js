@@ -331,7 +331,7 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, extent, height, lines, stage, threshold, width, xAxis, xAxisDOM, xDateScale, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
+    var canvas, canvasId, context, ctx, extent, height, lines, stage, threshold, width, xAxis, xAxisDOM, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
       _this = this;
     context = this;
     canvasId = null;
@@ -339,9 +339,8 @@
     width = Math.floor(context.w() - quandlism_yaxis_width);
     height = Math.floor(context.h() * quandlism_stage.h);
     xScale = d3.scale.linear();
-    xDateScale = d3.time.scale();
     yScale = d3.scale.linear();
-    xAxis = d3.svg.axis().orient('bottom').scale(xDateScale);
+    xAxis = d3.svg.axis().orient('bottom').scale(xScale);
     yAxis = d3.svg.axis().orient('left').scale(yScale);
     yAxisDOM = null;
     xAxisDOM = null;
@@ -377,20 +376,16 @@
         xAxisDOM.attr('style', "margin-left: " + quandlism_yaxis_width);
       }
       yAxis.tickSize(5, 3, 0);
-      yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
-      xAxis.ticks(5);
       xAxis.tickSize(5, 3, 0);
-      xAxis.tickFormat(d3.time.format("%b %d, %Y"));
       setScales = function() {
-        var divisor, parseDate, units;
+        var divisor, units;
         extent = context.utility().getExtent(lines, xStart, xEnd);
-        parseDate = context.utility().parseDate(lines[0].dateAt(0));
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
         xScale.domain([xStart, xEnd]);
         xScale.range([context.padding(), width - context.padding()]);
-        xDateScale.domain([parseDate(lines[0].dateAt(xStart)), parseDate(lines[0].dateAt(xEnd))]);
-        xDateScale.range([context.padding(), width - context.padding()]);
+        yAxis.tickSize(5, 3, 0);
+        yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
         units = context.utility().getUnit(Math.round(extent[1]));
         divisor = 1;
         if (units === 'K') {
@@ -406,6 +401,12 @@
           n = n.replace(/\.$/, '');
           return "" + n + " " + units;
         });
+        xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
+        xAxis.tickFormat(function(d) {
+          var date;
+          date = new Date(lines[0].dateAt(d));
+          return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
+        });
       };
       drawAxis = function() {
         var xg, yg;
@@ -415,7 +416,7 @@
         yg.call(yAxis);
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
-        return xg.call(xAxis);
+        xg.call(xAxis);
       };
       drawGridLines = function() {
         var x, y, _i, _j, _len, _len1, _ref, _ref1, _results;
@@ -430,11 +431,10 @@
           ctx.stroke();
           ctx.closePath();
         }
-        _ref1 = xScale.ticks(5);
+        _ref1 = xScale.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
         _results = [];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           x = _ref1[_j];
-          console.log("" + x + " " + (xScale(x)));
           ctx.beginPath();
           ctx.strokeStyle = '#EDEDED';
           ctx.lineWith = 1;
@@ -1085,6 +1085,11 @@
           return m[1];
         })
       ];
+    };
+    utility.getMonthName = function(monthDigit) {
+      var months;
+      months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return months[monthDigit];
     };
     utility.getColor = function(i) {
       var s;
