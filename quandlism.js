@@ -3,7 +3,7 @@
   var QuandlismContext, QuandlismContext_, QuandlismLine, quandlism, quandlism_axis, quandlism_brush, quandlism_id_ref, quandlism_line_id, quandlism_stage, quandlism_xaxis, quandlism_yaxis_width;
 
   quandlism = exports.quandlism = {
-    version: '0.2.0'
+    version: '0.3.0'
   };
 
   quandlism.context = function() {
@@ -499,8 +499,10 @@
         return false;
       };
       drawTooltip = function(x, line, hex) {
-        var pointSize;
-        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>: " + (context.utility().formatNumberAsString(line.valueAt(x))) + "  on " + (line.dateAt(x)));
+        var date, pointSize, value;
+        date = new Date(line.dateAt(x));
+        value = line.valueAt(x);
+        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>, " + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ": " + (value.toFixed(2)));
         draw(line.id());
         pointSize = xEnd - xStart <= threshold ? 5 : 3;
         line.drawPoint(hex, ctx, xScale, yScale, x, pointSize);
@@ -709,19 +711,19 @@
         }
       };
       drawBrush = function() {
-        ctx.strokeStyle = 'rgba(207, 207, 207, 0.55)';
+        ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)';
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(207, 207, 207, 0.55)';
+        ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
         ctx.fillRect(xStart, 0, brushWidth, height);
         ctx.lineWidth = 1;
         ctx.lineTo(xStart, height);
         ctx.closePath();
         ctx.beginPath();
-        ctx.fillStyle = '#CFCFCF';
+        ctx.fillStyle = '#D9D9D9';
         ctx.fillRect(xStart - handleWidth, 0, handleWidth, height);
         ctx.closePath();
         ctx.beginPath();
-        ctx.fillStyle = '#CFCFCF';
+        ctx.fillStyle = '#D9D9D9';
         ctx.fillRect(xStart + brushWidth, 0, handleWidth, height);
         ctx.closePath();
       };

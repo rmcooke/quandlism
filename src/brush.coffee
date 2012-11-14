@@ -119,21 +119,21 @@ QuandlismContext_.brush = () ->
       
     # Draw the brush control
     drawBrush = () =>
-      ctx.strokeStyle = 'rgba(207, 207, 207, 0.55)'
+      ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)'
       ctx.beginPath()
-      ctx.fillStyle = 'rgba(207, 207, 207, 0.55)'
+      ctx.fillStyle = 'rgba(237, 237, 237, 0.80)'
       ctx.fillRect xStart, 0, brushWidth, height
       ctx.lineWidth = 1
       ctx.lineTo xStart, height
       ctx.closePath()
     
       ctx.beginPath()
-      ctx.fillStyle = '#CFCFCF'
+      ctx.fillStyle = '#D9D9D9'
       ctx.fillRect xStart-handleWidth, 0, handleWidth, height
       ctx.closePath()
       
       ctx.beginPath()
-      ctx.fillStyle = '#CFCFCF'
+      ctx.fillStyle = '#D9D9D9'
       ctx.fillRect xStart + brushWidth, 0, handleWidth, height
       ctx.closePath()
       return
