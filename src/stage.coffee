@@ -2,7 +2,7 @@ QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
   lines       = []
-  width       = Math.floor (context.w()-quandlism_yaxis_width)
+  width       = Math.floor (context.w()-quandlism_yaxis_width-1)
   height      = Math.floor context.h() * quandlism_stage.h
   xScale      = d3.scale.linear()
   yScale      = d3.scale.linear()
@@ -220,7 +220,7 @@ QuandlismContext_.stage = () ->
     # Resize, clear and re-draw
     context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
-      width = Math.floor context.w()-quandlism_yaxis_width
+      width = Math.floor context.w()-quandlism_yaxis_width-1
       height = Math.floor context.h() * quandlism_stage.h
       canvas.attr 'width', width
       canvas.attr 'height', height
