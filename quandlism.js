@@ -7,7 +7,7 @@
   };
 
   quandlism.context = function() {
-    var colorScale, context, dom, dombrush, domlegend, domstage, domtooltip, endPercent, event, h, lines, padding, startPoint, w,
+    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, startPoint, w,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -17,13 +17,15 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
-    endPercent = 0.80;
     padding = 0;
     startPoint = 0.75;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
-    colorScale = d3.scale.category20();
+    colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
     context.attachData = function(lines_) {
+      if (!lines.length) {
+        context.addColorsIfNecessary(lines_);
+      }
       lines = lines_;
       if (domstage) {
         d3.select(domstage).datum(lines);
@@ -53,25 +55,34 @@
       h = $(dom).height();
       return context;
     };
+    context.addColorsIfNecessary = function(lines_) {
+      var brightness, colorsNeeded, i, rgb;
+      colorsNeeded = lines_.length - colorList.length;
+      if (colorsNeeded < 0) {
+        return;
+      }
+      brightness = 0.3;
+      i = 0;
+      while (i < colorsNeeded) {
+        rgb = d3.rgb(colorList[i]).brighter(brightness);
+        colorList.push(rgb.toString());
+        i++;
+      }
+      console.log(colorsNeeded);
+      console.log(colorList.length);
+    };
     context.lines = function(_) {
-      if (!(_ != null)) {
+      if (!_) {
         return lines;
       }
       lines = _;
       return context;
     };
-    context.colorScale = function(_) {
+    context.colorList = function(_) {
       if (!(_ != null)) {
-        return colorScale;
+        return colorList;
       }
-      colorScale = _;
-      return context;
-    };
-    context.endPercent = function(_) {
-      if (!(_ != null)) {
-        return endPercent;
-      }
-      endPercent = _;
+      colorList = _;
       return context;
     };
     context.startPoint = function(_) {
@@ -471,7 +482,7 @@
       lineHit = function(m) {
         var hex, hitMatrix, i, j, k, n, _i, _j, _k, _ref, _ref1, _ref2, _ref3, _ref4;
         hex = context.utility().getPixelRGB(m, ctx);
-        i = _.indexOf(context.colorScale().range(), hex);
+        i = _.indexOf(context.colorList(), hex);
         if (i !== -1) {
           return {
             x: m[0],
@@ -489,7 +500,7 @@
         }
         for (n = _k = 0, _ref4 = hitMatrix.length - 1; 0 <= _ref4 ? _k <= _ref4 : _k >= _ref4; n = 0 <= _ref4 ? ++_k : --_k) {
           hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
-          i = _.indexOf(context.colorScale().range(), hex);
+          i = _.indexOf(context.colorList(), hex);
           if (i !== -1) {
             return {
               x: hitMatrix[n][0],
@@ -1139,9 +1150,9 @@
       return months[monthDigit];
     };
     utility.getColor = function(i) {
-      var s;
-      s = context.colorScale();
-      return s(i);
+      var colors;
+      colors = context.colorList();
+      return colors[i];
     };
     utility.formatNumberAsString = function(num) {
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

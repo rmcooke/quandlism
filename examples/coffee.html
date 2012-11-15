@@ -83,7 +83,6 @@
   
   <p id='tooltip'></p>
   
-  
   <div id='chart'>
     <div id='stage'></div>
     <div id='brush'></div>
@@ -98,7 +97,7 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend')  .domtooltip("#tooltip")
+  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip("#tooltip")
   
   d3.json('/data/uhero.json', function(data) {    
     lines = context.utility().createLines(data);

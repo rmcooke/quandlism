@@ -167,7 +167,8 @@ QuandlismContext_.stage = () ->
       
       # Check for a direct match under cursor
       hex = context.utility().getPixelRGB m, ctx
-      i = _.indexOf context.colorScale().range(), hex
+      
+      i = _.indexOf context.colorList(), hex
       return {x: m[0], color: hex, line: lines[i] } if i isnt -1
 
       # If no match, check the immediate area for fuzzy matching
@@ -179,9 +180,8 @@ QuandlismContext_.stage = () ->
             
       for n in [0..(hitMatrix.length-1)]
         hex = context.utility().getPixelRGB hitMatrix[n], ctx
-        i = _.indexOf context.colorScale().range(), hex
+        i = _.indexOf context.colorList(), hex
         return {x: hitMatrix[n][0], color: hex, line: lines[i]} if i isnt -1
-        
       false
       
     # Render the tooltip data, from a mouseover event on a line, and highlight the moused over point

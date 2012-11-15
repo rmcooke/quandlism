@@ -8,21 +8,24 @@ quandlism.context = () ->
   dombrush      = null
   domlegend     = null
   domtooltip    = null
-  endPercent    = 0.80
   padding       = 0 
   startPoint    = 0.75
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
-  colorScale    = d3.scale.category20()
+  colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
   context.attachData = (lines_) =>
+    # Only operate on color array the first time attachData is called
+    if not lines.length
+      context.addColorsIfNecessary(lines_)
     lines = lines_
     d3.select(domstage).datum lines if domstage
     d3.select(dombrush).datum lines if dombrush
     d3.select(domlegend).datum lines if domlegend
     context
+
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -39,23 +42,29 @@ quandlism.context = () ->
     context
     
     
+  # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
+  # by applying functions to the existing codes until there are lines.length number of unique codes
+  context.addColorsIfNecessary = (lines_) =>
+    colorsNeeded = lines_.length-colorList.length
+    return if colorsNeeded < 0
+    brightness = 0.3
+    i = 0
+    while i < colorsNeeded
+      rgb = d3.rgb(colorList[i]).brighter brightness
+      colorList.push rgb.toString()
+      i++
+    return   
+    
+    
   # Expose attributes via getters and settesr
-  
-  
   context.lines = (_) =>
-
-    if not _? then return lines
+    if not _ then return lines
     lines = _
     context
     
-  context.colorScale = (_) =>
-    if not _? then return colorScale
-    colorScale = _
-    context
-    
-  context.endPercent = (_) =>
-    if not _? then return endPercent
-    endPercent = _
+  context.colorList = (_) =>
+    if not _? then return colorList
+    colorList = _
     context
   
   context.startPoint = (_) =>

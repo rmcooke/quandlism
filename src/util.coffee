@@ -53,8 +53,7 @@ QuandlismContext_.utility = () ->
   # 
   # Returns a string hex code
   utility.getColor = (i) =>
-    s = context.colorScale()
-    s i
+    context.colorList()[i]
     
   # Formats a number with commas
   #
