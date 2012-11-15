@@ -32,7 +32,7 @@ QuandlismContext_.brush = () ->
 
   brush = (selection) =>
     lines = selection.datum()
-    canvasId = "canvas-brush-#{++quandlism_id_ref}"
+    canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
 
     # append canvas and get reference to element and drawing context
     canvas = selection.append('canvas').attr('id', canvasId)
@@ -266,6 +266,7 @@ QuandlismContext_.brush = () ->
       setScales()
       checkDragState()
       setBrushValues() if dragEnabled
+      drawAxis()
       dispatchAdjust()      
       return
       
@@ -332,11 +333,17 @@ QuandlismContext_.brush = () ->
           addBrushClass ''
       return
 
-  # Geters and setters
+  # 
+  # Getters and setters
+  #  
+  brush.canvasId = (_) =>
+    if not _? then return canvasId
+    canvasId = _
+    brush
   
-  brush.xAxis = (_) =>
-    if not _? then return xAxis
-    xAxis = _
+  brush.xScale = (_) =>
+    if not _? then return xScale
+    xScale = _
     brush
     
   brush.threshold = (_) =>

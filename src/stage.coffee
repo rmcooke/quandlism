@@ -21,10 +21,10 @@ QuandlismContext_.stage = () ->
   stage = (selection) =>
     # Get lines and generate unique ID for the stage
     lines = selection.datum()
-    canvasId = "canvas-stage-#{++quandlism_id_ref}"
+    canvasId = "canvas-stage-#{++quandlism_id_ref}" if not canvasId?
     
     # Build the yAxis
-    if not yAxisDOM? and not false
+    if not yAxisDOM? 
       yAxisDOM = selection.insert 'svg'
       yAxisDOM.attr 'class', 'y axis'
       yAxisDOM.attr 'id', "y-axis-#{canvasId}"
@@ -41,7 +41,7 @@ QuandlismContext_.stage = () ->
     ctx = canvas.node().getContext '2d'
    
     # Build the xAxis
-    if not xAxisDOM? and not false
+    if not xAxisDOM? 
       xAxisDOM = selection.append 'svg'
       xAxisDOM.attr 'class', 'x axis'
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
@@ -273,16 +273,6 @@ QuandlismContext_.stage = () ->
   stage.canvasId = (_) =>
     if not _? then return canvasId
     canvasId = _
-    stage
-    
-  stage.width = (_) =>
-    if not _? then return width
-    width = _
-    stage
-  
-  stage.height = (_) =>
-    if not _? then return height
-    height = _
     stage
     
   stage.xScale = (_) =>

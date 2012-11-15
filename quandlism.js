@@ -3,7 +3,7 @@
   var QuandlismContext, QuandlismContext_, QuandlismLine, quandlism, quandlism_axis, quandlism_brush, quandlism_id_ref, quandlism_line_id, quandlism_stage, quandlism_xaxis, quandlism_yaxis_width;
 
   quandlism = exports.quandlism = {
-    version: '0.3.0'
+    version: '0.4.0'
   };
 
   quandlism.context = function() {
@@ -68,8 +68,6 @@
         colorList.push(rgb.toString());
         i++;
       }
-      console.log(colorsNeeded);
-      console.log(colorList.length);
     };
     context.lines = function(_) {
       if (!_) {
@@ -364,8 +362,10 @@
     stage = function(selection) {
       var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales;
       lines = selection.datum();
-      canvasId = "canvas-stage-" + (++quandlism_id_ref);
-      if (!(yAxisDOM != null) && !false) {
+      if (!(canvasId != null)) {
+        canvasId = "canvas-stage-" + (++quandlism_id_ref);
+      }
+      if (!(yAxisDOM != null)) {
         yAxisDOM = selection.insert('svg');
         yAxisDOM.attr('class', 'y axis');
         yAxisDOM.attr('id', "y-axis-" + canvasId);
@@ -378,7 +378,7 @@
       canvas.attr('class', 'stage');
       canvas.attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
-      if (!(xAxisDOM != null) && !false) {
+      if (!(xAxisDOM != null)) {
         xAxisDOM = selection.append('svg');
         xAxisDOM.attr('class', 'x axis');
         xAxisDOM.attr('id', "x-axis-" + canvasId);
@@ -574,20 +574,6 @@
       canvasId = _;
       return stage;
     };
-    stage.width = function(_) {
-      if (!(_ != null)) {
-        return width;
-      }
-      width = _;
-      return stage;
-    };
-    stage.height = function(_) {
-      if (!(_ != null)) {
-        return height;
-      }
-      height = _;
-      return stage;
-    };
     stage.xScale = function(_) {
       if (!(_ != null)) {
         return xScale;
@@ -663,7 +649,9 @@
     brush = function(selection) {
       var addBrushClass, checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, isDraggingLocation, isLeftHandle, isRightHandle, resetState, setBrushValues, setScales, update;
       lines = selection.datum();
-      canvasId = "canvas-brush-" + (++quandlism_id_ref);
+      if (!(canvasId != null)) {
+        canvasId = "canvas-brush-" + (++quandlism_id_ref);
+      }
       canvas = selection.append('canvas').attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
       if (!(xAxisDOM != null)) {
@@ -819,6 +807,7 @@
         if (dragEnabled) {
           setBrushValues();
         }
+        drawAxis();
         dispatchAdjust();
       });
       context.on("toggle.brush", function() {
@@ -879,11 +868,18 @@
         }
       });
     };
-    brush.xAxis = function(_) {
+    brush.canvasId = function(_) {
       if (!(_ != null)) {
-        return xAxis;
+        return canvasId;
       }
-      xAxis = _;
+      canvasId = _;
+      return brush;
+    };
+    brush.xScale = function(_) {
+      if (!(_ != null)) {
+        return xScale;
+      }
+      xScale = _;
       return brush;
     };
     brush.threshold = function(_) {
@@ -1150,9 +1146,7 @@
       return months[monthDigit];
     };
     utility.getColor = function(i) {
-      var colors;
-      colors = context.colorList();
-      return colors[i];
+      return context.colorList()[i];
     };
     utility.formatNumberAsString = function(num) {
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
