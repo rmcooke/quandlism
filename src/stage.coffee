@@ -24,12 +24,12 @@ QuandlismContext_.stage = () ->
     canvasId = "canvas-stage-#{++quandlism_id_ref}"
     
     # Build the yAxis
-    if not yAxisDOM?
+    if not yAxisDOM? and not false
       yAxisDOM = selection.insert 'svg'
       yAxisDOM.attr 'class', 'y axis'
       yAxisDOM.attr 'id', "y-axis-#{canvasId}"
       yAxisDOM.attr 'width', quandlism_yaxis_width
-      yAxisDOM.attr 'height', context.h()*quandlism_stage.h
+      yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -41,12 +41,12 @@ QuandlismContext_.stage = () ->
     ctx = canvas.node().getContext '2d'
    
     # Build the xAxis
-    if not xAxisDOM?
+    if not xAxisDOM? and not false
       xAxisDOM = selection.append 'svg'
       xAxisDOM.attr 'class', 'x axis'
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
-      xAxisDOM.attr 'width', context.w()-quandlism_yaxis_width
-      xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
+      xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
+      xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
       xAxisDOM.attr 'style', "margin-left: #{quandlism_yaxis_width}"
       
     # Axis tick size
@@ -220,7 +220,7 @@ QuandlismContext_.stage = () ->
     # Resize, clear and re-draw
     context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
-      width = Math.floor context.w() - quandlism_yaxis_width
+      width = Math.floor context.w()-quandlism_yaxis_width
       height = Math.floor context.h() * quandlism_stage.h
       canvas.attr 'width', width
       canvas.attr 'height', height

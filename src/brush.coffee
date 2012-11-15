@@ -1,8 +1,8 @@
 QuandlismContext_.brush = () ->
   context       = @
-  height        = context.h() * quandlism_brush.h
+  height        = Math.floor context.h() * quandlism_brush.h
   height0       = height
-  width         = context.w()-quandlism_yaxis_width
+  width         = Math.floor context.w()-quandlism_yaxis_width
   width0        = width
   brushWidth    = null
   brushWidth0   = null
@@ -44,8 +44,8 @@ QuandlismContext_.brush = () ->
       xAxisDOM = selection.append 'svg'
       xAxisDOM.attr 'class', 'x axis'
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
-      xAxisDOM.attr 'height', context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'width', context.w()-quandlism_yaxis_width
+      xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
+      xAxisDOM.attr 'width', Math.floor context.w()-quandlism_yaxis_width
       
     
     # Setup xAxis
@@ -245,11 +245,11 @@ QuandlismContext_.brush = () ->
     context.on "respond.brush", () ->
       height0 = height
       width0 = width
-      height = context.h()*quandlism_brush.h
-      width = context.w()-quandlism_yaxis_width
-      xStart = xStart/width0*width
-      xStart0 = xStart0/width0*width
-      brushWidth = brushWidth/width0*width
+      height = Math.floor context.h()*quandlism_brush.h
+      width = Math.floor context.w()-quandlism_yaxis_width
+      xStart = Math.floor xStart/width0*width
+      xStart0 = Math.floor xStart0/width0*width
+      brushWidth = Math.floor brushWidth/width0*width
       brushWidth0 = brushWidth
       
       # 
