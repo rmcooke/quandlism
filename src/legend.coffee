@@ -14,7 +14,10 @@ QuandlismContext_.legend = () ->
     legend_ = selection.selectAll('li').data(lines)
       .enter()
       .append('li')
-      .append('a').attr('href', 'javascript:;').attr('data-line-id', (line) -> line.id()).attr('style', (line) -> "background-color: #{context.utility().getColor line.id()}")
+        .attr('style', (line) -> "color: #{context.utility().getColor line.id()}")
+      .append('a', ':first-child')
+        .attr('href', 'javascript:;')
+        .attr('data-line-id', (line) -> line.id())
       .text((line) -> line.name())
   
 
@@ -30,9 +33,7 @@ QuandlismContext_.legend = () ->
       id = el.getAttribute 'data-line-id'
       e.preventDefault()
       if lines[id]?
-        if lines[id].toggle() == false then $(el).addClass('off').attr("style", 'background-color: none;') else $(el).removeClass('off').attr("style", "background-color: #{context.utility().getColor id}")
+        if lines[id].toggle() is false then $(el).parent().addClass 'off' else $(el).parent().removeClass 'off'
         context.toggle()
       return
-
-
-  legend
+    legend

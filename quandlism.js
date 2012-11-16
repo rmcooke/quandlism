@@ -1056,21 +1056,21 @@
     context = this;
     legend_ = null;
     lines = [];
-    legend = function(selection) {
+    return legend = function(selection) {
       var _this = this;
       lines = selection.datum();
       selection.selectAll('li').remove();
-      legend_ = selection.selectAll('li').data(lines).enter().append('li').append('a').attr('href', 'javascript:;').attr('data-line-id', function(line) {
+      legend_ = selection.selectAll('li').data(lines).enter().append('li').attr('style', function(line) {
+        return "color: " + (context.utility().getColor(line.id()));
+      }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
         return line.id();
-      }).attr('style', function(line) {
-        return "background-color: " + (context.utility().getColor(line.id()));
       }).text(function(line) {
         return line.name();
       });
       context.on("refresh.legend", function() {
         return lines = selection.datum();
       });
-      return selection.selectAll('a').on("click", function(d, i) {
+      selection.selectAll('a').on("click", function(d, i) {
         var e, el, id;
         e = d3.event;
         el = e.target;
@@ -1078,15 +1078,15 @@
         e.preventDefault();
         if (lines[id] != null) {
           if (lines[id].toggle() === false) {
-            $(el).addClass('off').attr("style", 'background-color: none;');
+            $(el).parent().addClass('off');
           } else {
-            $(el).removeClass('off').attr("style", "background-color: " + (context.utility().getColor(id)));
+            $(el).parent().removeClass('off');
           }
           context.toggle();
         }
       });
+      return legend;
     };
-    return legend;
   };
 
   QuandlismContext_.utility = function() {
