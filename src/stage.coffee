@@ -206,7 +206,7 @@ QuandlismContext_.stage = () ->
       # Container
       ctx.beginPath()
       ctx.fillStyle = 'rgba(237, 237, 237, 0.80)'
-      ctx.fillRect w-320, 0, 320, 15
+      ctx.fillRect w-240, 0, 240, 15
       ctx.closePath()
       # Value
       ctx.fillStyle = '#000'
@@ -215,7 +215,7 @@ QuandlismContext_.stage = () ->
       # Line Name
       ctx.fillStyle = line.color()
       ctx.textAlign = 'end'
-      ctx.fillText "#{line.name()}", w-110, 10, 200
+      ctx.fillText "#{context.utility().truncate line.name(), 20}", w-110, 10, 200
 
       return
       

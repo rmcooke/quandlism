@@ -528,14 +528,14 @@
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
         ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
-        ctx.fillRect(w - 320, 0, 320, 15);
+        ctx.fillRect(w - 240, 0, 240, 15);
         ctx.closePath();
         ctx.fillStyle = '#000';
         ctx.textAlign = 'start';
         ctx.fillText("" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ": " + (value.toFixed(2)), w - 100, 10, 100);
         ctx.fillStyle = line.color();
         ctx.textAlign = 'end';
-        ctx.fillText("" + (line.name()), w - 110, 10, 200);
+        ctx.fillText("" + (context.utility().truncate(line.name(), 20)), w - 110, 10, 200);
       };
       clearTooltip = function() {
         draw();
@@ -1105,6 +1105,13 @@
       _this = this;
     context = this;
     utility = function() {};
+    utility.truncate = function(word, chars) {
+      if (word.length > chars) {
+        return "" + (word.substring(0, chars)) + "...";
+      } else {
+        return word;
+      }
+    };
     utility.createLines = function(data) {
       var i, keys, line, lineData, lines, _i, _len;
       keys = data.columns.slice(1);

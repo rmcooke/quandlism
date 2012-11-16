@@ -4,6 +4,11 @@ QuandlismContext_.utility = () ->
   
   utility = () -> return
 
+
+  # Truncate a word to a max 
+  utility.truncate = (word, chars) =>
+    if word.length > chars then "#{word.substring(0, chars)}..." else word
+    
   # Create lines objects
   #
   # data - Raw data 
