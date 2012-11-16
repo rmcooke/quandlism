@@ -105,11 +105,6 @@ quandlism.context = () ->
     domlegend = _
     context
     
-  context.domtooltip = (_) =>
-    if not _? then return domtooltip
-    domtooltip = _
-    context
-    
   context.padding = (_) =>
     if not _? then return padding
     padding = _

@@ -186,24 +186,42 @@ QuandlismContext_.stage = () ->
       
     # Render the tooltip data, from a mouseover event on a line, and highlight the moused over point
     #
+    # locq  - Mouse location
     # x     - The x index of the data point
     # line  - The line that was highlighted
     # hex   - The color
     # 
     # Returns null
-    drawTooltip = (x, line, hex) ->
+    drawTooltip = (loc, x, line, hex) =>
       date = new Date line.dateAt x
       value = line.valueAt x
-      $(context.domtooltip()).html "<span style='color: #{hex};'>#{line.name()}</span>, #{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}: #{value.toFixed 2}"
+      # Draw the line with the point highlighted
       draw line.id()
       pointSize = if (xEnd - xStart <= threshold) then 5 else 3
-      line.drawPoint hex, ctx, xScale, yScale, x, pointSize
+      line.drawPoint ctx, xScale, yScale, x, pointSize
+      
+      # In toolip container?
+      inTooltip = loc[1] <= 20 and loc[0] >= (width-500)
+      w = if inTooltip then width-400 else width
+      # Container
+      ctx.beginPath()
+      ctx.fillStyle = 'rgba(237, 237, 237, 0.80)'
+      ctx.fillRect w-320, 0, 320, 15
+      ctx.closePath()
+      # Value
+      ctx.fillStyle = '#000'
+      ctx.textAlign = 'start'
+      ctx.fillText "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}: #{value.toFixed 2}", w-100, 10, 100
+      # Line Name
+      ctx.fillStyle = line.color()
+      ctx.textAlign = 'end'
+      ctx.fillText "#{line.name()}", w-110, 10, 200
+
       return
       
       
     # Remove toolitp data and graph highlighting
     clearTooltip = () ->
-      $(context.domtooltip()).text ''
       draw()
       return
       
@@ -258,11 +276,11 @@ QuandlismContext_.stage = () ->
       return
       
     # If the tooltip dom is defined, track mousemovement on stage for tooltip
-    if context.domtooltip()?
-      d3.select("##{canvasId}").on 'mousemove', (e) ->
-        hit = lineHit d3.mouse @ 
-        if hit isnt false then drawTooltip Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
-        return
+    d3.select("##{canvasId}").on 'mousemove', (e) ->
+      loc = d3.mouse @
+      hit = lineHit loc
+      if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
+      return
  
     return
     

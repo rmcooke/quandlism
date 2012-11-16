@@ -137,13 +137,6 @@
       domlegend = _;
       return context;
     };
-    context.domtooltip = function(_) {
-      if (!(_ != null)) {
-        return domtooltip;
-      }
-      domtooltip = _;
-      return context;
-    };
     context.padding = function(_) {
       if (!(_ != null)) {
         return padding;
@@ -524,17 +517,27 @@
         }
         return false;
       };
-      drawTooltip = function(x, line, hex) {
-        var date, pointSize, value;
+      drawTooltip = function(loc, x, line, hex) {
+        var date, inTooltip, pointSize, value, w;
         date = new Date(line.dateAt(x));
         value = line.valueAt(x);
-        $(context.domtooltip()).html("<span style='color: " + hex + ";'>" + (line.name()) + "</span>, " + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ": " + (value.toFixed(2)));
         draw(line.id());
         pointSize = xEnd - xStart <= threshold ? 5 : 3;
-        line.drawPoint(hex, ctx, xScale, yScale, x, pointSize);
+        line.drawPoint(ctx, xScale, yScale, x, pointSize);
+        inTooltip = loc[1] <= 20 && loc[0] >= (width - 500);
+        w = inTooltip ? width - 400 : width;
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
+        ctx.fillRect(w - 320, 0, 320, 15);
+        ctx.closePath();
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'start';
+        ctx.fillText("" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ": " + (value.toFixed(2)), w - 100, 10, 100);
+        ctx.fillStyle = line.color();
+        ctx.textAlign = 'end';
+        ctx.fillText("" + (line.name()), w - 110, 10, 200);
       };
       clearTooltip = function() {
-        $(context.domtooltip()).text('');
         draw();
       };
       if (!context.dombrush()) {
@@ -568,17 +571,16 @@
           draw();
         }
       });
-      if (context.domtooltip() != null) {
-        d3.select("#" + canvasId).on('mousemove', function(e) {
-          var hit;
-          hit = lineHit(d3.mouse(this));
-          if (hit !== false) {
-            drawTooltip(Math.round(xScale.invert(hit.x)), hit.line, hit.color);
-          } else {
-            clearTooltip();
-          }
-        });
-      }
+      d3.select("#" + canvasId).on('mousemove', function(e) {
+        var hit, loc;
+        loc = d3.mouse(this);
+        hit = lineHit(loc);
+        if (hit !== false) {
+          drawTooltip(loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color);
+        } else {
+          clearTooltip();
+        }
+      });
     };
     stage.canvasId = function(_) {
       if (!(_ != null)) {
