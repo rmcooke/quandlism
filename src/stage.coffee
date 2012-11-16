@@ -201,7 +201,7 @@ QuandlismContext_.stage = () ->
       line.drawPoint ctx, xScale, yScale, x, pointSize
       
       # In toolip container?
-      inTooltip = loc[1] <= 20 and loc[0] >= (width-500)
+      inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
       w = if inTooltip then width-400 else width
       # Container
       ctx.beginPath()

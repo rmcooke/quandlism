@@ -524,7 +524,7 @@
         draw(line.id());
         pointSize = xEnd - xStart <= threshold ? 5 : 3;
         line.drawPoint(ctx, xScale, yScale, x, pointSize);
-        inTooltip = loc[1] <= 20 && loc[0] >= (width - 500);
+        inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
         ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
