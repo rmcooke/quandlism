@@ -20,7 +20,10 @@ quandlism.context = () ->
     # Only operate on color array the first time attachData is called
     if not lines.length
       context.addColorsIfNecessary(lines_)
+      line.color(colorList[i]) for line, i in lines_
+            
     lines = lines_
+        
     d3.select(domstage).datum lines if domstage
     d3.select(dombrush).datum lines if dombrush
     d3.select(domlegend).datum lines if domlegend

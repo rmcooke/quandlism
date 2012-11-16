@@ -23,8 +23,13 @@
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
     context.attachData = function(lines_) {
+      var i, line, _i, _len;
       if (!lines.length) {
         context.addColorsIfNecessary(lines_);
+        for (i = _i = 0, _len = lines_.length; _i < _len; i = ++_i) {
+          line = lines_[i];
+          line.color(colorList[i]);
+        }
       }
       lines = lines_;
       if (domstage) {
@@ -220,7 +225,7 @@
   })();
 
   QuandlismContext_.line = function(data) {
-    var context, id, line, name, values, visible,
+    var color, context, id, line, name, values, visible,
       _this = this;
     line = new QuandlismLine(context);
     context = this;
@@ -228,6 +233,7 @@
     values = data.values.reverse();
     id = quandlism_line_id++;
     visible = true;
+    color = '#000000';
     line.extent = function(start, end) {
       var i, max, min, n, val;
       i = start != null ? start : 0;
@@ -334,6 +340,13 @@
         return visible;
       }
       visible = _;
+      return line;
+    };
+    line.color = function(_) {
+      if (!(_ != null)) {
+        return color;
+      }
+      color = _;
       return line;
     };
     return line;
@@ -1052,23 +1065,19 @@
   };
 
   QuandlismContext_.legend = function() {
-    var context, legend, legend_, lines;
+    var context, legend, lines;
     context = this;
-    legend_ = null;
     lines = [];
     return legend = function(selection) {
       var _this = this;
       lines = selection.datum();
       selection.selectAll('li').remove();
-      legend_ = selection.selectAll('li').data(lines).enter().append('li').attr('style', function(line) {
-        return "color: " + (context.utility().getColor(line.id()));
+      selection.selectAll('li').data(lines).enter().append('li').attr('style', function(line) {
+        return "color: " + (line.color());
       }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
         return line.id();
       }).text(function(line) {
         return line.name();
-      });
-      context.on("refresh.legend", function() {
-        return lines = selection.datum();
       });
       selection.selectAll('a').on("click", function(d, i) {
         var e, el, id;

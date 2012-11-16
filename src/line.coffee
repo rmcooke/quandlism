@@ -7,6 +7,7 @@ QuandlismContext_.line = (data) ->
   values       = data.values.reverse()
   id           = quandlism_line_id++
   visible      = true
+  color        = '#000000'
   
   
   # Instance methods
@@ -127,6 +128,11 @@ QuandlismContext_.line = (data) ->
   line.visible = (_) =>
     if not _? then return visible
     visible = _
+    line
+    
+  line.color = (_) =>
+    if not _? then return color
+    color = _
     line
     
   line
