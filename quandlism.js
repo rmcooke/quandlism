@@ -286,16 +286,16 @@
         return null;
       }
     };
-    line.drawPoint = function(color, ctx, xS, yS, index, radius) {
+    line.drawPoint = function(ctx, xS, yS, index, radius) {
       if (this.visible()) {
         ctx.beginPath();
         ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
-        ctx.fillStyle = color;
+        ctx.fillStyle = this.color();
         ctx.fill();
         return ctx.closePath();
       }
     };
-    line.drawPath = function(color, ctx, xS, yS, start, end, lineWidth) {
+    line.drawPath = function(ctx, xS, yS, start, end, lineWidth) {
       var i, _i;
       if (this.visible()) {
         ctx.beginPath();
@@ -303,7 +303,7 @@
           ctx.lineTo(xS(i), yS(this.valueAt(i)));
         }
         ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = this.color();
         ctx.stroke();
         return ctx.closePath();
       }
@@ -481,14 +481,14 @@
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           if (xEnd - xStart <= threshold) {
-            line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth);
+            line.drawPath(ctx, xScale, yScale, xStart, xEnd, lineWidth);
             for (i = _j = xStart; xStart <= xEnd ? _j <= xEnd : _j >= xEnd; i = xStart <= xEnd ? ++_j : --_j) {
-              line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, i, 3);
+              line.drawPoint(ctx, xScale, yScale, i, 3);
             }
           } else if (xEnd === xStart) {
-            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, xStart, 3);
+            line.drawPoint(ctx, xScale, yScale, xStart, 3);
           } else {
-            line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth);
+            line.drawPath(ctx, xScale, yScale, xStart, xEnd, lineWidth);
           }
         }
       };
@@ -722,9 +722,9 @@
         showPoints = lines[0].length() <= threshold;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1);
+          line.drawPath(ctx, xScale, yScale, 0, lines[0].length(), 1);
           if (showPoints) {
-            line.drawPoint(context.utility().getColor(j), ctx, xScale, yScale, j, 2);
+            line.drawPoint(ctx, xScale, yScale, j, 2);
           }
         }
       };

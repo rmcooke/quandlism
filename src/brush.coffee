@@ -128,8 +128,8 @@ QuandlismContext_.brush = () ->
     draw = () =>
       showPoints = (lines[0].length() <= threshold)
       for line, j in lines
-        line.drawPath context.utility().getColor(j), ctx, xScale, yScale, 0, lines[0].length(), 1
-        line.drawPoint context.utility().getColor(j), ctx, xScale, yScale, j, 2 if showPoints
+        line.drawPath ctx, xScale, yScale, 0, lines[0].length(), 1
+        line.drawPoint ctx, xScale, yScale, j, 2 if showPoints
       return
       
     # Uses the xStart, handleWidth and brushWidth variables to draw the 

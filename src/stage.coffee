@@ -147,13 +147,13 @@ QuandlismContext_.stage = () ->
         # If we are on a single data point, show only a point
         # Othwerwise, render a path
         if (xEnd - xStart <= threshold)
-          line.drawPath context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth
+          line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
           for i in [xStart..xEnd]
-            line.drawPoint context.utility().getColor(j), ctx, xScale, yScale, i, 3
+            line.drawPoint ctx, xScale, yScale, i, 3
         else if xEnd is xStart
-          line.drawPoint context.utility().getColor(j), ctx, xScale, yScale, xStart, 3
+          line.drawPoint ctx, xScale, yScale, xStart, 3
         else
-          line.drawPath context.utility().getColor(j), ctx, xScale, yScale, xStart, xEnd, lineWidth
+          line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
         
       return
       
