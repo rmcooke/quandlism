@@ -38,7 +38,7 @@
       if (dombrush) {
         d3.select(dombrush).datum(lines);
       }
-      if (domlegend) {
+      if (domlegend && lines.length > 1) {
         d3.select(domlegend).datum(lines);
       }
       return context;
@@ -50,7 +50,7 @@
       if (dombrush) {
         d3.select(dombrush).call(context.brush());
       }
-      if (domlegend) {
+      if (domlegend && lines.length > 1) {
         d3.select(domlegend).call(context.legend());
       }
       return context;
@@ -1070,7 +1070,7 @@
     var context, legend, lines;
     context = this;
     lines = [];
-    return legend = function(selection) {
+    legend = function(selection) {
       var _this = this;
       lines = selection.datum();
       selection.selectAll('li').remove();
@@ -1096,8 +1096,8 @@
           context.toggle();
         }
       });
-      return legend;
     };
+    return legend;
   };
 
   QuandlismContext_.utility = function() {

@@ -26,7 +26,7 @@ quandlism.context = () ->
         
     d3.select(domstage).datum lines if domstage
     d3.select(dombrush).datum lines if dombrush
-    d3.select(domlegend).datum lines if domlegend
+    d3.select(domlegend).datum lines if domlegend and lines.length > 1
     context
 
 
@@ -35,7 +35,7 @@ quandlism.context = () ->
   context.render = () =>
     d3.select(domstage).call context.stage() if domstage
     d3.select(dombrush).call context.brush() if dombrush
-    d3.select(domlegend).call context.legend() if domlegend
+    d3.select(domlegend).call context.legend() if domlegend and lines.length > 1
     context
   
   # Update the height and width 

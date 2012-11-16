@@ -7,7 +7,7 @@ QuandlismContext_.legend = () ->
     # Extract lines and remove any child elements in the selection
     lines = selection.datum()
     selection.selectAll('li').remove()
-    
+        
     # d3 joins
     selection.selectAll('li').data(lines)
       .enter()
@@ -30,4 +30,6 @@ QuandlismContext_.legend = () ->
         context.toggle()
       return
       
-    legend
+    return
+      
+  legend
