@@ -1,7 +1,7 @@
 class QuandlismLine
 
 QuandlismContext_.line = (data) ->
-  line          = new QuandlismLine(context)
+  line          = new QuandlismLine()
   context      = @
   name         = data.name
   values       = data.values.reverse()
@@ -107,7 +107,8 @@ QuandlismContext_.line = (data) ->
     @.visible(v)
     v
   
-  #
+  # Getters and setters - expose attributes of the line
+  
   line.id = (_) =>
     if not _? then return id
     id = _
@@ -135,7 +136,6 @@ QuandlismContext_.line = (data) ->
     
   line
    
-  # Instance methods
   
     
   

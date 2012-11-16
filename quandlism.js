@@ -227,7 +227,7 @@
   QuandlismContext_.line = function(data) {
     var color, context, id, line, name, values, visible,
       _this = this;
-    line = new QuandlismLine(context);
+    line = new QuandlismLine();
     context = this;
     name = data.name;
     values = data.values.reverse();
