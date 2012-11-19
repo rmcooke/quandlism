@@ -73,48 +73,12 @@ module.exports = function(grunt) {
 
   // Load plugins
   grunt.loadNpmTasks('grunt-contrib-coffee');
+  grunt.loadNpmTasks('grunt-wrap');
   
   // Default task.
   grunt.registerTask('default', 'concat coffee wrap');
   grunt.registerTask('production', 'concat wrap min');
   grunt.registerTask('all', 'concat coffee wrap min');
-  
-  /**
-   * Register wrap helper
-   */
-  grunt.registerMultiTask('wrap', 'Wraps file with specified strings', function() {
-    var files = grunt.file.expandFiles(this.file.src),
-        path = require('path'),
-        task = this,
-        src;
-    if (files) {
-      files.map(function(filepath) {
-        src = grunt.helper('wrap', filepath, {wrapper: task.data.wrapper});
-        grunt.file.write(path.join(task.file.dest, filepath), src);
-      });
-    } 
-    
-    if (this.errorCount) {
-      return false;
-    }
-    
-    grunt.log.writeln('Wrapped files created');
-    
-    
-  });
-  
-  
-
-  // Helpers
-  
-  grunt.registerHelper('wrap', function(filepath, options) {
-    options = grunt.utils._.defaults(options || {}, {
-      wrapper: ['', '']
-    });
-    return options.wrapper[0] + grunt.task.directive(filepath, grunt.file.read) + options.wrapper[1];
-  });
-  
-  
   
 
 };
