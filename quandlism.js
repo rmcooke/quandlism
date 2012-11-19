@@ -1076,6 +1076,10 @@
       selection.selectAll('li').remove();
       selection.selectAll('li').data(lines).enter().append('li').attr('style', function(line) {
         return "color: " + (line.color());
+      }).attr('class', function(line) {
+        if (!line.visible()) {
+          return "off";
+        }
       }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
         return line.id();
       }).text(function(line) {
@@ -1113,7 +1117,7 @@
       }
     };
     utility.createLines = function(data) {
-      var i, keys, line, lineData, lines, _i, _len;
+      var i, keys, line, lineData, lines, _i, _j, _len, _len1;
       keys = data.columns.slice(1);
       lineData = _.map(keys, function(key, i) {
         return _.map(data.data, function(d) {
@@ -1130,9 +1134,15 @@
             values: lineData[i]
           });
         });
+        for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
+          line = lines[i];
+          if (i > 0) {
+            line.visible(false);
+          }
+        }
       } else {
         lines = context.lines();
-        for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
+        for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
           line = lines[i];
           line.values(lineData[i].reverse());
         }

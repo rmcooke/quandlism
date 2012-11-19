@@ -13,6 +13,7 @@ QuandlismContext_.legend = () ->
       .enter()
       .append('li')
         .attr('style', (line) -> "color: #{line.color()}")
+        .attr('class', (line) -> "off" if not line.visible())
       .append('a', ':first-child')
         .attr('href', 'javascript:;')
         .attr('data-line-id', (line) -> line.id())

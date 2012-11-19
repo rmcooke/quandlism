@@ -26,6 +26,9 @@ QuandlismContext_.utility = () ->
     if not context.lines().length
       lines = _.map keys, (key, i) =>
         context.line {name: key, values: lineData[i]}
+      # Only draw the first line
+      for line, i in lines
+        line.visible false if i > 0
     else
       lines = context.lines()
       for line, i in lines
