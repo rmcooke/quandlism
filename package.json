@@ -37,7 +37,8 @@
     "d3": "*",
     "underscore": "*",
     "mocha": "*",
-    "chai": "*"
+    "chai": "*",
+    "sinon": "*"
   },
   "keywords": []
 }
