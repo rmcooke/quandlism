@@ -27,10 +27,17 @@
   "scripts": {
     "test": "grunt test"
   },
+  "dependencies": {
+    
+  },
   "devDependencies": {
     "grunt": "~0.3.16",
     "grunt-contrib-coffee": ">= 0.3.1",
-    "grunt-wrap": ">= 0.1.0"
+    "grunt-wrap": ">= 0.1.0",
+    "d3": "*",
+    "underscore": "*",
+    "mocha": "*",
+    "chai": "*"
   },
   "keywords": []
 }
