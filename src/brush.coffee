@@ -34,6 +34,7 @@ QuandlismContext_.brush = () ->
     lines = selection.datum()
     canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
 
+    selection.attr "style", "position: absolute; top: #{context.h()*(quandlism_stage.h+quandlism_xaxis.h)}px; left: #{quandlism_yaxis_width}px"
     # append canvas and get reference to element and drawing context
     canvas = selection.append('canvas').attr('id', canvasId)
     ctx = canvas.node().getContext '2d'
@@ -51,8 +52,6 @@ QuandlismContext_.brush = () ->
     # Setup xAxis
     xAxis.tickSize 5, 3, 0
     
-    # set a margin for the brush element so the stage aligns
-    $("#{context.dombrush()}").css('marginLeft', "#{quandlism_yaxis_width}px")
     
     # Calculate the y and x scales. Sets the domain and ranges of the
     # scales and creates the x axis labelling functions
@@ -254,7 +253,6 @@ QuandlismContext_.brush = () ->
       
       # 
       xAxisDOM.attr 'width', width
-      $("#{context.dombrush()}").css('marginLeft', "#{quandlism_yaxis_width}px")
       
       setScales()
       drawAxis()

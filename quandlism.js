@@ -371,6 +371,7 @@
       if (!(canvasId != null)) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
+      selection.attr("style", "position: absolute; left: 0px; top: 0px;");
       if (!(yAxisDOM != null)) {
         yAxisDOM = selection.insert('svg');
         yAxisDOM.attr('class', 'y axis');
@@ -667,6 +668,7 @@
       if (!(canvasId != null)) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
       }
+      selection.attr("style", "position: absolute; top: " + (context.h() * (quandlism_stage.h + quandlism_xaxis.h)) + "px; left: " + quandlism_yaxis_width + "px");
       canvas = selection.append('canvas').attr('id', canvasId);
       ctx = canvas.node().getContext('2d');
       if (!(xAxisDOM != null)) {
@@ -677,7 +679,6 @@
         xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
       }
       xAxis.tickSize(5, 3, 0);
-      $("" + (context.dombrush())).css('marginLeft', "" + quandlism_yaxis_width + "px");
       setScales = function() {
         extent = context.utility().getExtent(lines, null, null);
         yScale.domain([extent[0], extent[1]]);
@@ -811,7 +812,6 @@
         brushWidth = Math.floor(brushWidth / width0 * width);
         brushWidth0 = brushWidth;
         xAxisDOM.attr('width', width);
-        $("" + (context.dombrush())).css('marginLeft', "" + quandlism_yaxis_width + "px");
         setScales();
         drawAxis();
       });
