@@ -36,7 +36,9 @@ QuandlismContext_.brush = () ->
 
     selection.attr "style", "position: absolute; top: #{context.h()*(quandlism_stage.h+quandlism_xaxis.h)}px; left: #{quandlism_yaxis_width}px"
     # append canvas and get reference to element and drawing context
-    canvas = selection.append('canvas').attr('id', canvasId)
+    canvas = selection.append('canvas')
+    canvas.attr 'id', canvasId
+    canvas.attr "style", "position: absolute; left: 0px; top: 0px"
     ctx = canvas.node().getContext '2d'
     
     # if xAxis not defined, create it
@@ -47,7 +49,7 @@ QuandlismContext_.brush = () ->
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
       xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
       xAxisDOM.attr 'width', Math.floor context.w()-quandlism_yaxis_width
-      
+      xAxisDOM.attr "style", "position: absolute; top: #{context.h()*quandlism_brush.h}px; left: 0px"
     
     # Setup xAxis
     xAxis.tickSize 5, 3, 0

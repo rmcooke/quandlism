@@ -2,7 +2,7 @@ QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
   lines       = []
-  width       = Math.floor (context.w()-quandlism_yaxis_width-1)
+  width       = Math.floor (context.w()-quandlism_yaxis_width-2)
   height      = Math.floor context.h() * quandlism_stage.h
   xScale      = d3.scale.linear()
   yScale      = d3.scale.linear()
@@ -32,6 +32,7 @@ QuandlismContext_.stage = () ->
       yAxisDOM.attr 'id', "y-axis-#{canvasId}"
       yAxisDOM.attr 'width', quandlism_yaxis_width
       yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
+      yAxisDOM.attr "style", "position: absolute: left: 0px; top: 0px;"
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -39,7 +40,8 @@ QuandlismContext_.stage = () ->
     canvas.attr 'height', height
     canvas.attr 'class', 'stage'
     canvas.attr 'id', canvasId
-    
+    canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px;"
+  
     ctx = canvas.node().getContext '2d'
    
     # Build the xAxis
@@ -49,7 +51,7 @@ QuandlismContext_.stage = () ->
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
       xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
       xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'style', "margin-left: #{quandlism_yaxis_width}"
+      xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}; top: #{context.h()*quandlism_stage.h}px"
       
     # Axis tick size
     yAxis.tickSize 5, 3, 0
@@ -250,7 +252,6 @@ QuandlismContext_.stage = () ->
       
       # Adjust x axis with and marign
       xAxisDOM.attr 'width', Math.floor context.w() - quandlism_yaxis_width
-      xAxisDOM.attr 'style', "margin-left: #{quandlism_yaxis_width}"
       
       setScales()
       draw()
