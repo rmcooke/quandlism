@@ -630,7 +630,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, canvas, canvasId, context, ctx, cursorClasses, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, width, width0, xAxis, xAxisDOM, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushWidth, brushWidth0, buffer, canvas, canvasId, context, ctx, cursorClasses, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, useCache, width, width0, xAxis, xAxisDOM, xScale, xStart, xStart0, yScale,
       _this = this;
     context = this;
     height = Math.floor(context.h() * quandlism_brush.h);
@@ -663,8 +663,10 @@
       move: 'move',
       resize: 'resize'
     };
+    buffer = document.createElement('canvas');
+    useCache = false;
     brush = function(selection) {
-      var addBrushClass, checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, isDraggingLocation, isLeftHandle, isRightHandle, resetState, setBrushValues, setScales, update;
+      var addBrushClass, checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, resetState, saveCanvasData, setBrushValues, setScales, update;
       lines = selection.datum();
       if (!(canvasId != null)) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
@@ -711,7 +713,11 @@
       };
       update = function() {
         clearCanvas();
-        draw();
+        if (useCache) {
+          drawFromCache();
+        } else {
+          draw();
+        }
         drawBrush();
       };
       clearCanvas = function() {
@@ -734,6 +740,17 @@
             line.drawPoint(ctx, xScale, yScale, j, 2);
           }
         }
+        saveCanvasData();
+      };
+      drawFromCache = function() {
+        ctx.drawImage(buffer.canvas, 0, 0);
+      };
+      saveCanvasData = function() {
+        useCache = true;
+        buffer.setAttribute('width', width);
+        buffer.setAttribute('height', height);
+        buffer = buffer.getContext('2d');
+        buffer.drawImage(document.getElementById(canvasId), 0, 0);
       };
       drawBrush = function() {
         ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)';
@@ -761,6 +778,10 @@
         } else {
           return dragEnabled = true;
         }
+      };
+      removeCache = function() {
+        buffer = document.createElement('canvas');
+        useCache = false;
       };
       dispatchAdjust = function() {
         var x1, x2;
@@ -805,7 +826,7 @@
       }
       drawAxis();
       dispatchAdjust();
-      setInterval(update, 50);
+      setInterval(update, 70);
       context.on("respond.brush", function() {
         height0 = height;
         width0 = width;
@@ -816,11 +837,13 @@
         brushWidth = Math.floor(brushWidth / width0 * width);
         brushWidth0 = brushWidth;
         xAxisDOM.attr('width', width);
+        removeCache();
         setScales();
         drawAxis();
       });
       context.on('refresh.brush', function() {
         lines = selection.datum();
+        removeCache();
         setScales();
         checkDragState();
         if (dragEnabled) {

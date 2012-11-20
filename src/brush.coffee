@@ -27,7 +27,8 @@ QuandlismContext_.brush = () ->
   activeHandle  = 0
   touchPoint    = null
   cursorClasses = {move: 'move', resize: 'resize'}
-
+  buffer        = document.createElement('canvas')
+  useCache      = false
 
 
   brush = (selection) =>
@@ -99,7 +100,7 @@ QuandlismContext_.brush = () ->
     # Returns null
     update = () =>
       clearCanvas()
-      draw()
+      if useCache then drawFromCache() else draw()
       drawBrush()
       return
       
@@ -131,8 +132,23 @@ QuandlismContext_.brush = () ->
       for line, j in lines
         line.drawPath ctx, xScale, yScale, 0, lines[0].length(), 1
         line.drawPoint ctx, xScale, yScale, j, 2 if showPoints
+      saveCanvasData()
       return
       
+    # Don't redraw the brush. Just use the saved image
+    drawFromCache = () =>
+      ctx.drawImage buffer.canvas, 0, 0
+      return
+      
+    # Save the canvas state as an image for easy re-drawing
+    saveCanvasData = () =>
+      useCache = true      
+      buffer.setAttribute 'width', width
+      buffer.setAttribute 'height', height
+      buffer = buffer.getContext('2d')
+      buffer.drawImage document.getElementById(canvasId), 0, 0
+      return
+    
     # Uses the xStart, handleWidth and brushWidth variables to draw the 
     # the brush control on the canvas context 
     #
@@ -170,6 +186,13 @@ QuandlismContext_.brush = () ->
         dragEnabled = false
       else
         dragEnabled = true
+        
+    # Resets the buffer element and sets useCache to be false
+    #
+    removeCache = () =>
+      buffer = document.createElement('canvas')
+      useCache = false
+      return
         
     # Calculates the start and end points of the brushWidth and
     # triggers the context.adjust event with those parameters
@@ -238,7 +261,7 @@ QuandlismContext_.brush = () ->
     dispatchAdjust()
     
     # Set drawing interval
-    setInterval update, 50
+    setInterval update, 70
 
     # Event listners
   
@@ -252,10 +275,8 @@ QuandlismContext_.brush = () ->
       xStart0 = Math.floor xStart0/width0*width
       brushWidth = Math.floor brushWidth/width0*width
       brushWidth0 = brushWidth
-      
-      # 
       xAxisDOM.attr 'width', width
-      
+      removeCache()
       setScales()
       drawAxis()
       return
@@ -263,6 +284,7 @@ QuandlismContext_.brush = () ->
     # Respond to refresh event
     context.on 'refresh.brush', () ->
       lines = selection.datum()
+      removeCache()
       setScales()
       checkDragState()
       setBrushValues() if dragEnabled
