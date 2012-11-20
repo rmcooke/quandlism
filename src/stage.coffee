@@ -23,6 +23,8 @@ QuandlismContext_.stage = () ->
     lines = selection.datum()
     canvasId = "canvas-stage-#{++quandlism_id_ref}" if not canvasId?
     
+    selection.attr "style", "position: absolute; left: 0px; top: 0px;"
+    
     # Build the yAxis
     if not yAxisDOM? 
       yAxisDOM = selection.insert 'svg'
