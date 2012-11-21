@@ -70,9 +70,6 @@
       i = 0;
       while (i < colorsNeeded) {
         rgb = d3.rgb(colorList[i]).brighter(brightness);
-        if (_.indexOf(colorList, rgb) === -1) {
-          console.log(rgb.toString());
-        }
         colorList.push(rgb.toString());
         i++;
       }
