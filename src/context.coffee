@@ -44,13 +44,13 @@ quandlism.context = () ->
     h = $(dom).height()
     context
     
-    
+  
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
   # by applying functions to the existing codes until there are lines.length number of unique codes
   context.addColorsIfNecessary = (lines_) =>
     colorsNeeded = lines_.length-colorList.length
     return if colorsNeeded < 0
-    brightness = 0.3
+    brightness = 0.1
     i = 0
     while i < colorsNeeded
       rgb = d3.rgb(colorList[i]).brighter brightness
