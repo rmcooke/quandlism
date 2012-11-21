@@ -32,7 +32,7 @@ QuandlismContext_.stage = () ->
       yAxisDOM.attr 'id', "y-axis-#{canvasId}"
       yAxisDOM.attr 'width', quandlism_yaxis_width
       yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
-      yAxisDOM.attr "style", "position: absolute: left: 0px; top: 0px;"
+      yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
