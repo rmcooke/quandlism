@@ -398,7 +398,7 @@
       yAxis.tickSize(5, 3, 0);
       xAxis.tickSize(5, 3, 0);
       setScales = function() {
-        var divisor, units;
+        var unitsObj;
         extent = context.utility().getExtent(lines, xStart, xEnd);
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
@@ -406,20 +406,13 @@
         xScale.range([context.padding(), width - context.padding()]);
         yAxis.tickSize(5, 3, 0);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
-        units = context.utility().getUnit(Math.round(extent[1]));
-        divisor = 1;
-        if (units === 'K') {
-          divisor = 1000;
-        }
-        if (units === 'M') {
-          divisor = 1000000;
-        }
+        unitsObj = context.utility().getUnitAndDivisor(Math.round(extent[1]));
         yAxis.tickFormat(function(d) {
           var n;
-          n = (d / divisor).toFixed(2);
+          n = (d / unitsObj['divisor']).toFixed(2);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
-          return "" + n + " " + units;
+          return "" + n + " " + unitsObj['label'];
         });
         xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
         xAxis.tickFormat(function(d) {
@@ -1219,8 +1212,35 @@
         return '';
       } else if (len <= 6) {
         return 'K';
-      } else {
+      } else if (len <= 9) {
         return 'M';
+      } else {
+        return 'B';
+      }
+    };
+    utility.getUnitAndDivisor = function(extent) {
+      var len;
+      len = extent.toString().length;
+      if (len <= 3) {
+        return {
+          label: '',
+          divisor: 1
+        };
+      } else if (len <= 6) {
+        return {
+          label: 'K',
+          divisor: 1000
+        };
+      } else if (len <= 9) {
+        return {
+          label: 'M',
+          divisor: 1000000
+        };
+      } else {
+        return {
+          label: 'B',
+          divisor: 1000000000
+        };
       }
     };
     utility.dateFormat = function(date) {

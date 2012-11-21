@@ -94,9 +94,27 @@ QuandlismContext_.utility = () ->
       return ''
     else if len <= 6
       return 'K'
-    else 
+    else if len <= 9
       return 'M'
-  
+    else 
+      return 'B'
+      
+  # Returns the label and divisor
+  #
+  # extent - The largest avlue of the graph, rounded, with zero decimal places
+  #
+  # Returns an object with label and divisor
+  utility.getUnitAndDivisor = (extent) =>
+    len = extent.toString().length
+    if len <= 3
+      {label: '', divisor: 1}
+    else if len <= 6
+      {label: 'K', divisor: 1000}
+    else if len <= 9
+      {label: 'M', divisor: 1000000}
+    else 
+      {label: 'B', divisor: 1000000000}
+      
   # Returns a string that can be parsed in the same format as the dates in the active graph.
   # The number of - present indicate one of two date formats available.
   # date - An example date

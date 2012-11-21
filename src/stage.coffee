@@ -75,16 +75,13 @@ QuandlismContext_.stage = () ->
    
    
       # Build the yAxis tick formatting function
-      units = context.utility().getUnit Math.round(extent[1])
-      
-      divisor = 1
-      divisor = 1000 if units is 'K'
-      divisor = 1000000 if units is 'M'
+      unitsObj = context.utility().getUnitAndDivisor Math.round(extent[1])
+  
       yAxis.tickFormat (d) =>
-        n = (d/divisor).toFixed 2
+        n = (d/unitsObj['divisor']).toFixed 2
         n = n.replace(/0+$/, '')
         n = n.replace(/\.$/, '')
-        "#{n} #{units}"
+        "#{n} #{unitsObj['label']}"
         
         
       # Build the xAxis tick formatting function
