@@ -514,7 +514,7 @@
         return false;
       };
       drawTooltip = function(loc, x, line, hex) {
-        var date, inTooltip, pointSize, value, w;
+        var date, inTooltip, pointSize, tooltipText, value, w;
         date = new Date(line.dateAt(x));
         value = line.valueAt(x);
         draw(line.id());
@@ -528,7 +528,9 @@
         ctx.closePath();
         ctx.fillStyle = '#000';
         ctx.textAlign = 'start';
-        ctx.fillText("" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ": " + (value.toFixed(2)), w - 100, 10, 100);
+        tooltipText = "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ": ";
+        tooltipText += "" + (context.utility().formatNumberAsString(value.toFixed(2)));
+        ctx.fillText(tooltipText, w - 100, 10, 100);
         ctx.fillStyle = line.color();
         ctx.textAlign = 'end';
         ctx.fillText("" + (context.utility().truncate(line.name(), 20)), w - 110, 10, 200);
@@ -1204,19 +1206,6 @@
       px = ctx.getImageData(m[0], m[1], 1, 1).data;
       rgb = d3.rgb(px[0], px[1], px[2]);
       return rgb.toString();
-    };
-    utility.getUnit = function(extent) {
-      var len;
-      len = extent.toString().length;
-      if (len <= 3) {
-        return '';
-      } else if (len <= 6) {
-        return 'K';
-      } else if (len <= 9) {
-        return 'M';
-      } else {
-        return 'B';
-      }
     };
     utility.getUnitAndDivisor = function(extent) {
       var len;
