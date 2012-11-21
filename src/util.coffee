@@ -82,22 +82,6 @@ QuandlismContext_.utility = () ->
     rgb = d3.rgb px[0], px[1], px[2]
     rgb.toString()
   
-  
-  # Returns a label to use for axis labelling
-  #
-  # extent - The largest value of the graph, rounded, with zero decimal places
-  # 
-  # Returns a string
-  utility.getUnit = (extent) =>
-    len = extent.toString().length
-    if len <= 3
-      return ''
-    else if len <= 6
-      return 'K'
-    else if len <= 9
-      return 'M'
-    else 
-      return 'B'
       
   # Returns the label and divisor
   #
