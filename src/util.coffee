@@ -24,11 +24,12 @@ QuandlismContext_.utility = () ->
         }
         
     if not context.lines().length
+      defaultColumn = utility.defaultColumn data.code
       lines = _.map keys, (key, i) =>
         context.line {name: key, values: lineData[i]}
       # Only draw the first line
       for line, i in lines
-        line.visible false if i > 0
+        line.visible false if i isnt defaultColumn
     else
       lines = context.lines()
       for line, i in lines
@@ -36,7 +37,15 @@ QuandlismContext_.utility = () ->
       
     lines
 
-      
+  # Get the default column to show when the dataset is drawn
+  # 
+  # code - The dataset code
+  #
+  # Returns 0 if code is not present, or if dataset is not a futures dataset. Returns 4 otherwis
+  utility.defaultColumn = (code) ->
+    return 0 unless code?
+    if code.match /^FUTURE_/ then return 3 else return 0
+    
   # Calculates the minimum and maxium values for all of the lines in the lines array
   # between the index values start, and end
   #

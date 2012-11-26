@@ -1139,7 +1139,7 @@
       }
     };
     utility.createLines = function(data) {
-      var i, keys, line, lineData, lines, _i, _j, _len, _len1;
+      var defaultColumn, i, keys, line, lineData, lines, _i, _j, _len, _len1;
       keys = data.columns.slice(1);
       lineData = _.map(keys, function(key, i) {
         return _.map(data.data, function(d) {
@@ -1150,6 +1150,7 @@
         });
       });
       if (!context.lines().length) {
+        defaultColumn = utility.defaultColumn(data.code);
         lines = _.map(keys, function(key, i) {
           return context.line({
             name: key,
@@ -1158,7 +1159,7 @@
         });
         for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
           line = lines[i];
-          if (i > 0) {
+          if (i !== defaultColumn) {
             line.visible(false);
           }
         }
@@ -1170,6 +1171,16 @@
         }
       }
       return lines;
+    };
+    utility.defaultColumn = function(code) {
+      if (code == null) {
+        return 0;
+      }
+      if (code.match(/^FUTURE_/)) {
+        return 3;
+      } else {
+        return 0;
+      }
     };
     utility.getExtent = function(lines, start, end) {
       var exes, line;
