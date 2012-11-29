@@ -346,7 +346,7 @@ QuandlismContext_.brush = () ->
         
         dispatchAdjust()
         
-      else
+      else if dragEnabled
         if isDraggingLocation m[0]
           addBrushClass cursorClasses['move']
         else if isLeftHandle(m[0]) or isRightHandle(m[0])

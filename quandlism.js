@@ -894,7 +894,7 @@
             }
           }
           dispatchAdjust();
-        } else {
+        } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
             addBrushClass(cursorClasses['move']);
           } else if (isLeftHandle(m[0]) || isRightHandle(m[0])) {
