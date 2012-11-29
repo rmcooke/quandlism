@@ -212,13 +212,13 @@ QuandlismContext_.stage = () ->
       # Value
       ctx.fillStyle = '#000'
       ctx.textAlign = 'start'
-      tooltipText = "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}: "
+      tooltipText = "#{context.utility().getMonthName date.getUTCMonth()}  #{date.getUTCDate()}, #{date.getFullYear()}: "
       tooltipText += "#{context.utility().formatNumberAsString value.toFixed 2}"
-      ctx.fillText tooltipText, w-100, 10, 100
+      ctx.fillText tooltipText, w-110, 10, 100
       # Line Name
       ctx.fillStyle = line.color()
       ctx.textAlign = 'end'
-      ctx.fillText "#{context.utility().truncate line.name(), 20}", w-110, 10, 200
+      ctx.fillText "#{context.utility().truncate line.name(), 20}", w-120, 10, 200
 
       return
       
