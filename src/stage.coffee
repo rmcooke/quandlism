@@ -51,7 +51,7 @@ QuandlismContext_.stage = () ->
       xAxisDOM.attr 'id', "x-axis-#{canvasId}"
       xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
       xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}; top: #{context.h()*quandlism_stage.h}px"
+      xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
       
     # Axis tick size
     yAxis.tickSize 5, 3, 0
