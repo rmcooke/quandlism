@@ -294,7 +294,9 @@ QuandlismContext_.brush = () ->
       
       
     # Respond to toggle by re-setting extents to account for newly hidden or visible columns
+    # And redrawing the brush backgorund
     context.on "toggle.brush", () ->
+      removeCache()
       setScales()
       return
       

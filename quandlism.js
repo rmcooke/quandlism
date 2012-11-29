@@ -848,6 +848,7 @@
         dispatchAdjust();
       });
       context.on("toggle.brush", function() {
+        removeCache();
         setScales();
       });
       canvas.on('mousedown', function(e) {
