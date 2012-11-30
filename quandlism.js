@@ -571,12 +571,10 @@
           draw();
         }
       });
-      console.log(canvasId);
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var hit, loc;
         loc = d3.mouse(this);
         hit = lineHit(loc);
-        console.log(hit);
         if (hit !== false) {
           drawTooltip(loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color);
         } else {

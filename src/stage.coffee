@@ -279,11 +279,9 @@ QuandlismContext_.stage = () ->
       draw() if not context.dombrush()
       return
       
-    console.log canvasId
     d3.select("##{canvasId}").on 'mousemove', (e) ->
       loc = d3.mouse @
       hit = lineHit loc
-      console.log hit
       if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
       return
  
