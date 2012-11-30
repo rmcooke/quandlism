@@ -233,11 +233,9 @@ QuandlismContext_.stage = () ->
     unless context.dombrush()?
       xStart = 0
       xEnd = lines[0].length()-1
-      setupWithoutBrush()
       setScales()
       draw()
-      return
-        
+
     # Callbacks / Event bindings
     # Listen for events dispatched from context, or listen for events in canvas
   
@@ -281,10 +279,11 @@ QuandlismContext_.stage = () ->
       draw() if not context.dombrush()
       return
       
-    # If the tooltip dom is defined, track mousemovement on stage for tooltip
+    console.log canvasId
     d3.select("##{canvasId}").on 'mousemove', (e) ->
       loc = d3.mouse @
       hit = lineHit loc
+      console.log hit
       if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
       return
  
