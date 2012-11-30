@@ -60,6 +60,31 @@
       h = $(dom).height();
       return context;
     };
+    context.setupWithContainer = function(selector, brush_) {
+      var brush, brushId, container, stageId;
+      if (!typeof selector === 'string') {
+        throw 'Execting string selector';
+      }
+      container = $(selector);
+      if (!container.length) {
+        throw 'Invalid container';
+      }
+      brush = brush_ != null ? brush_ : true;
+      container.children().remove();
+      if (!(container.attr('id') != null)) {
+        container.attr('id', "quandlism-" + (++quandlism_id_ref));
+      }
+      dom = "#" + (container.attr('id'));
+      stageId = "stage-" + (++quandlism_id_ref);
+      container.append("<div class='stage' id='" + stageId + "'></div>");
+      domstage = "#" + stageId;
+      if (brush) {
+        brushId = "brush-" + (++quandlism_id_ref);
+        container.append("<div class='brush' id='" + brushId + "'></div>");
+        dombrush = "#" + brushId;
+      }
+      return context;
+    };
     context.addColorsIfNecessary = function(lines_) {
       var brightness, colorsNeeded, i, rgb;
       colorsNeeded = lines_.length - colorList.length;
