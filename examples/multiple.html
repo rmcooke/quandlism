@@ -36,11 +36,14 @@
   
   <div id='charts'>
     
+    <div class='chart' id='chart-0'></div>
+    <ul id='legend-0'></ul>
     <div class='chart' id='chart-1'></div>
+    <ul id='legend-1'></ul>
     <div class='chart' id='chart-2'></div>
+    <ul id='legend-2'></ul>
     <div class='chart' id='chart-3'></div>
-    <div class='chart' id='chart-4'></div>
-    
+    <ul id='legend-3'></ul>
   </div>  
   
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
@@ -51,8 +54,10 @@
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
   
   $.each($('.chart'), function(i, el) {
-    d3.json('/data/oil.json', function(data) {
-      context = quandlism.context().setupWithContainer($(el));
+    d3.json('/data/apple.json', function(data) {
+      legendId = "#legend-" + i;
+      console.log(legendId);
+      context = quandlism.context().setupWithContainer($(el)).legendWithSelector($(legendId));
       lines = context.utility().createLines(data);
       context.build().attachData(lines).render();
     });

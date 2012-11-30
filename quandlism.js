@@ -1143,13 +1143,16 @@
         return line.name();
       });
       selection.selectAll('a').on("click", function(d, i) {
-        var e, el, id;
+        var e, el, id, line;
         e = d3.event;
         el = e.target;
-        id = el.getAttribute('data-line-id');
+        id = parseInt(el.getAttribute('data-line-id'));
         e.preventDefault();
-        if (lines[id] != null) {
-          if (lines[id].toggle() === false) {
+        line = _.find(lines, function(l) {
+          return l.id() === id;
+        });
+        if (line != null) {
+          if (line.toggle() === false) {
             $(el).parent().addClass('off');
           } else {
             $(el).parent().removeClass('off');
