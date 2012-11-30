@@ -57,12 +57,10 @@ QuandlismContext_.stage = () ->
     yAxis.tickSize 5, 3, 0
     xAxis.tickSize 5, 3, 0
 
-    
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       # Calculate the extent for the area between xStart and xEnd
       extent = context.utility().getExtent lines, xStart, xEnd
-      
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
       yScale.range [(height - context.padding()), context.padding()]
@@ -232,8 +230,14 @@ QuandlismContext_.stage = () ->
     # Intial draw. If there is a brush in the context, it will dispatch the adjust event and force the 
     # stage to draw. If there isn't, force the stage to draw
     #
-    setScales() and draw() if not context.dombrush()
-      
+    unless context.dombrush()?
+      xStart = 0
+      xEnd = lines[0].length()-1
+      setupWithoutBrush()
+      setScales()
+      draw()
+      return
+        
     # Callbacks / Event bindings
     # Listen for events dispatched from context, or listen for events in canvas
   

@@ -366,7 +366,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, setupWithoutBrush;
       lines = selection.datum();
       if (!(canvasId != null)) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
@@ -397,6 +397,10 @@
       }
       yAxis.tickSize(5, 3, 0);
       xAxis.tickSize(5, 3, 0);
+      setupWithoutBrush = function() {
+        xStart = 0;
+        xEnd = lines[0].length() - 1;
+      };
       setScales = function() {
         var unitsObj;
         extent = context.utility().getExtent(lines, xStart, xEnd);
@@ -538,8 +542,11 @@
       clearTooltip = function() {
         draw();
       };
-      if (!context.dombrush()) {
-        setScales() && draw();
+      if (context.dombrush() == null) {
+        setupWithoutBrush();
+        setScales();
+        draw();
+        return;
       }
       context.on('respond.stage', function() {
         ctx.clearRect(0, 0, width, height);
