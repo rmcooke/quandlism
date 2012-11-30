@@ -41,7 +41,7 @@
     <div class='chart' id='chart-3'></div>
     <div class='chart' id='chart-4'></div>
     
-  </div>
+  </div>  
   
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.4.1/underscore-min.js" type="text/javascript" charset="utf-8"></script>
@@ -52,8 +52,7 @@
   
   $.each($('.chart'), function(i, el) {
     d3.json('/data/oil.json', function(data) {
-      id = "#" + el.getAttribute('id');
-      context = quandlism.context().setupWithContainer(id);
+      context = quandlism.context().setupWithContainer($(el));
       lines = context.utility().createLines(data);
       context.build().attachData(lines).render();
     });

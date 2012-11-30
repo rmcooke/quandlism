@@ -47,27 +47,32 @@ quandlism.context = () ->
   # Convenience method for building the quanlism chart with ONLY a container selector
   # Remove all children of container and creates brush and stage elements
   #
-  # container - The string selector for the containr element
+  # container - The jQuery selector 
   # brush     - Boolean indicating whether or not to include the brush
   #
   # Return self
-  context.setupWithContainer = (selector, brush_) =>
-    throw 'Execting string selector' if not typeof(selector) is 'string'
-    container = $(selector)
+  context.setupWithContainer = (container, brush_) =>
     throw 'Invalid container' if not container.length
     brush = brush_ ? true
     # Add ID to container if not present
     container.children().remove()
     container.attr('id', "quandlism-#{++quandlism_id_ref}") if not container.attr('id')?
     dom = "##{container.attr('id')}"
-    stageId = "stage-#{++quandlism_id_ref}"
+    stageId = "quandlism-stage-#{++quandlism_id_ref}"
     container.append "<div class='stage' id='#{stageId}'></div>"
     domstage = "##{stageId}"
     if brush
-      brushId = "brush-#{++quandlism_id_ref}"
+      brushId = "quandlism-brush-#{++quandlism_id_ref}"
       container.append "<div class='brush' id='#{brushId}'></div>"
       dombrush = "##{brushId}"
     context  
+    
+  # Setup the legend via selector
+  context.legendWithSelector = (container) =>
+    throw 'Invalid container' if not container.length
+    container.attr('id', "quandlism-legend-#{++quandlism_id_ref}") if not container.attr('id')
+    domlegend = "##{container.attr('id')}"
+    context
 
       
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes

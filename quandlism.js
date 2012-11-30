@@ -60,12 +60,8 @@
       h = $(dom).height();
       return context;
     };
-    context.setupWithContainer = function(selector, brush_) {
-      var brush, brushId, container, stageId;
-      if (!typeof selector === 'string') {
-        throw 'Execting string selector';
-      }
-      container = $(selector);
+    context.setupWithContainer = function(container, brush_) {
+      var brush, brushId, stageId;
       if (!container.length) {
         throw 'Invalid container';
       }
@@ -75,14 +71,24 @@
         container.attr('id', "quandlism-" + (++quandlism_id_ref));
       }
       dom = "#" + (container.attr('id'));
-      stageId = "stage-" + (++quandlism_id_ref);
+      stageId = "quandlism-stage-" + (++quandlism_id_ref);
       container.append("<div class='stage' id='" + stageId + "'></div>");
       domstage = "#" + stageId;
       if (brush) {
-        brushId = "brush-" + (++quandlism_id_ref);
+        brushId = "quandlism-brush-" + (++quandlism_id_ref);
         container.append("<div class='brush' id='" + brushId + "'></div>");
         dombrush = "#" + brushId;
       }
+      return context;
+    };
+    context.legendWithSelector = function(container) {
+      if (!container.length) {
+        throw 'Invalid container';
+      }
+      if (!container.attr('id')) {
+        container.attr('id', "quandlism-legend-" + (++quandlism_id_ref));
+      }
+      domlegend = "#" + (container.attr('id'));
       return context;
     };
     context.addColorsIfNecessary = function(lines_) {
