@@ -24,10 +24,11 @@ QuandlismContext_.legend = () ->
     selection.selectAll('a').on "click", (d, i) =>
       e = d3.event
       el = e.target
-      id = el.getAttribute 'data-line-id'
+      id = parseInt el.getAttribute 'data-line-id'
       e.preventDefault()
-      if lines[id]?
-        if lines[id].toggle() is false then $(el).parent().addClass 'off' else $(el).parent().removeClass 'off'
+      line = _.find lines, (l) => l.id() is id
+      if line?
+        if line.toggle() is false then $(el).parent().addClass 'off' else $(el).parent().removeClass 'off'
         context.toggle()
       return
       

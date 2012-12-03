@@ -60,6 +60,37 @@
       h = $(dom).height();
       return context;
     };
+    context.setupWithContainer = function(container, brush_) {
+      var brush, brushId, stageId;
+      if (!container.length) {
+        throw 'Invalid container';
+      }
+      brush = brush_ != null ? brush_ : true;
+      container.children().remove();
+      if (!(container.attr('id') != null)) {
+        container.attr('id', "quandlism-" + (++quandlism_id_ref));
+      }
+      dom = "#" + (container.attr('id'));
+      stageId = "quandlism-stage-" + (++quandlism_id_ref);
+      container.append("<div class='stage' id='" + stageId + "'></div>");
+      domstage = "#" + stageId;
+      if (brush) {
+        brushId = "quandlism-brush-" + (++quandlism_id_ref);
+        container.append("<div class='brush' id='" + brushId + "'></div>");
+        dombrush = "#" + brushId;
+      }
+      return context;
+    };
+    context.legendWithSelector = function(container) {
+      if (!container.length) {
+        throw 'Invalid container';
+      }
+      if (!container.attr('id')) {
+        container.attr('id', "quandlism-legend-" + (++quandlism_id_ref));
+      }
+      domlegend = "#" + (container.attr('id'));
+      return context;
+    };
     context.addColorsIfNecessary = function(lines_) {
       var brightness, colorsNeeded, i, rgb;
       colorsNeeded = lines_.length - colorList.length;
@@ -571,12 +602,10 @@
           draw();
         }
       });
-      console.log(canvasId);
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var hit, loc;
         loc = d3.mouse(this);
         hit = lineHit(loc);
-        console.log(hit);
         if (hit !== false) {
           drawTooltip(loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color);
         } else {
@@ -1114,13 +1143,16 @@
         return line.name();
       });
       selection.selectAll('a').on("click", function(d, i) {
-        var e, el, id;
+        var e, el, id, line;
         e = d3.event;
         el = e.target;
-        id = el.getAttribute('data-line-id');
+        id = parseInt(el.getAttribute('data-line-id'));
         e.preventDefault();
-        if (lines[id] != null) {
-          if (lines[id].toggle() === false) {
+        line = _.find(lines, function(l) {
+          return l.id() === id;
+        });
+        if (line != null) {
+          if (line.toggle() === false) {
             $(el).parent().addClass('off');
           } else {
             $(el).parent().removeClass('off');
