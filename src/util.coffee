@@ -30,13 +30,39 @@ QuandlismContext_.utility = () ->
       # Only draw the first line
       for line, i in lines
         line.visible false if i isnt defaultColumn
-    else
+    else      
       lines = context.lines()
       for line, i in lines
         line.values lineData[i].reverse()
       
+      # Try to add new data (superset support)
+      lines = utility.addNewLines lines, data unless keys.length is lines.length
+    
+      
     lines
 
+
+  # Create a new Quandlism line for every column in data that is not represented
+  # in the lines array. Adds support for superset page reload
+  #
+  # lines - The existing line data
+  # data  - The raw datasets data
+  #
+  # Returns a new array of lines, with the new columns attached
+  utility.addNewLines = (lines, data) =>
+    for column, columnIndex in data.columns[1..]
+      unless _.find(lines, (line) -> line.name() is column)
+        lineData = _.map data.data, (d) ->
+          {
+            date: d[0]
+            num: +d[(columnIndex+1)]
+          }
+        line = context.line { name: column, values: lineData }
+        line.visible false
+        lines.push line
+    lines
+    
+  
   # Get the default column to show when the dataset is drawn
   # 
   # code - The dataset code

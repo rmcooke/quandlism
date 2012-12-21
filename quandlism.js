@@ -24,12 +24,10 @@
     lines = [];
     context.attachData = function(lines_) {
       var i, line, _i, _len;
-      if (!lines.length) {
-        context.addColorsIfNecessary(lines_);
-        for (i = _i = 0, _len = lines_.length; _i < _len; i = ++_i) {
-          line = lines_[i];
-          line.color(colorList[i]);
-        }
+      context.addColorsIfNecessary(lines_);
+      for (i = _i = 0, _len = lines_.length; _i < _len; i = ++_i) {
+        line = lines_[i];
+        line.color(colorList[i]);
       }
       lines = lines_;
       if (domstage) {
@@ -1128,37 +1126,44 @@
     context = this;
     lines = [];
     legend = function(selection) {
-      var _this = this;
-      lines = selection.datum();
-      selection.selectAll('li').remove();
-      selection.selectAll('li').data(lines).enter().append('li').attr('style', function(line) {
-        return "color: " + (line.color());
-      }).attr('class', function(line) {
-        if (!line.visible()) {
-          return "off";
-        }
-      }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
-        return line.id();
-      }).text(function(line) {
-        return line.name();
-      });
-      selection.selectAll('a').on("click", function(d, i) {
-        var e, el, id, line;
-        e = d3.event;
-        el = e.target;
-        id = parseInt(el.getAttribute('data-line-id'));
-        e.preventDefault();
-        line = _.find(lines, function(l) {
-          return l.id() === id;
-        });
-        if (line != null) {
-          if (line.toggle() === false) {
-            $(el).parent().addClass('off');
-          } else {
-            $(el).parent().removeClass('off');
+      var buildLegend;
+      buildLegend = function() {
+        var _this = this;
+        lines = selection.datum();
+        selection.selectAll('li').remove();
+        selection.selectAll('li').data(lines).enter().append('li').attr('style', function(line) {
+          return "color: " + (line.color());
+        }).attr('class', function(line) {
+          if (!line.visible()) {
+            return "off";
           }
-          context.toggle();
-        }
+        }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
+          return line.id();
+        }).text(function(line) {
+          return line.name();
+        });
+        selection.selectAll('a').on("click", function(d, i) {
+          var e, el, id, line;
+          e = d3.event;
+          el = e.target;
+          id = parseInt(el.getAttribute('data-line-id'));
+          e.preventDefault();
+          line = _.find(lines, function(l) {
+            return l.id() === id;
+          });
+          if (line != null) {
+            if (line.toggle() === false) {
+              $(el).parent().addClass('off');
+            } else {
+              $(el).parent().removeClass('off');
+            }
+            context.toggle();
+          }
+        });
+      };
+      buildLegend();
+      context.on('refresh.legend', function() {
+        buildLegend();
       });
     };
     return legend;
@@ -1206,6 +1211,33 @@
         for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
           line = lines[i];
           line.values(lineData[i].reverse());
+        }
+        if (keys.length !== lines.length) {
+          lines = utility.addNewLines(lines, data);
+        }
+      }
+      return lines;
+    };
+    utility.addNewLines = function(lines, data) {
+      var column, columnIndex, line, lineData, _i, _len, _ref;
+      _ref = data.columns.slice(1);
+      for (columnIndex = _i = 0, _len = _ref.length; _i < _len; columnIndex = ++_i) {
+        column = _ref[columnIndex];
+        if (!_.find(lines, function(line) {
+          return line.name() === column;
+        })) {
+          lineData = _.map(data.data, function(d) {
+            return {
+              date: d[0],
+              num: +d[columnIndex + 1]
+            };
+          });
+          line = context.line({
+            name: column,
+            values: lineData
+          });
+          line.visible(false);
+          lines.push(line);
         }
       }
       return lines;
