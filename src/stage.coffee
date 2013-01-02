@@ -61,6 +61,12 @@ QuandlismContext_.stage = () ->
     setScales = () =>
       # Calculate the extent for the area between xStart and xEnd
       extent = context.utility().getExtent lines, xStart, xEnd
+      
+      # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
+      # on x-axis if all poitns are the same
+      unless extent[0] isnt extent[1]
+        extent = context.utility().getExtent lines, 0, lines[0].length()-1 
+      
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
       yScale.range [(height - context.padding()), context.padding()]

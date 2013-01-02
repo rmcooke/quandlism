@@ -429,6 +429,9 @@
       setScales = function() {
         var unitsObj;
         extent = context.utility().getExtent(lines, xStart, xEnd);
+        if (extent[0] === extent[1]) {
+          extent = context.utility().getExtent(lines, 0, lines[0].length() - 1);
+        }
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
         xScale.domain([xStart, xEnd]);
