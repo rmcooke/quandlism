@@ -3,7 +3,7 @@
   var QuandlismContext, QuandlismContext_, QuandlismLine, quandlism, quandlism_axis, quandlism_brush, quandlism_id_ref, quandlism_line_id, quandlism_stage, quandlism_xaxis, quandlism_yaxis_width;
 
   quandlism = exports.quandlism = {
-    version: '0.4.0'
+    version: '0.5.0'
   };
 
   quandlism.context = function() {
