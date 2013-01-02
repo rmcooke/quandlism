@@ -16,11 +16,10 @@ quandlism.context = () ->
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
-  context.attachData = (lines_) =>
-    # Only operate on color array the first time attachData is called
-    if not lines.length
-      context.addColorsIfNecessary(lines_)
-      line.color(colorList[i]) for line, i in lines_
+  context.attachData = (lines_) =>    
+    # Set colors whenever data is attached, to support cases when a new line is added
+    context.addColorsIfNecessary(lines_)
+    line.color(colorList[i]) for line, i in lines_
             
     lines = lines_
         
