@@ -15,32 +15,50 @@ QuandlismContext_.utility = () ->
   #
   # Returns an array of quandlism lines
   utility.createLines = (data) =>
-    keys = data.columns[1..]
-    lineData = _.map keys, (key, i) =>
-      _.map data.data, (d) ->
-        {
-          date: d[0]
-          num: +d[(i+1)]
-        }
-        
-    if not context.lines().length
+    # Get line data
+    keys = data.columns[1..]        
+    lineData = _.map keys, (key, i) => utility.getLineData data.data, i
+    
+    # If first time called
+    if not context.lines().length 
       defaultColumn = utility.defaultColumn data.code
+      # Build lines
       lines = _.map keys, (key, i) =>
         context.line {name: key, values: lineData[i]}
       # Only draw the first line
       for line, i in lines
         line.visible false if i isnt defaultColumn
-    else      
+    else            
       lines = context.lines()
-      for line, i in lines
-        line.values lineData[i].reverse()
-      
-      # Try to add new data (superset support)
-      lines = utility.addNewLines lines, data unless keys.length is lines.length
-    
-      
+      if lines.length is keys.length
+        # If this is just a refresh, and columns have not been added/removed, refresh the data
+        line.values lineData[i].reverse() for line, i in lines
+      else
+        # Otherwise, superset operation, so add remove columns as necessary
+        lines = utility.mergeLines lines, data, keys
     lines
+    
+  # Conveneince method for returning mapped data for a given index
+  utility.getLineData = (data, index) =>
+    _.map data, (d) ->
+      {
+        date: d[0]
+        num: +d[(index+1)]
+      }
+  
 
+  # Convenience method for refreshing line data
+  # Removes any lines present in lines that is NOT present in newLineData
+  # Adds any lines from newLineData that are NOT in lines, to lines
+  # lines - Array of existing line data
+  # newLineData - Raw data for new lines
+  #
+  # Returns an array of lines 
+  utility.mergeLines = (lines, data, keys) =>
+    lines = utility.addNewLines lines, data
+    lines = utility.removeLines lines, keys
+    lines
+    
 
   # Create a new Quandlism line for every column in data that is not represented
   # in the lines array. Adds support for superset page reload
@@ -52,17 +70,21 @@ QuandlismContext_.utility = () ->
   utility.addNewLines = (lines, data) =>
     for column, columnIndex in data.columns[1..]
       unless _.find(lines, (line) -> line.name() is column)
-        lineData = _.map data.data, (d) ->
-          {
-            date: d[0]
-            num: +d[(columnIndex+1)]
-          }
+        lineData = utility.getLineData data.data, columnIndex
         line = context.line { name: column, values: lineData }
         line.visible false
         lines.push line
     lines
     
-  
+  # Removes any lines that do not have a name present in keys
+  #
+  # lines - An array of line objects
+  # keys  - An array of strings
+  # Returns a filtered array of line objects
+  utility.removeLines = (lines, keys) =>
+    _.reject lines, (line) ->
+       line.name() not in keys
+       
   # Get the default column to show when the dataset is drawn
   # 
   # code - The dataset code
