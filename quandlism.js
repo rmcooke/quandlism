@@ -1,6 +1,7 @@
 (function(exports) { 
 (function() {
-  var QuandlismContext, QuandlismContext_, QuandlismLine, quandlism, quandlism_axis, quandlism_brush, quandlism_id_ref, quandlism_line_id, quandlism_stage, quandlism_xaxis, quandlism_yaxis_width;
+  var QuandlismContext, QuandlismContext_, QuandlismLine, quandlism, quandlism_axis, quandlism_brush, quandlism_id_ref, quandlism_line_id, quandlism_stage, quandlism_xaxis, quandlism_yaxis_width,
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
     version: '0.5.0'
@@ -429,6 +430,9 @@
       setScales = function() {
         var unitsObj;
         extent = context.utility().getExtent(lines, xStart, xEnd);
+        if (extent[0] === extent[1]) {
+          extent = context.utility().getExtent(lines, 0, lines[0].length() - 1);
+        }
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
         xScale.domain([xStart, xEnd]);
@@ -1185,12 +1189,7 @@
       var defaultColumn, i, keys, line, lineData, lines, _i, _j, _len, _len1;
       keys = data.columns.slice(1);
       lineData = _.map(keys, function(key, i) {
-        return _.map(data.data, function(d) {
-          return {
-            date: d[0],
-            num: +d[i + 1]
-          };
-        });
+        return utility.getLineData(data.data, i);
       });
       if (!context.lines().length) {
         defaultColumn = utility.defaultColumn(data.code);
@@ -1208,14 +1207,28 @@
         }
       } else {
         lines = context.lines();
-        for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
-          line = lines[i];
-          line.values(lineData[i].reverse());
-        }
-        if (keys.length !== lines.length) {
-          lines = utility.addNewLines(lines, data);
+        if (lines.length === keys.length) {
+          for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
+            line = lines[i];
+            line.values(lineData[i].reverse());
+          }
+        } else {
+          lines = utility.mergeLines(lines, data, keys);
         }
       }
+      return lines;
+    };
+    utility.getLineData = function(data, index) {
+      return _.map(data, function(d) {
+        return {
+          date: d[0],
+          num: +d[index + 1]
+        };
+      });
+    };
+    utility.mergeLines = function(lines, data, keys) {
+      lines = utility.addNewLines(lines, data);
+      lines = utility.removeLines(lines, keys);
       return lines;
     };
     utility.addNewLines = function(lines, data) {
@@ -1226,12 +1239,7 @@
         if (!_.find(lines, function(line) {
           return line.name() === column;
         })) {
-          lineData = _.map(data.data, function(d) {
-            return {
-              date: d[0],
-              num: +d[columnIndex + 1]
-            };
-          });
+          lineData = utility.getLineData(data.data, columnIndex);
           line = context.line({
             name: column,
             values: lineData
@@ -1241,6 +1249,12 @@
         }
       }
       return lines;
+    };
+    utility.removeLines = function(lines, keys) {
+      return _.reject(lines, function(line) {
+        var _ref;
+        return _ref = line.name(), __indexOf.call(keys, _ref) < 0;
+      });
     };
     utility.defaultColumn = function(code) {
       if (code == null) {

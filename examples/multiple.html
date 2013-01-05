@@ -54,9 +54,8 @@
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
   
   $.each($('.chart'), function(i, el) {
-    d3.json('/data/apple.json', function(data) {
+    d3.json('/data/boj.json', function(data) {
       legendId = "#legend-" + i;
-      console.log(legendId);
       context = quandlism.context().setupWithContainer($(el)).legendWithSelector($(legendId));
       lines = context.utility().createLines(data);
       context.build().attachData(lines).render();

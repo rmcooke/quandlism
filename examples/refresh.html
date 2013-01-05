@@ -53,7 +53,6 @@
   
   function init() {
     d3.json('/data/apple.json', function(data) {    
-      data.columns = data.columns.slice(0,-1);
       lines = context.utility().createLines(data);
       context.build().attachData(lines).render()
     }); 
@@ -62,8 +61,8 @@
   
   function refresh() {
     d3.json('/data/apple.json', function(data) {
+      data.columns = data.columns.slice(0,-1);
       lines = context.utility().createLines(data);
-      console.log('refreshing');
       context.attachData(lines).refresh();
     });
   }
