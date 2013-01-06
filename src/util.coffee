@@ -36,6 +36,9 @@ QuandlismContext_.utility = () ->
       else
         # Otherwise, superset operation, so add remove columns as necessary
         lines = utility.mergeLines lines, data, keys
+        # If we've removed the only visible line, make the first line visible
+        lines[0].visible true  unless not lines[0]? or _.find(lines, (line) -> line.visible() is true)
+
     lines
     
   # Conveneince method for returning mapped data for a given index
