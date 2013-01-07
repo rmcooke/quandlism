@@ -46,7 +46,7 @@ QuandlismContext_.utility = () ->
     _.map data, (d) ->
       {
         date: d[0]
-        num: +d[(index+1)]
+        num:  d[(index+1)]
       }
   
 

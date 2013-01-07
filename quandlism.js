@@ -311,6 +311,9 @@
     };
     line.drawPoint = function(ctx, xS, yS, index, radius) {
       if (this.visible()) {
+        if (this.valueAt(index) == null) {
+          return;
+        }
         ctx.beginPath();
         ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
         ctx.fillStyle = this.color();
@@ -323,6 +326,9 @@
       if (this.visible()) {
         ctx.beginPath();
         for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
+          if (this.valueAt(i) == null) {
+            continue;
+          }
           ctx.lineTo(xS(i), yS(this.valueAt(i)));
         }
         ctx.lineWidth = lineWidth;
@@ -1216,7 +1222,7 @@
           lines = utility.mergeLines(lines, data, keys);
           if (!(!(lines[0] != null) || _.find(lines, function(line) {
             return line.visible() === true;
-          }) && lines.length)) {
+          }))) {
             lines[0].visible(true);
           }
         }
@@ -1227,7 +1233,7 @@
       return _.map(data, function(d) {
         return {
           date: d[0],
-          num: +d[index + 1]
+          num: d[index + 1]
         };
       });
     };
