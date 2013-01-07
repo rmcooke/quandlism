@@ -37,7 +37,7 @@
       if (dombrush) {
         d3.select(dombrush).datum(lines);
       }
-      if (domlegend && lines.length > 1) {
+      if (domlegend) {
         d3.select(domlegend).datum(lines);
       }
       return context;
@@ -49,7 +49,7 @@
       if (dombrush) {
         d3.select(dombrush).call(context.brush());
       }
-      if (domlegend && lines.length > 1) {
+      if (domlegend) {
         d3.select(domlegend).call(context.legend());
       }
       return context;
