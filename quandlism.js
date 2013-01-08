@@ -1192,12 +1192,12 @@
       }
     };
     utility.createLines = function(data) {
-      var defaultColumn, i, keys, line, lineData, lines, _i, _j, _len, _len1;
-      keys = data.columns.slice(1);
-      lineData = _.map(keys, function(key, i) {
-        return utility.getLineData(data.data, i);
-      });
+      var defaultColumn, i, keys, line, lineData, lines, _i, _len;
       if (!context.lines().length) {
+        keys = data.columns.slice(1);
+        lineData = _.map(keys, function(key, i) {
+          return utility.getLineData(data.data, i);
+        });
         defaultColumn = utility.defaultColumn(data.code);
         lines = _.map(keys, function(key, i) {
           return context.line({
@@ -1212,20 +1212,7 @@
           }
         }
       } else {
-        lines = context.lines();
-        if (lines.length === keys.length) {
-          for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
-            line = lines[i];
-            line.values(lineData[i].reverse());
-          }
-        } else {
-          lines = utility.mergeLines(lines, data, keys);
-          if (!(!(lines[0] != null) || _.find(lines, function(line) {
-            return line.visible() === true;
-          }))) {
-            lines[0].visible(true);
-          }
-        }
+        lines = utility.mergeLines(context.lines(), data);
       }
       return lines;
     };
@@ -1237,20 +1224,32 @@
         };
       });
     };
-    utility.mergeLines = function(lines, data, keys) {
-      lines = utility.addNewLines(lines, data);
-      lines = utility.removeLines(lines, keys);
+    utility.mergeLines = function(lines, data) {
+      lines = utility.addNewLinesAndRefresh(lines, data);
+      lines = utility.removeStaleLines(lines, data.columns);
+      if (!(!(lines[0] != null) || _.find(lines, function(line) {
+        return line.visible() === true;
+      }))) {
+        lines[0].visible(true);
+      }
       return lines;
     };
-    utility.addNewLines = function(lines, data) {
-      var column, columnIndex, line, lineData, _i, _len, _ref;
+    utility.addNewLinesAndRefresh = function(lines, data) {
+      var column, columnIndex, found, i, line, lineData, _i, _j, _len, _len1, _ref;
       _ref = data.columns.slice(1);
       for (columnIndex = _i = 0, _len = _ref.length; _i < _len; columnIndex = ++_i) {
         column = _ref[columnIndex];
-        if (!_.find(lines, function(line) {
-          return line.name() === column;
-        })) {
-          lineData = utility.getLineData(data.data, columnIndex);
+        found = false;
+        lineData = utility.getLineData(data.data, columnIndex);
+        for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
+          line = lines[i];
+          if (line.name() === column) {
+            found = true;
+            lines[i].values(lineData.reverse());
+            break;
+          }
+        }
+        if (!found) {
           line = context.line({
             name: column,
             values: lineData
@@ -1261,10 +1260,10 @@
       }
       return lines;
     };
-    utility.removeLines = function(lines, keys) {
+    utility.removeStaleLines = function(lines, columns) {
       return _.reject(lines, function(line) {
         var _ref;
-        return _ref = line.name(), __indexOf.call(keys, _ref) < 0;
+        return _ref = line.name(), __indexOf.call(columns, _ref) < 0;
       });
     };
     utility.defaultColumn = function(code) {
