@@ -50,7 +50,7 @@
 
 
   var context = quandlism.context().setupWithContainer($('.chart')).legendWithSelector($('.legend'));
-  
+  var refreshCount = -1
   function init() {
     d3.json('/data/apple.json', function(data) {    
       lines = context.utility().createLines(data);
@@ -61,7 +61,8 @@
   
   function refresh() {
     d3.json('/data/apple.json', function(data) {
-      data.columns = data.columns.slice(0,-1);
+      data.columns = data.columns.slice(0,refreshCount);
+      refreshCount -= 1;
       lines = context.utility().createLines(data);
       context.attachData(lines).refresh();
     });

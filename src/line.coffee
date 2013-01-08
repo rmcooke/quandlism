@@ -72,15 +72,16 @@ QuandlismContext_.line = (data) ->
   # Returns null
   line.drawPoint = (ctx, xS, yS, index, radius) ->
       # do something\
-    if @.visible()
+    if @visible()
+      return unless @valueAt(index)?
       ctx.beginPath()
-      ctx.arc xS(index), yS(@.valueAt(index)), radius, 0, Math.PI*2, true
+      ctx.arc xS(index), yS(@valueAt(index)), radius, 0, Math.PI*2, true
       ctx.fillStyle = @.color()
       ctx.fill()
       ctx.closePath()
 
   # Draw a path on the drawing context
-  #
+  # Skips any values with null value
   # ctx       - The HTML canvas context
   # xS        - The d3 scale for the x co-ordinate
   # yS        - The d3 scale for the y co-ordinate
@@ -93,7 +94,9 @@ QuandlismContext_.line = (data) ->
     if @.visible()
       ctx.beginPath()
       for i in [start..end]
-        ctx.lineTo xS(i), yS(@.valueAt(i))
+        continue unless @valueAt(i)?
+        ctx.lineTo xS(i), yS(@valueAt(i))
+
         
       ctx.lineWidth = lineWidth
       ctx.strokeStyle = @.color()
