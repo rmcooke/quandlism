@@ -99,8 +99,7 @@ QuandlismContext_.line = (data) ->
   # dateEnd    - The final date that should be included on the plot
   # lineWidth - The width of the line
   # drawPoints  - should the individual data points be highlighted?
-  # radius      - The radius of the data points
-  # brush       - Is this coming from the stage?
+  # stage       - Is this coming from the stage?
   #
   # Returns null
   line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) ->
@@ -109,9 +108,8 @@ QuandlismContext_.line = (data) ->
     stage = stage ? false
     ctx.beginPath()
     for date, i in @dates()
-      console.log "#{date} #{dateStart} #{dateEnd}"
       unless stage
-        continue if (date > dateEnd or date < dateStart)
+        continue unless (date <= dateEnd and date >= dateStart)
       data.push {date: date, value: @valueAt(i)} if drawPoints
       ctx.lineTo xS(date), yS(@valueAt(i))
         
@@ -121,7 +119,7 @@ QuandlismContext_.line = (data) ->
     ctx.closePath()
     
     # Use captured data points to draw points, if necessary
-    @drawPoints ctx, xS, yS, data, radius if drawPoints
+    @drawPoints ctx, xS, yS, data if drawPoints
     
     return
   

@@ -60,12 +60,6 @@
       return context;
     };
     context.chart = function(container, brush_) {
-      return context.setupWithContainer(container, brush_);
-    };
-    context.withLegend = function(container) {
-      return context.legendWithSelector(container);
-    };
-    context.setupWithContainer = function(container, brush_) {
       var brush, brushId, stageId;
       if (!container.length) {
         throw 'Invalid container';
@@ -86,7 +80,7 @@
       }
       return context;
     };
-    context.legendWithSelector = function(container) {
+    context.withLegend = function(container) {
       if (!container.length) {
         throw 'Invalid container';
       }
@@ -95,6 +89,12 @@
       }
       domlegend = "#" + (container.attr('id'));
       return context;
+    };
+    context.setupWithContainer = function(container, brush_) {
+      return context.chart(container, brush_);
+    };
+    context.legendWithSelector = function(container) {
+      return context.withLegend(container);
     };
     context.addColorsIfNecessary = function(lines_) {
       var brightness, colorsNeeded, i, rgb;
@@ -363,9 +363,8 @@
       _ref = this.dates();
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         date = _ref[i];
-        console.log("" + date + " " + dateStart + " " + dateEnd);
         if (!stage) {
-          if (date > dateEnd || date < dateStart) {
+          if (!(date <= dateEnd && date >= dateStart)) {
             continue;
           }
         }
@@ -382,7 +381,7 @@
       ctx.stroke();
       ctx.closePath();
       if (drawPoints) {
-        this.drawPoints(ctx, xS, yS, data, radius);
+        this.drawPoints(ctx, xS, yS, data);
       }
     };
     line.drawPoints = function(ctx, xS, yS, data) {
@@ -393,6 +392,7 @@
       _results = [];
       for (_i = 0, _len = data.length; _i < _len; _i++) {
         obj = data[_i];
+        console.log("" + obj.value + " " + (yS(obj.value)));
         ctx.beginPath();
         ctx.arc(xS(obj.date), yS(obj.value), 3, 0, Math.PI * 2, true);
         ctx.fillStyle = this.color();
@@ -809,9 +809,10 @@
       draw = function() {
         var j, showPoints, _i, _len;
         showPoints = line.length() <= threshold;
+        console.log("" + (line.length()) + " " + threshold + " " + showPoints);
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, false, false);
+          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, showPoints, false);
         }
         saveCanvasData();
       };

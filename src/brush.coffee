@@ -136,8 +136,9 @@ QuandlismContext_.brush = () ->
     # Returns null
     draw = () =>
       showPoints = (line.length() <= threshold)
+      console.log "#{line.length()} #{threshold} #{showPoints}"
       for line, j in lines
-        line.drawPath ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, false, false
+        line.drawPath ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, showPoints, false
       saveCanvasData()
       return
       

@@ -66,18 +66,9 @@ quandlism.context = () ->
     domlegend = "##{container.attr('id')}"
     context
   
-    
-  # Convenience method for building the quanlism chart with ONLY a container selector
-  # Remove all children of container and creates brush and stage elements
-  #
-  # container - The jQuery selector 
-  # brush     - Boolean indicating whether or not to include the brush
-  #
-  # Return self
   context.setupWithContainer = (container, brush_) =>
     return context.chart container, brush_
     
-  
 
   # Setup the legend via selector
   context.legendWithSelector = (container) =>
