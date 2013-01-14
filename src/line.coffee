@@ -98,20 +98,39 @@ QuandlismContext_.line = (data) ->
   # dateStart  - The first date that should be included on the plot
   # dateEnd    - The final date that should be included on the plot
   # lineWidth - The width of the line
+  # drawPoints  - should the individual data points be highlighted?
+  # radius      - The radius of the data points
+  # brush       - Is this coming from the stage?
   #
   # Returns null
-  line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, debug) ->
-    debug = debug ? false
-    if @visible()
-      ctx.beginPath()
-      for date, i in @dates()
-        continue unless date <= dateEnd and date >= dateStart
-        ctx.lineTo xS(date), yS(@valueAt(i))
-
+  line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) ->
+    return unless @visible()
+    data = []
+    stage = stage ? false
+    ctx.beginPath()
+    for date, i in @dates()
+      continue if not stage and (date > dateEnd or date < dateStart)
+      data.push {date: date, value: @valueAt(i)} if drawPoints
+      ctx.lineTo xS(date), yS(@valueAt(i))
         
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = @.color()
-      ctx.stroke()
+    ctx.lineWidth = lineWidth
+    ctx.strokeStyle = @color()
+    ctx.stroke()
+    ctx.closePath()
+    
+    # Use captured data points to draw points, if necessary
+    @drawPoints ctx, xS, yS, data, radius if drawPoints
+    
+    return
+  
+  # Given an array of objects {data, value}, draw the points  on the context
+  line.drawPoints = (ctx, xS, yS, data) ->
+    return unless @visible()
+    for obj in data
+      ctx.beginPath()
+      ctx.arc xS(obj.date), yS(obj.value), 3, 0, Math.PI*2, true
+      ctx.fillStyle = @color()
+      ctx.fill()
       ctx.closePath()
       
       

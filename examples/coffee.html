@@ -99,7 +99,7 @@
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
   var context = quandlism.context().setupWithContainer($("#chart")).legendWithSelector($("#legend"));
   
-  d3.json('/data/uhero.json', function(data) {    
+  d3.json('/data/apple.json', function(data) {    
     lines = context.utility().createLines(data);
     context.build().attachData(lines).render()
   }); 

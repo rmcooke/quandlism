@@ -344,24 +344,51 @@
         return ctx.closePath();
       }
     };
-    line.drawPath = function(ctx, xS, yS, dateStart, dateEnd, lineWidth, debug) {
+    line.drawPath = function(ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) {
       var date, i, _i, _len, _ref;
-      debug = debug != null ? debug : false;
-      if (this.visible()) {
-        ctx.beginPath();
-        _ref = this.dates();
-        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-          date = _ref[i];
-          if (!(date <= dateEnd && date >= dateStart)) {
-            continue;
-          }
-          ctx.lineTo(xS(date), yS(this.valueAt(i)));
-        }
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = this.color();
-        ctx.stroke();
-        return ctx.closePath();
+      if (!this.visible()) {
+        return;
       }
+      data = [];
+      stage = stage != null ? stage : false;
+      ctx.beginPath();
+      _ref = this.dates();
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        date = _ref[i];
+        if (!stage && (date > dateEnd || date < dateStart)) {
+          continue;
+        }
+        if (drawPoints) {
+          data.push({
+            date: date,
+            value: this.valueAt(i)
+          });
+        }
+        ctx.lineTo(xS(date), yS(this.valueAt(i)));
+      }
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = this.color();
+      ctx.stroke();
+      ctx.closePath();
+      if (drawPoints) {
+        this.drawPoints(ctx, xS, yS, data, radius);
+      }
+    };
+    line.drawPoints = function(ctx, xS, yS, data) {
+      var obj, _i, _len, _results;
+      if (!this.visible()) {
+        return;
+      }
+      _results = [];
+      for (_i = 0, _len = data.length; _i < _len; _i++) {
+        obj = data[_i];
+        ctx.beginPath();
+        ctx.arc(xS(obj.date), yS(obj.value), 3, 0, Math.PI * 2, true);
+        ctx.fillStyle = this.color();
+        ctx.fill();
+        _results.push(ctx.closePath());
+      }
+      return _results;
     };
     line.toggle = function() {
       var v;
@@ -526,11 +553,10 @@
         ctx.clearRect(0, 0, width, height);
         drawGridLines();
         lineId = lineId != null ? lineId : -1;
-        console.log("DRAWING: " + dateStart + " " + dateEnd);
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          line.drawPath(ctx, xScale, yScale, dateStart, dateEnd, lineWidth);
+          line.drawPath(ctx, xScale, yScale, dateStart, dateEnd, lineWidth, false, 3);
         }
       };
       lineHit = function(m) {
@@ -775,10 +801,7 @@
         showPoints = line.length() <= threshold;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, true);
-          if (showPoints) {
-            line.drawPoint(ctx, xScale, yScale, j, 2);
-          }
+          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, false, false);
         }
         saveCanvasData();
       };

@@ -129,6 +129,7 @@ QuandlismContext_.stage = () ->
         ctx.stroke()
         ctx.closePath()
         
+        
     # Draws the stage data
     draw = (lineId) =>
     
@@ -138,18 +139,16 @@ QuandlismContext_.stage = () ->
       ctx.clearRect 0, 0, width, height
       
       drawGridLines()
-      
+
       # if lineId to highlight is not defined, set to an invalid index
       lineId = if lineId? then lineId else -1
-      console.log "DRAWING: #{dateStart} #{dateEnd}"
       for line, j in lines
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
         # If we are within the minimum threshold show points with line
         # If we are on a single data point, show only a point
         # Othwerwise, render a path
-        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
-      
+        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth, false, 3
         # if (xEnd - xStart <= threshold)
         #   line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
         #   # for i in [xStart..xEnd]
