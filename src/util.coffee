@@ -109,6 +109,15 @@ QuandlismContext_.utility = () ->
     [d3.min(exes, (m) -> m[0]), d3.max(exes, (m) -> m[1])]
  
  
+  # Calculates the extend of the set of lines, using a date range, rather than indicies
+  #
+  # lines - An array of quandlism.line objects
+  # startDate - the start of the date range
+  # endDate - The end of the date range
+  utility.getExtentFromDates = (lines, startDate, endDate) =>
+    exes = (line.extentByDate startDate, endDate for line in lines)
+    [d3.min(exes, (m) -> m[0]), d3.max(exes, (m) -> m[1])]
+ 
   # Returns the name of the month
   utility.getMonthName = (monthDigit) =>
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']

@@ -146,9 +146,9 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     draw = () =>
-      showPoints = (lines[0].length() <= threshold)
+      showPoints = (line.length() <= threshold)
       for line, j in lines
-        line.drawPath ctx, xScale, yScale, 0, lines[0].length(), 1, true
+        line.drawPath ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, true
         line.drawPoint ctx, xScale, yScale, j, 2 if showPoints
       saveCanvasData()
       return
@@ -199,14 +199,15 @@ QuandlismContext_.brush = () ->
     # Send the new start and end dates that should be rendered on the sage
     # triggers the context.adjust event with those parameters
     #
+    # calcDates - Re-calcualte date end points before dispatching?
     # Returns null
-    dispatchAdjust = () =>
+    dispatchAdjust = (calcDates) =>
+      calcDates = calcDates ? false
+      if calcDates
+        dateStart = xScale.invert drawStart
+        dateEnd   = xScale.invert drawEnd
+      context.adjust dateStart, dateEnd
       return
-      # dateStart = xScale.invert xStart
-      # dateEnd = xScale.invert xStart + brushWidth
-      # console.log "dateStart: #{dateStart} datEnd: #{dateEnd}"
-      # context.adjust dateStart, dateEnd
-      # return
       
     # Resets the state of the brush control
     # Sets dragging and stretching to to false and saves the xStart and brushWidth values
@@ -285,17 +286,16 @@ QuandlismContext_.brush = () ->
   
     # Respond to resized browser by recalculating key points and redrawing
     context.on "respond.brush", () ->
-      console.log "pre respond #{drawStart}(#{dateStart}) #{drawEnd}"
       setPristine 'height', height
       setPristine 'width', width
       height = Math.floor context.h()*quandlism_brush.h
       width = Math.floor context.w()-quandlism_yaxis_width
-      xAxisDOM.attr 'width', width
       removeCache()
       setScales()
       drawStart = xScale dateStart
       drawEnd   = xScale dateEnd
       saveState()
+      xAxisDOM.attr 'width', width
       drawAxis()
       return
       
@@ -356,16 +356,16 @@ QuandlismContext_.brush = () ->
         dragDiff = m[0]-touchPoint
         if dragging and dragEnabled
           drawStart = getPristine('drawStart') + dragDiff
-          drawEnd = getPristine('drawEnd') + dragDiff
+          drawEnd   = getPristine('drawEnd') + dragDiff
         else if stretching
           # Calculate new brushWidth and xStart values, ensuring the the brush does not have a width less than stretchMin
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
-          drawEnd   = getPristine('drawEnd') + dragDiff   if activeHandle is 1
           drawStart = getPristine('drawStart') + dragDiff if activeHandle is -1
+          drawEnd   = getPristine('drawEnd') + dragDiff   if activeHandle is 1
           # if brushWidth <= stretchMin
           #    drawStart = drawStart + (brushWidth-stretchMin) if activeHandle is -1
           #         
-        dispatchAdjust()
+        dispatchAdjust(true)
         
       else if dragEnabled
         if isDraggingLocation m[0]

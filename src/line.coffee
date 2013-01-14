@@ -20,13 +20,13 @@ QuandlismContext_.line = (data) ->
   # Returns an array of two values
   line.extent = (start, end) ->
     i = if start? then start else 0
-    n = if end? then end else (@.length()-1)
+    n = if end? then end else (@length()-1)
     min = Infinity
     max = -Infinity
-    return [min, max] if not @.visible()
+    return [min, max] unless @visible()
 
     while i <= n
-      val = @.valueAt i
+      val = @valueAt i
       if not val?
         i++
         continue
@@ -36,6 +36,16 @@ QuandlismContext_.line = (data) ->
       
     [min, max]
     
+  line.extentByDate = (startDate, endDate) ->
+    min = Infinity
+    max = -Infinity
+    return [min, max] unless @visible()
+    for date, i in @dates()
+      continue unless date <= endDate and date >= startDate
+      val = @valueAt i
+      min = val if val < min
+      max = val if val > max
+    [min, max]
     
   line.dates = (start, end) =>
     (v.date for v in values[start..end])
@@ -85,18 +95,17 @@ QuandlismContext_.line = (data) ->
   # ctx       - The HTML canvas context
   # xS        - The d3 scale for the x co-ordinate
   # yS        - The d3 scale for the y co-ordinate
-  # start     - The first array index for the line
-  # end       - The final array index for the line
+  # dateStart  - The first date that should be included on the plot
+  # dateEnd    - The final date that should be included on the plot
   # lineWidth - The width of the line
   #
   # Returns null
-  line.drawPath = (ctx, xS, yS, start, end, lineWidth, debug) ->
+  line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, debug) ->
     debug = debug ? false
     if @visible()
       ctx.beginPath()
-      for i in [start..end]
-        date = @dateAt(i)
-        continue unless date?
+      for date, i in @dates()
+        continue unless date <= dateEnd and date >= dateStart
         ctx.lineTo xS(date), yS(@valueAt(i))
 
         

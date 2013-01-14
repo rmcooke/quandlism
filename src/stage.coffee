@@ -2,39 +2,39 @@ QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
   lines       = []
+  line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
   height      = Math.floor context.h() * quandlism_stage.h
   xScale      = d3.scale.linear()
   yScale      = d3.scale.linear()
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
-  yAxisDOM    = null
-  xAxisDOM    = null
   extent      = []
   dateStart   = null
   dateEnd     = null
+  drawStart   = null
+  drawEnd     = null
   threshold   = 10
   canvas      = null
-  xEnd        = 0
-  xStart      = 0
   ctx         = null
   
   
   stage = (selection) =>
-    # Get lines and generate unique ID for the stage
-    lines = selection.datum()
+    
     canvasId = "canvas-stage-#{++quandlism_id_ref}" if not canvasId?
     
+    # Get lines and generate unique ID for the stage
+    lines = selection.datum()
+    line  = _.first lines
     selection.attr "style", "position: absolute; left: 0px; top: 0px;"
     
     # Build the yAxis
-    if not yAxisDOM? 
-      yAxisDOM = selection.insert 'svg'
-      yAxisDOM.attr 'class', 'y axis'
-      yAxisDOM.attr 'id', "y-axis-#{canvasId}"
-      yAxisDOM.attr 'width', quandlism_yaxis_width
-      yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
-      yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
+    yAxisDOM = selection.insert 'svg'
+    yAxisDOM.attr 'class', 'y axis'
+    yAxisDOM.attr 'id', "y-axis-#{canvasId}"
+    yAxisDOM.attr 'width', quandlism_yaxis_width
+    yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
+    yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -47,13 +47,12 @@ QuandlismContext_.stage = () ->
     ctx = canvas.node().getContext '2d'
    
     # Build the xAxis
-    if not xAxisDOM? 
-      xAxisDOM = selection.append 'svg'
-      xAxisDOM.attr 'class', 'x axis'
-      xAxisDOM.attr 'id', "x-axis-#{canvasId}"
-      xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
-      xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
+    xAxisDOM = selection.append 'svg'
+    xAxisDOM.attr 'class', 'x axis'
+    xAxisDOM.attr 'id', "x-axis-#{canvasId}"
+    xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
+    xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
+    xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
       
     # Axis tick size
     yAxis.tickSize 5, 3, 0
@@ -61,13 +60,11 @@ QuandlismContext_.stage = () ->
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>
-      # Calculate the extent for the area between xStart and xEnd
-      extent = context.utility().getExtent lines, xStart, xEnd
-      
+      extent = context.utility().getExtentFromDates lines, dateStart, dateEnd
       # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
       # on x-axis if all poitns are the same
       unless extent[0] isnt extent[1]
-        extent = context.utility().getExtent lines, 0, lines[0].length()-1 
+        extent = context.utility().getExtent lines, 0, line.length()
       
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
@@ -90,13 +87,13 @@ QuandlismContext_.stage = () ->
         "#{n} #{unitsObj['label']}"
         
         
-      # Build the xAxis tick formatting function
-      xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
-      xAxis.tickFormat (d) =>
-        if date = lines[0].dateAt d
-          date = new Date date
-          "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
-      
+      # # Build the xAxis tick formatting function
+      #     xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
+      #     xAxis.tickFormat (d) =>
+      #       if date = lines[0].dateAt d
+      #         date = new Date date
+      #         "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
+      #     
    
       return
     
@@ -145,22 +142,23 @@ QuandlismContext_.stage = () ->
       
       # if lineId to highlight is not defined, set to an invalid index
       lineId = if lineId? then lineId else -1
-      
+      console.log "DRAWING: #{dateStart} #{dateEnd}"
       for line, j in lines
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
-        
         # If we are within the minimum threshold show points with line
         # If we are on a single data point, show only a point
         # Othwerwise, render a path
-        if (xEnd - xStart <= threshold)
-          line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
-          for i in [xStart..xEnd]
-            line.drawPoint ctx, xScale, yScale, i, 3
-        else if xEnd is xStart
-          line.drawPoint ctx, xScale, yScale, xStart, 3
-        else
-          line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
+        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
+      
+        # if (xEnd - xStart <= threshold)
+        #   line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
+        #   # for i in [xStart..xEnd]
+        #   #   line.drawPoint ctx, xScale, yScale, i, 3
+        # else if dateStart is dateEnd
+        #   line.drawPoint ctx, xScale, yScale, xStart, 3
+        # else
+        #   line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
         
       return
       
@@ -268,11 +266,10 @@ QuandlismContext_.stage = () ->
  
     # Respond to adjsut events from the brush
     context.on 'adjust.stage', (_dateStart, _dateEnd) ->
-      console.log "ADJUSTING STAGE: #{_dateStart} #{_dateEnd}"
       dateStart = _dateStart
       dateEnd = _dateEnd
       setScales()
-      # draw()
+      draw()
       return
       
     # Respond to toggle event by re-drawing
@@ -284,11 +281,13 @@ QuandlismContext_.stage = () ->
     # Respond to refresh event. Update line data and re-draw
     context.on 'refresh.stage', () ->
       lines = selection.datum()
+      line  = _.first lines
       # Only draw if there is no brush to dispatch the adjust event
       draw() if not context.dombrush()
       return
       
     d3.select("##{canvasId}").on 'mousemove', (e) ->
+      return
       loc = d3.mouse @
       hit = lineHit loc
       if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
@@ -314,16 +313,6 @@ QuandlismContext_.stage = () ->
     if not _? then return yScale
     yScale = _
     stage
-
-  stage.xEnd = (_) =>
-    if not _? then return xEnd
-    xEnd = _
-    stage    
-
-  stage.xStart = (_) =>
-    if not _? then return xStart
-    xStart = _
-    stage        
     
   stage.threshold = (_) =>
     if not _? then return threshold
