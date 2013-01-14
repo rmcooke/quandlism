@@ -16,11 +16,10 @@ QuandlismContext_.brush = () ->
   extent        = []
   lines         = []
   threshold     = 10
+  stretchLimit  = 6
   dragging      = false
   dragEnabled   = true
   stretching    = false
-  stretchLimit  = 6
-  stretchMin    = 0
   activeHandle  = 0
   touchPoint    = null
   cursorClasses = {move: 'move', resize: 'resize'}
@@ -77,23 +76,13 @@ QuandlismContext_.brush = () ->
     setScales = () =>
       
       # Set yScale
-      yScale.domain context.utility().getExtent lines, null, null 
+      ext = context.utility().getExtent lines, null, null 
+      yScale.domain ext 
       yScale.range [height-context.padding(), context.padding()]
             
       # set xScale
       xScale.range [context.padding(), width-context.padding()]
       xScale.domain [_.first(line.dates()), _.last(line.dates())]
-
-      
-      # Set the minimum brush size when scale is calculated
-      # stretchMin = Math.floor xScale stretchLimit
-      strechMin = 2
-      # Determine x Axis formatting
-      # xAxis.ticks 20
-      # xAxis.tickFormat (d) =>
-      #     date = new Date (lines[0].dateAt(d))
-      #     "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
-      #   
       return
     
     # Calculates variables needed for drawing the brush (start, width)
@@ -198,11 +187,11 @@ QuandlismContext_.brush = () ->
     # Send the new start and end dates that should be rendered on the sage
     # triggers the context.adjust event with those parameters
     #
-    # calcDates - Re-calcualte date end points before dispatching?
+    # calculateDates - Re-calcualte date end points before dispatching?
     # Returns null
-    dispatchAdjust = (calcDates) =>
-      calcDates = calcDates ? false
-      if calcDates
+    dispatchAdjust = (calculateDates) =>
+      calculateDates = calculateDates ? false
+      if calculateDates
         dateStart = xScale.invert drawStart
         dateEnd   = xScale.invert drawEnd
       context.adjust dateStart, dateEnd
@@ -276,7 +265,7 @@ QuandlismContext_.brush = () ->
     setBrushValues() if dragEnabled
     drawAxis()
     dispatchAdjust()
-    
+        
     # Set drawing interval
     setInterval update, 70
  

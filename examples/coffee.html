@@ -97,11 +97,11 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var context = quandlism.context().setupWithContainer($("#chart")).legendWithSelector($("#legend"));
+  var quandlismChart = quandlism.context().chart($("#chart")).withLegend($("#legend"));
   
-  d3.json('/data/apple.json', function(data) {    
-    lines = context.utility().createLines(data);
-    context.build().attachData(lines).render()
+  d3.json('/data/bank.json', function(data) {    
+    lines = quandlismChart.utility().createLines(data);
+    quandlismChart.build().attachData(lines).render()
   }); 
 
 

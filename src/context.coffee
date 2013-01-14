@@ -43,6 +43,13 @@ quandlism.context = () ->
     h = $(dom).height()
     context
   
+  
+  context.chart = (container, brush_) =>
+    return context.setupWithContainer container, brush_
+    
+  context.withLegend = (container) =>
+    return context.legendWithSelector container
+  
     
   # Convenience method for building the quanlism chart with ONLY a container selector
   # Remove all children of container and creates brush and stage elements
@@ -67,6 +74,8 @@ quandlism.context = () ->
       dombrush = "##{brushId}"
     context  
     
+  
+
   # Setup the legend via selector
   context.legendWithSelector = (container) =>
     throw 'Invalid container' if not container.length

@@ -59,6 +59,12 @@
       h = $(dom).height();
       return context;
     };
+    context.chart = function(container, brush_) {
+      return context.setupWithContainer(container, brush_);
+    };
+    context.withLegend = function(container) {
+      return context.legendWithSelector(container);
+    };
     context.setupWithContainer = function(container, brush_) {
       var brush, brushId, stageId;
       if (!container.length) {
@@ -349,14 +355,19 @@
       if (!this.visible()) {
         return;
       }
-      data = [];
+      if (drawPoints) {
+        data = [];
+      }
       stage = stage != null ? stage : false;
       ctx.beginPath();
       _ref = this.dates();
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         date = _ref[i];
-        if (!stage && (date > dateEnd || date < dateStart)) {
-          continue;
+        console.log("" + date + " " + dateStart + " " + dateEnd);
+        if (!stage) {
+          if (date > dateEnd || date < dateStart) {
+            continue;
+          }
         }
         if (drawPoints) {
           data.push({
@@ -694,7 +705,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, buffer, canvas, canvasId, context, ctx, cursorClasses, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, pristine, stretchLimit, stretchMin, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
+    var activeHandle, brush, buffer, canvas, canvasId, context, ctx, cursorClasses, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, pristine, stretchLimit, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
       _this = this;
     context = this;
     height = Math.floor(context.h() * quandlism_brush.h);
@@ -713,11 +724,10 @@
     extent = [];
     lines = [];
     threshold = 10;
+    stretchLimit = 6;
     dragging = false;
     dragEnabled = true;
     stretching = false;
-    stretchLimit = 6;
-    stretchMin = 0;
     activeHandle = 0;
     touchPoint = null;
     cursorClasses = {
@@ -760,12 +770,12 @@
         }
       };
       setScales = function() {
-        var strechMin;
-        yScale.domain(context.utility().getExtent(lines, null, null));
+        var ext;
+        ext = context.utility().getExtent(lines, null, null);
+        yScale.domain(ext);
         yScale.range([height - context.padding(), context.padding()]);
         xScale.range([context.padding(), width - context.padding()]);
         xScale.domain([_.first(line.dates()), _.last(line.dates())]);
-        strechMin = 2;
       };
       setBrushValues = function() {
         dateStart = line.dateAt(Math.floor(context.startPoint() * line.length()));
@@ -834,9 +844,9 @@
         buffer = document.createElement('canvas');
         useCache = false;
       };
-      dispatchAdjust = function(calcDates) {
-        calcDates = calcDates != null ? calcDates : false;
-        if (calcDates) {
+      dispatchAdjust = function(calculateDates) {
+        calculateDates = calculateDates != null ? calculateDates : false;
+        if (calculateDates) {
           dateStart = xScale.invert(drawStart);
           dateEnd = xScale.invert(drawEnd);
         }

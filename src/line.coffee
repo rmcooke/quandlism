@@ -105,11 +105,13 @@ QuandlismContext_.line = (data) ->
   # Returns null
   line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) ->
     return unless @visible()
-    data = []
+    data = [] if drawPoints
     stage = stage ? false
     ctx.beginPath()
     for date, i in @dates()
-      continue if not stage and (date > dateEnd or date < dateStart)
+      console.log "#{date} #{dateStart} #{dateEnd}"
+      unless stage
+        continue if (date > dateEnd or date < dateStart)
       data.push {date: date, value: @valueAt(i)} if drawPoints
       ctx.lineTo xS(date), yS(@valueAt(i))
         
@@ -136,8 +138,8 @@ QuandlismContext_.line = (data) ->
       
   # Toggle visibility of line
   line.toggle = () ->
-    v = not @.visible()
-    @.visible(v)
+    v = not @visible()
+    @visible(v)
     v
   
   # Getters and setters - expose attributes of the line
