@@ -82,14 +82,12 @@ QuandlismContext_.brush = () ->
             
       # set xScale
       xScale.range [context.padding(), width-context.padding()]
-      xScale.domain [dateStart, dateEnd]
-      
-      drawStart = xScale dateStart
-      drawEnd   = xScale dateEnd
+      xScale.domain [_.first(line.dates()), _.last(line.dates())]
+
       
       # Set the minimum brush size when scale is calculated
       # stretchMin = Math.floor xScale stretchLimit
-      strechMin = 20
+      strechMin = 2
       # Determine x Axis formatting
       # xAxis.ticks 20
       # xAxis.tickFormat (d) =>
@@ -103,9 +101,7 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     setBrushValues = () =>
-      
       # Set the date and x-value of the date, for the endpoints
-      console.log  Math.floor(context.startPoint()*line.length())
       dateStart = line.dateAt Math.floor(context.startPoint()*line.length())
       dateEnd   = _.last line.dates()
       drawStart = xScale dateStart 
@@ -114,12 +110,6 @@ QuandlismContext_.brush = () ->
       setPristine 'dateEnd', dateEnd
       setPristine 'drawStart', drawStart
       setPristine 'drawEnd', drawEnd
-      # Calculate brush width
-      # brushWidth = width - drawStart
-      # setPristine 'brushWidth', brushWidth
-      # if brushWidth < stretchMin
-      #   brushWidth = stretchMin
-      #   setPristine 'brushWidth', brushWidth
       return
       
     # Update function drives the brush element. This is called on invertal
@@ -295,6 +285,7 @@ QuandlismContext_.brush = () ->
   
     # Respond to resized browser by recalculating key points and redrawing
     context.on "respond.brush", () ->
+      console.log "pre respond #{drawStart}(#{dateStart}) #{drawEnd}"
       setPristine 'height', height
       setPristine 'width', width
       height = Math.floor context.h()*quandlism_brush.h
@@ -302,6 +293,9 @@ QuandlismContext_.brush = () ->
       xAxisDOM.attr 'width', width
       removeCache()
       setScales()
+      drawStart = xScale dateStart
+      drawEnd   = xScale dateEnd
+      saveState()
       drawAxis()
       return
       

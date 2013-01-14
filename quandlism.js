@@ -747,13 +747,10 @@
         yScale.domain(context.utility().getExtent(lines, null, null));
         yScale.range([height - context.padding(), context.padding()]);
         xScale.range([context.padding(), width - context.padding()]);
-        xScale.domain([dateStart, dateEnd]);
-        drawStart = xScale(dateStart);
-        drawEnd = xScale(dateEnd);
-        strechMin = 20;
+        xScale.domain([_.first(line.dates()), _.last(line.dates())]);
+        strechMin = 2;
       };
       setBrushValues = function() {
-        console.log(Math.floor(context.startPoint() * line.length()));
         dateStart = line.dateAt(Math.floor(context.startPoint() * line.length()));
         dateEnd = _.last(line.dates());
         drawStart = xScale(dateStart);
@@ -805,7 +802,6 @@
         buffer.drawImage(document.getElementById(canvasId), 0, 0);
       };
       drawBrush = function() {
-        console.log(["start: " + drawStart, "end: " + drawEnd]);
         ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)';
         ctx.beginPath();
         ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
@@ -877,6 +873,7 @@
       dispatchAdjust();
       setInterval(update, 70);
       context.on("respond.brush", function() {
+        console.log("pre respond " + drawStart + "(" + dateStart + ") " + drawEnd);
         setPristine('height', height);
         setPristine('width', width);
         height = Math.floor(context.h() * quandlism_brush.h);
@@ -884,6 +881,9 @@
         xAxisDOM.attr('width', width);
         removeCache();
         setScales();
+        drawStart = xScale(dateStart);
+        drawEnd = xScale(dateEnd);
+        saveState();
         drawAxis();
       });
       context.on('refresh.brush', function() {
@@ -926,7 +926,6 @@
       return canvas.on('mousemove', function(e) {
         var dragDiff, m;
         m = d3.mouse(this);
-        console.log("END: " + drawEnd + " " + (getPristine('drawEnd')));
         if (dragging || stretching) {
           dragDiff = m[0] - touchPoint;
           if (dragging && dragEnabled) {
