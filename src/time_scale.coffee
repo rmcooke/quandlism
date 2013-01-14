@@ -1,0 +1,2 @@
+QuandlismContext_.timeScale = () ->
+  context = @
