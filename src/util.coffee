@@ -32,9 +32,10 @@ QuandlismContext_.utility = () ->
     
   # Conveneince method for returning mapped data for a given index
   utility.getLineData = (data, index) =>
+    formatter = d3.time.format("%Y-%m-%d")
     _.map data, (d) ->
       {
-        date: d[0]
+        date: formatter.parse(d[0])
         num:  d[(index+1)]
       }
   

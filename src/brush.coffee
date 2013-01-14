@@ -9,7 +9,7 @@ QuandlismContext_.brush = () ->
   handleWidth   = 10
   xStart        = null
   xStart0       = null
-  xScale        = d3.scale.linear()
+  xScale        = d3.time.scale()
   yScale        = d3.scale.linear()
   canvas        = null
   ctx           = null
@@ -43,7 +43,7 @@ QuandlismContext_.brush = () ->
     ctx = canvas.node().getContext '2d'
     
     # if xAxis not defined, create it
-    
+
     if not xAxisDOM?
       xAxisDOM = selection.append 'svg'
       xAxisDOM.attr 'class', 'x axis'
@@ -64,18 +64,21 @@ QuandlismContext_.brush = () ->
       extent = context.utility().getExtent lines, null, null    
       yScale.domain [extent[0], extent[1]]
       yScale.range [height-context.padding(), context.padding()]
-      xScale.domain [0, lines[0].length()-1]
+      
+      
       xScale.range [context.padding(), width-context.padding()]
-            
+      dates = lines[0].dates().reverse()
+      xScale.domain [_.first(dates), _.last(dates)]
+
       # Set the minimum brush size when scale is calculated
-      stretchMin = Math.floor xScale stretchLimit
-      
+      # stretchMin = Math.floor xScale stretchLimit
+      strechMin = 20
       # Determine x Axis formatting
-      xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
-      xAxis.tickFormat (d) =>
-        date = new Date (lines[0].dateAt(d))
-        "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
-      
+      xAxis.ticks 20
+      # xAxis.tickFormat (d) =>
+      #     date = new Date (lines[0].dateAt(d))
+      #     "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
+      #   
       return
     
     # Calculates variables needed for drawing the brush (start, width)
@@ -83,7 +86,7 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     setBrushValues = () =>
-      xStart = xScale context.startPoint()*lines[0].length()
+      xStart = xScale lines[0].dateAt(Math.floor context.startPoint()*lines[0].length())
       xStart0 = xStart
       brushWidth = width - xStart
       brushWidth0 = brushWidth
@@ -130,7 +133,7 @@ QuandlismContext_.brush = () ->
     draw = () =>
       showPoints = (lines[0].length() <= threshold)
       for line, j in lines
-        line.drawPath ctx, xScale, yScale, 0, lines[0].length(), 1
+        line.drawPath ctx, xScale, yScale, 0, lines[0].length(), 1, true
         line.drawPoint ctx, xScale, yScale, j, 2 if showPoints
       saveCanvasData()
       return
@@ -223,6 +226,7 @@ QuandlismContext_.brush = () ->
     # 
     # Returns boolean
     isDraggingLocation = (x) =>
+      # console.log ["x: #{x}", "brushWidth: #{brushWidth}", "xStart: #{xStart}"]
       x <= (brushWidth + xStart) and x >= xStart
 
     # Determines if the mouse cursor location corresponds to the left handle of the brush control
@@ -258,10 +262,11 @@ QuandlismContext_.brush = () ->
     checkDragState()
     setBrushValues() if dragEnabled
     drawAxis()
-    dispatchAdjust()
+    # dispatchAdjust()
     
     # Set drawing interval
     setInterval update, 70
+ 
 
     # Event listners
   
@@ -289,7 +294,7 @@ QuandlismContext_.brush = () ->
       checkDragState()
       setBrushValues() if dragEnabled
       drawAxis()
-      dispatchAdjust()      
+      # dispatchAdjust()      
       return
       
       
@@ -346,7 +351,7 @@ QuandlismContext_.brush = () ->
             xStart = xStart + (brushWidth-stretchMin) if activeHandle is -1
             brushWidth = stretchMin
         
-        dispatchAdjust()
+        # dispatchAdjust()
         
       else if dragEnabled
         if isDraggingLocation m[0]
@@ -368,6 +373,11 @@ QuandlismContext_.brush = () ->
   brush.xScale = (_) =>
     if not _? then return xScale
     xScale = _
+    brush
+    
+  brush.yScale = (_) =>
+    if not _? then return yScale
+    yScale = _
     brush
     
   brush.threshold = (_) =>

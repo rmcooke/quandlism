@@ -97,9 +97,9 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend');
+  var context = quandlism.context().setupWithContainer($("#chart")).legendWithSelector($("#legend"));
   
-  d3.json('/data/amex_bsjc.json', function(data) {    
+  d3.json('/data/mad.json', function(data) {    
     lines = context.utility().createLines(data);
     context.build().attachData(lines).render()
   }); 

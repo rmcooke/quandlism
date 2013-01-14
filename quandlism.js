@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.5.1'
+    version: '0.5.2'
   };
 
   quandlism.context = function() {
@@ -321,15 +321,17 @@
         return ctx.closePath();
       }
     };
-    line.drawPath = function(ctx, xS, yS, start, end, lineWidth) {
-      var i, _i;
+    line.drawPath = function(ctx, xS, yS, start, end, lineWidth, debug) {
+      var date, i, _i;
+      debug = debug != null ? debug : false;
       if (this.visible()) {
         ctx.beginPath();
         for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
-          if (this.valueAt(i) == null) {
+          date = this.dateAt(i);
+          if (date == null) {
             continue;
           }
-          ctx.lineTo(xS(i), yS(this.valueAt(i)));
+          ctx.lineTo(xS(date), yS(this.valueAt(i)));
         }
         ctx.lineWidth = lineWidth;
         ctx.strokeStyle = this.color();
@@ -679,7 +681,7 @@
     handleWidth = 10;
     xStart = null;
     xStart0 = null;
-    xScale = d3.scale.linear();
+    xScale = d3.time.scale();
     yScale = d3.scale.linear();
     canvas = null;
     ctx = null;
@@ -723,21 +725,18 @@
       }
       xAxis.tickSize(5, 3, 0);
       setScales = function() {
+        var dates, strechMin;
         extent = context.utility().getExtent(lines, null, null);
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
-        xScale.domain([0, lines[0].length() - 1]);
         xScale.range([context.padding(), width - context.padding()]);
-        stretchMin = Math.floor(xScale(stretchLimit));
-        xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
-        xAxis.tickFormat(function(d) {
-          var date;
-          date = new Date(lines[0].dateAt(d));
-          return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
-        });
+        dates = lines[0].dates().reverse();
+        xScale.domain([_.first(dates), _.last(dates)]);
+        strechMin = 20;
+        xAxis.ticks(20);
       };
       setBrushValues = function() {
-        xStart = xScale(context.startPoint() * lines[0].length());
+        xStart = xScale(lines[0].dateAt(Math.floor(context.startPoint() * lines[0].length())));
         xStart0 = xStart;
         brushWidth = width - xStart;
         brushWidth0 = brushWidth;
@@ -772,7 +771,7 @@
         showPoints = lines[0].length() <= threshold;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(ctx, xScale, yScale, 0, lines[0].length(), 1);
+          line.drawPath(ctx, xScale, yScale, 0, lines[0].length(), 1, true);
           if (showPoints) {
             line.drawPoint(ctx, xScale, yScale, j, 2);
           }
@@ -862,7 +861,6 @@
         setBrushValues();
       }
       drawAxis();
-      dispatchAdjust();
       setInterval(update, 70);
       context.on("respond.brush", function() {
         height0 = height;
@@ -887,7 +885,6 @@
           setBrushValues();
         }
         drawAxis();
-        dispatchAdjust();
       });
       context.on("toggle.brush", function() {
         removeCache();
@@ -936,7 +933,6 @@
               brushWidth = stretchMin;
             }
           }
-          dispatchAdjust();
         } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
             addBrushClass(cursorClasses['move']);
@@ -960,6 +956,13 @@
         return xScale;
       }
       xScale = _;
+      return brush;
+    };
+    brush.yScale = function(_) {
+      if (!(_ != null)) {
+        return yScale;
+      }
+      yScale = _;
       return brush;
     };
     brush.threshold = function(_) {
@@ -1217,9 +1220,11 @@
       return lines;
     };
     utility.getLineData = function(data, index) {
+      var formatter;
+      formatter = d3.time.format("%Y-%m-%d");
       return _.map(data, function(d) {
         return {
-          date: d[0],
+          date: formatter.parse(d[0]),
           num: d[index + 1]
         };
       });

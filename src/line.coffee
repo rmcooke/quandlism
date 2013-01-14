@@ -90,12 +90,14 @@ QuandlismContext_.line = (data) ->
   # lineWidth - The width of the line
   #
   # Returns null
-  line.drawPath = (ctx, xS, yS, start, end, lineWidth) ->
-    if @.visible()
+  line.drawPath = (ctx, xS, yS, start, end, lineWidth, debug) ->
+    debug = debug ? false
+    if @visible()
       ctx.beginPath()
       for i in [start..end]
-        continue unless @valueAt(i)?
-        ctx.lineTo xS(i), yS(@valueAt(i))
+        date = @dateAt(i)
+        continue unless date?
+        ctx.lineTo xS(date), yS(@valueAt(i))
 
         
       ctx.lineWidth = lineWidth
