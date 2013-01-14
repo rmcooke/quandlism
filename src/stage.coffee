@@ -265,7 +265,8 @@ QuandlismContext_.stage = () ->
       return
  
     # Respond to adjsut events from the brush
-    context.on 'adjust.stage', (x1, x2) ->
+    context.on 'adjust.stage', (dateStart, dateEnd) ->
+      console.log "ADJUSTING STAGE: #{x1} #{x2}"
       xStart = if x1 > 0 then x1 else 0
       xEnd = if lines[0].length() > x2 then x2 else lines[0].length()-1
       setScales()

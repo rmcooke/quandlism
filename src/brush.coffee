@@ -157,6 +157,8 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     drawBrush = () =>
+      console.log "DrawBrush"
+      console.log ["start: #{xStart}", "brushWidth: #{brushWidth}"]
       ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)'
       ctx.beginPath()
       ctx.fillStyle = 'rgba(237, 237, 237, 0.80)'
@@ -197,14 +199,15 @@ QuandlismContext_.brush = () ->
       useCache = false
       return
         
-    # Calculates the start and end points of the brushWidth and
+    # Send the new start and end dates that should be rendered on the sage
     # triggers the context.adjust event with those parameters
     #
     # Returns null
     dispatchAdjust = () =>
-      x1 = xScale.invert xStart
-      x2 = xScale.invert xStart + brushWidth
-      context.adjust Math.ceil(x1), Math.ceil(x2)
+      dateStart = xScale.invert xStart
+      dateEnd = xScale.invert xStart + brushWidth
+      console.log "xStart: #{xStart} x1: #{dateStart} x2: #{dateEnd}"
+    
       return
       
     # Resets the state of the brush control
@@ -262,7 +265,7 @@ QuandlismContext_.brush = () ->
     checkDragState()
     setBrushValues() if dragEnabled
     drawAxis()
-    # dispatchAdjust()
+    dispatchAdjust()
     
     # Set drawing interval
     setInterval update, 70
@@ -294,7 +297,7 @@ QuandlismContext_.brush = () ->
       checkDragState()
       setBrushValues() if dragEnabled
       drawAxis()
-      # dispatchAdjust()      
+      dispatchAdjust()      
       return
       
       
@@ -351,7 +354,7 @@ QuandlismContext_.brush = () ->
             xStart = xStart + (brushWidth-stretchMin) if activeHandle is -1
             brushWidth = stretchMin
         
-        # dispatchAdjust()
+        dispatchAdjust()
         
       else if dragEnabled
         if isDraggingLocation m[0]

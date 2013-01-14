@@ -43,6 +43,14 @@ quandlism.context = () ->
     h = $(dom).height()
     context
     
+  # Initializers
+  context.chart = (container, brush_) =>
+    false
+    
+  # Intiailze legend?
+  context.legend = (container) =>
+    false
+    
   # Convenience method for building the quanlism chart with ONLY a container selector
   # Remove all children of container and creates brush and stage elements
   #

@@ -59,6 +59,12 @@
       h = $(dom).height();
       return context;
     };
+    context.chart = function(container, brush_) {
+      return false;
+    };
+    context.legend = function(container) {
+      return false;
+    };
     context.setupWithContainer = function(container, brush_) {
       var brush, brushId, stageId;
       if (!container.length) {
@@ -383,6 +389,12 @@
     return line;
   };
 
+  QuandlismContext_.timeScale = function() {
+    var context, scale;
+    context = this;
+    return scale = d3.time.scale();
+  };
+
   QuandlismContext_.stage = function() {
     var canvas, canvasId, context, ctx, extent, height, lines, stage, threshold, width, xAxis, xAxisDOM, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
       _this = this;
@@ -597,6 +609,7 @@
         draw();
       });
       context.on('adjust.stage', function(x1, x2) {
+        console.log("ADJUSTING STAGE: " + x1 + " " + x2);
         xStart = x1 > 0 ? x1 : 0;
         xEnd = lines[0].length() > x2 ? x2 : lines[0].length() - 1;
         setScales();
@@ -789,6 +802,8 @@
         buffer.drawImage(document.getElementById(canvasId), 0, 0);
       };
       drawBrush = function() {
+        console.log("DrawBrush");
+        console.log(["start: " + xStart, "brushWidth: " + brushWidth]);
         ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)';
         ctx.beginPath();
         ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
@@ -820,10 +835,10 @@
         useCache = false;
       };
       dispatchAdjust = function() {
-        var x1, x2;
-        x1 = xScale.invert(xStart);
-        x2 = xScale.invert(xStart + brushWidth);
-        context.adjust(Math.ceil(x1), Math.ceil(x2));
+        var dateEnd, dateStart;
+        dateStart = xScale.invert(xStart);
+        dateEnd = xScale.invert(xStart + brushWidth);
+        console.log("xStart: " + xStart + " x1: " + dateStart + " x2: " + dateEnd);
       };
       resetState = function() {
         dragging = false;
@@ -861,6 +876,7 @@
         setBrushValues();
       }
       drawAxis();
+      dispatchAdjust();
       setInterval(update, 70);
       context.on("respond.brush", function() {
         height0 = height;
@@ -885,6 +901,7 @@
           setBrushValues();
         }
         drawAxis();
+        dispatchAdjust();
       });
       context.on("toggle.brush", function() {
         removeCache();
@@ -933,6 +950,7 @@
               brushWidth = stretchMin;
             }
           }
+          dispatchAdjust();
         } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
             addBrushClass(cursorClasses['move']);
