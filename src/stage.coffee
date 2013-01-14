@@ -5,7 +5,7 @@ QuandlismContext_.stage = () ->
   line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
   height      = Math.floor context.h() * quandlism_stage.h
-  xScale      = d3.scale.linear()
+  xScale      = d3.time.scale()
   yScale      = d3.scale.linear()
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
@@ -56,7 +56,6 @@ QuandlismContext_.stage = () ->
       
     # Axis tick size
     yAxis.tickSize 5, 3, 0
-    xAxis.tickSize 5, 3, 0
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>

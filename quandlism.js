@@ -422,7 +422,7 @@
     line = null;
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
     height = Math.floor(context.h() * quandlism_stage.h);
-    xScale = d3.scale.linear();
+    xScale = d3.time.scale();
     yScale = d3.scale.linear();
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
     yAxis = d3.svg.axis().orient('left').scale(yScale);
@@ -462,7 +462,6 @@
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       yAxis.tickSize(5, 3, 0);
-      xAxis.tickSize(5, 3, 0);
       setScales = function() {
         var unitsObj;
         extent = context.utility().getExtentFromDates(lines, dateStart, dateEnd);
