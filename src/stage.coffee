@@ -11,10 +11,12 @@ QuandlismContext_.stage = () ->
   yAxisDOM    = null
   xAxisDOM    = null
   extent      = []
-  xStart      = 0
-  xEnd        = width
+  dateStart   = null
+  dateEnd     = null
   threshold   = 10
   canvas      = null
+  xEnd        = 0
+  xStart      = 0
   ctx         = null
   
   
@@ -71,7 +73,7 @@ QuandlismContext_.stage = () ->
       yScale.domain [extent[0], extent[1]]
       yScale.range [(height - context.padding()), context.padding()]
 
-      xScale.domain [xStart, xEnd]
+      xScale.domain [dateStart, dateEnd]
       xScale.range [context.padding(), (width-context.padding())]
    
       yAxis.tickSize 5, 3, 0
@@ -237,8 +239,8 @@ QuandlismContext_.stage = () ->
     # stage to draw. If there isn't, force the stage to draw
     #
     unless context.dombrush()?
-      xStart = 0
-      xEnd = lines[0].length()-1
+      dateStart = _.first lines[0].dates()
+      dateEnd = _.last lines[0].dates()
       setScales()
       draw()
 
@@ -265,12 +267,12 @@ QuandlismContext_.stage = () ->
       return
  
     # Respond to adjsut events from the brush
-    context.on 'adjust.stage', (dateStart, dateEnd) ->
-      console.log "ADJUSTING STAGE: #{x1} #{x2}"
-      xStart = if x1 > 0 then x1 else 0
-      xEnd = if lines[0].length() > x2 then x2 else lines[0].length()-1
+    context.on 'adjust.stage', (_dateStart, _dateEnd) ->
+      console.log "ADJUSTING STAGE: #{_dateStart} #{_dateEnd}"
+      dateStart = _dateStart
+      dateEnd = _dateEnd
       setScales()
-      draw()
+      # draw()
       return
       
     # Respond to toggle event by re-drawing
