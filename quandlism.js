@@ -369,12 +369,10 @@
       if (!this.visible()) {
         return;
       }
-      console.log(datesMap);
       _ref = this.dates();
       _results = [];
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         date = _ref[i];
-        console.log('drawing points');
         if (!(date >= dateStart && date <= dateEnd)) {
           continue;
         }
@@ -1377,26 +1375,6 @@
           divisor: 1000000000
         };
       }
-    };
-    utility.dateFormat = function(date) {
-      var dateString, hyphenCount;
-      hyphenCount = date.split('-').length - 1;
-      switch (hyphenCount) {
-        case -1:
-          dateString = '%Y';
-          break;
-        case 2:
-          dateString = '%Y-%m-%d';
-          break;
-        default:
-          throw "Unknown date format: " + hyphenCount + " " + date;
-      }
-      return dateString;
-    };
-    utility.parseDate = function(date) {
-      var dateString;
-      dateString = this.dateFormat(date);
-      return d3.time.format(dateString).parse;
     };
     return utility;
   };
