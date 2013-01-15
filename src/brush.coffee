@@ -16,7 +16,7 @@ QuandlismContext_.brush = () ->
   activeHandle  = 0
   buffer        = document.createElement('canvas')
   useCache      = false
-  pristine      = {}
+  previous      = {}
 
   brush = (selection) =>
     canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
@@ -83,10 +83,10 @@ QuandlismContext_.brush = () ->
       dateEnd   = _.last line.dates()
       drawStart = xScale dateStart 
       drawEnd   = xScale dateEnd
-      setPristine 'dateStart', dateStart
-      setPristine 'dateEnd', dateEnd
-      setPristine 'drawStart', drawStart
-      setPristine 'drawEnd', drawEnd
+      setPrevious 'dateStart', dateStart
+      setPrevious 'dateEnd', dateEnd
+      setPrevious 'drawStart', drawStart
+      setPrevious 'drawEnd', drawEnd
       return
       
     # Update function drives the brush element. This is called on invertal
@@ -105,7 +105,7 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     clearCanvas = () =>
-      ctx.clearRect 0, 0, getPristine('width'), getPristine('height')
+      ctx.clearRect 0, 0, getPrevious('width'), getPrevious('height')
       canvas.attr('width', width).attr('height', height)
       return
       
@@ -193,10 +193,10 @@ QuandlismContext_.brush = () ->
       activeHandle = 0
       dateStart = xScale.invert drawStart
       dateEnd   = xScale.invert drawEnd
-      setPristine 'drawStart', drawStart
-      setPristine 'dateStart', dateStart
-      setPristine 'drawEnd', drawEnd
-      setPristine 'dateEnd', dateEnd
+      setPrevious 'drawStart', drawStart
+      setPrevious 'dateStart', dateStart
+      setPrevious 'drawEnd', drawEnd
+      setPrevious 'dateEnd', dateEnd
       return
       
       
@@ -231,16 +231,16 @@ QuandlismContext_.brush = () ->
       document.getElementById("#{context.dombrush().substring(1)}").className = className
       return
       
-    setPristine = (key, value) =>
-      pristine[key] = value
+    setPrevious = (key, value) =>
+      previous[key] = value
       return
       
-    getPristine = (key) =>
-      pristine[key] ? null  
+    getPrevious = (key) =>
+      previous[key] ? null  
     
     # Save intial values of height and width
-    setPristine 'width', width
-    setPristine 'height', height
+    setPrevious 'width', width
+    setPrevious 'height', height
      
     #  
     # Intial drawing of brush
@@ -259,8 +259,8 @@ QuandlismContext_.brush = () ->
   
     # Respond to resized browser by recalculating key points and redrawing
     context.on "respond.brush", () ->
-      setPristine 'height', height
-      setPristine 'width', width
+      setPrevious 'height', height
+      setPrevious 'width', width
       height = Math.floor context.h()*quandlism_brush.h
       width = Math.floor context.w()-quandlism_yaxis_width
       removeCache()
@@ -329,13 +329,15 @@ QuandlismContext_.brush = () ->
       if dragging or stretching
         dragDiff = m[0]-touchPoint
         if dragging and dragEnabled
-          drawStart = getPristine('drawStart') + dragDiff
-          drawEnd   = getPristine('drawEnd') + dragDiff
+          drawStart = getPrevious('drawStart') + dragDiff
+          drawEnd   = getPrevious('drawEnd') + dragDiff
+          
         else if stretching
           # Calculate new brushWidth and xStart values, ensuring the the brush does not have a width less than stretchMin
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
-          drawStart = getPristine('drawStart') + dragDiff if activeHandle is -1
-          drawEnd   = getPristine('drawEnd') + dragDiff   if activeHandle is 1
+          drawStart = getPrevious('drawStart') + dragDiff if activeHandle is -1
+          drawEnd   = getPrevious('drawEnd') + dragDiff   if activeHandle is 1
+        
           # if brushWidth <= stretchMin
           #    drawStart = drawStart + (brushWidth-stretchMin) if activeHandle is -1
           #         

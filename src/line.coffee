@@ -81,14 +81,12 @@ QuandlismContext_.line = (data) ->
   #
   # Returns null
   line.drawPoint = (ctx, xS, yS, index, radius) ->
-      # do something\
-    if @visible()
-      return unless @valueAt(index)?
-      ctx.beginPath()
-      ctx.arc xS(index), yS(@valueAt(index)), radius, 0, Math.PI*2, true
-      ctx.fillStyle = @.color()
-      ctx.fill()
-      ctx.closePath()
+    return unless @visible() and @valueAt(index)?
+    ctx.beginPath()
+    ctx.arc xS(index), yS(@valueAt(index)), radius, 0, Math.PI*2, true
+    ctx.fillStyle = @.color()
+    ctx.fill()
+    ctx.closePath()
 
   # Draw a path on the drawing context
   # Skips any values with null value
@@ -104,13 +102,11 @@ QuandlismContext_.line = (data) ->
   # Returns null
   line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) ->
     return unless @visible()
-    data = [] if drawPoints
+    data = [] 
     stage = stage ? false
     ctx.beginPath()
     for date, i in @dates()
       continue unless @valueAt(i)
-      if not stage
-        continue unless (date <= dateEnd and date >= dateStart)
       data.push {date: date, value: @valueAt(i)} if drawPoints
       ctx.lineTo xS(date), yS(@valueAt(i))
         

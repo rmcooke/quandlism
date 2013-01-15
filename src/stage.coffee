@@ -53,9 +53,6 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
     xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
-      
-    # Axis tick size
-    yAxis.tickSize 5, 3, 0
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>
@@ -84,7 +81,6 @@ QuandlismContext_.stage = () ->
         
       xScale.domain [dateStart, dateEnd]
       xScale.range  [context.padding(), (width-context.padding())]
-   
       return
     
     # Draw axis

@@ -339,25 +339,21 @@
       }
     };
     line.drawPoint = function(ctx, xS, yS, index, radius) {
-      if (this.visible()) {
-        if (this.valueAt(index) == null) {
-          return;
-        }
-        ctx.beginPath();
-        ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
-        ctx.fillStyle = this.color();
-        ctx.fill();
-        return ctx.closePath();
+      if (!(this.visible() && (this.valueAt(index) != null))) {
+        return;
       }
+      ctx.beginPath();
+      ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
+      ctx.fillStyle = this.color();
+      ctx.fill();
+      return ctx.closePath();
     };
     line.drawPath = function(ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) {
       var date, i, _i, _len, _ref;
       if (!this.visible()) {
         return;
       }
-      if (drawPoints) {
-        data = [];
-      }
+      data = [];
       stage = stage != null ? stage : false;
       ctx.beginPath();
       _ref = this.dates();
@@ -365,11 +361,6 @@
         date = _ref[i];
         if (!this.valueAt(i)) {
           continue;
-        }
-        if (!stage) {
-          if (!(date <= dateEnd && date >= dateStart)) {
-            continue;
-          }
         }
         if (drawPoints) {
           data.push({
@@ -501,7 +492,6 @@
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
-      yAxis.tickSize(5, 3, 0);
       setScales = function() {
         var unitsObj;
         extent = context.utility().getExtentFromDates(lines, dateStart, dateEnd);
@@ -708,7 +698,7 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushId, buffer, canvas, canvasId, context, ctx, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, pristine, stertchhMin, stretchLimit, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
+    var activeHandle, brush, brushId, buffer, canvas, canvasId, context, ctx, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, previous, stertchhMin, stretchLimit, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
       _this = this;
     context = this;
     height = Math.floor(context.h() * quandlism_brush.h);
@@ -727,9 +717,9 @@
     activeHandle = 0;
     buffer = document.createElement('canvas');
     useCache = false;
-    pristine = {};
+    previous = {};
     brush = function(selection) {
-      var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPristine, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushClass, setBrushValues, setPristine, setScales, update, xAxisDOM;
+      var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPrevious, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushClass, setBrushValues, setPrevious, setScales, update, xAxisDOM;
       if (!(canvasId != null)) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
       }
@@ -770,10 +760,10 @@
         dateEnd = _.last(line.dates());
         drawStart = xScale(dateStart);
         drawEnd = xScale(dateEnd);
-        setPristine('dateStart', dateStart);
-        setPristine('dateEnd', dateEnd);
-        setPristine('drawStart', drawStart);
-        setPristine('drawEnd', drawEnd);
+        setPrevious('dateStart', dateStart);
+        setPrevious('dateEnd', dateEnd);
+        setPrevious('drawStart', drawStart);
+        setPrevious('drawEnd', drawEnd);
       };
       update = function() {
         clearCanvas();
@@ -785,7 +775,7 @@
         drawBrush();
       };
       clearCanvas = function() {
-        ctx.clearRect(0, 0, getPristine('width'), getPristine('height'));
+        ctx.clearRect(0, 0, getPrevious('width'), getPrevious('height'));
         canvas.attr('width', width).attr('height', height);
       };
       drawAxis = function() {
@@ -845,10 +835,10 @@
         activeHandle = 0;
         dateStart = xScale.invert(drawStart);
         dateEnd = xScale.invert(drawEnd);
-        setPristine('drawStart', drawStart);
-        setPristine('dateStart', dateStart);
-        setPristine('drawEnd', drawEnd);
-        setPristine('dateEnd', dateEnd);
+        setPrevious('drawStart', drawStart);
+        setPrevious('dateStart', dateStart);
+        setPrevious('drawEnd', drawEnd);
+        setPrevious('dateEnd', dateEnd);
       };
       isDraggingLocation = function(x) {
         return x <= drawEnd && x >= drawStart;
@@ -862,15 +852,15 @@
       setBrushClass = function(className) {
         document.getElementById("" + (context.dombrush().substring(1))).className = className;
       };
-      setPristine = function(key, value) {
-        pristine[key] = value;
+      setPrevious = function(key, value) {
+        previous[key] = value;
       };
-      getPristine = function(key) {
+      getPrevious = function(key) {
         var _ref;
-        return (_ref = pristine[key]) != null ? _ref : null;
+        return (_ref = previous[key]) != null ? _ref : null;
       };
-      setPristine('width', width);
-      setPristine('height', height);
+      setPrevious('width', width);
+      setPrevious('height', height);
       setScales();
       checkDragState();
       if (dragEnabled) {
@@ -880,8 +870,8 @@
       dispatchAdjust();
       setInterval(update, 70);
       context.on("respond.brush", function() {
-        setPristine('height', height);
-        setPristine('width', width);
+        setPrevious('height', height);
+        setPrevious('width', width);
         height = Math.floor(context.h() * quandlism_brush.h);
         width = Math.floor(context.w() - quandlism_yaxis_width);
         removeCache();
@@ -936,17 +926,17 @@
         if (dragging || stretching) {
           dragDiff = m[0] - touchPoint;
           if (dragging && dragEnabled) {
-            drawStart = getPristine('drawStart') + dragDiff;
-            drawEnd = getPristine('drawEnd') + dragDiff;
+            drawStart = getPrevious('drawStart') + dragDiff;
+            drawEnd = getPrevious('drawEnd') + dragDiff;
           } else if (stretching) {
             if (activeHandle !== 0 && activeHandle !== (-1) && activeHandle !== 1) {
               throw "Error: Unknown stretching direction";
             }
             if (activeHandle === -1) {
-              drawStart = getPristine('drawStart') + dragDiff;
+              drawStart = getPrevious('drawStart') + dragDiff;
             }
             if (activeHandle === 1) {
-              drawEnd = getPristine('drawEnd') + dragDiff;
+              drawEnd = getPrevious('drawEnd') + dragDiff;
             }
           }
           dispatchAdjust(true);
