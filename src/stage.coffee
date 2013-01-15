@@ -172,9 +172,11 @@ QuandlismContext_.stage = () ->
     drawTooltip = (loc, hit, dataPoint) =>
       # Draw the line with the point highlighted
       line_ = hit.line
+      date  = dataPoint.date
+      value = dataPoint.num
+      
       draw line_.id()
       line_.drawPoint ctx, xScale, yScale, dataPoint, 3
-      return
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
       w = if inTooltip then width-400 else width
@@ -190,9 +192,9 @@ QuandlismContext_.stage = () ->
       tooltipText += "#{context.utility().formatNumberAsString value.toFixed 2}"
       ctx.fillText tooltipText, w-110, 10, 100
       # Line Name
-      ctx.fillStyle = line.color()
+      ctx.fillStyle = line_.color()
       ctx.textAlign = 'end'
-      ctx.fillText "#{context.utility().truncate line.name(), 20}", w-120, 10, 200
+      ctx.fillText "#{context.utility().truncate line_.name(), 20}", w-120, 10, 200
 
       return
       

@@ -341,7 +341,6 @@
       if (!this.visible()) {
         return;
       }
-      console.log(dataPoint);
       ctx.beginPath();
       ctx.arc(xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI * 2, true);
       ctx.fillStyle = this.color();
@@ -601,11 +600,12 @@
         return false;
       };
       drawTooltip = function(loc, hit, dataPoint) {
-        var inTooltip, line_, tooltipText, w;
+        var date, inTooltip, line_, tooltipText, value, w;
         line_ = hit.line;
+        date = dataPoint.date;
+        value = dataPoint.num;
         draw(line_.id());
         line_.drawPoint(ctx, xScale, yScale, dataPoint, 3);
-        return;
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
@@ -617,9 +617,9 @@
         tooltipText = "" + (context.utility().getMonthName(date.getUTCMonth())) + "  " + (date.getUTCDate()) + ", " + (date.getFullYear()) + ": ";
         tooltipText += "" + (context.utility().formatNumberAsString(value.toFixed(2)));
         ctx.fillText(tooltipText, w - 110, 10, 100);
-        ctx.fillStyle = line.color();
+        ctx.fillStyle = line_.color();
         ctx.textAlign = 'end';
-        ctx.fillText("" + (context.utility().truncate(line.name(), 20)), w - 120, 10, 200);
+        ctx.fillText("" + (context.utility().truncate(line_.name(), 20)), w - 120, 10, 200);
       };
       clearTooltip = function() {
         draw();

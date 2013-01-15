@@ -82,7 +82,6 @@ QuandlismContext_.line = (data) ->
   # Returns null
   line.drawPoint = (ctx, xS, yS, dataPoint, radius) ->
     return unless @visible()
-    console.log dataPoint
     ctx.beginPath()
     ctx.arc xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI*2, true
     ctx.fillStyle = @.color()
