@@ -180,6 +180,12 @@ QuandlismContext_.brush = () ->
       if calculateDates
         dateStart = xScale.invert drawStart
         dateEnd   = xScale.invert drawEnd
+        if dateStart > dateEnd
+          d = dateEnd
+          dateEnd = dateStart
+          dateStart = d
+        
+      console.log "Dispatcin: #{dateStart} #{dateEnd}"
       context.adjust dateStart, dateEnd
       return
       
@@ -191,6 +197,11 @@ QuandlismContext_.brush = () ->
       dragging = false
       stretching = false
       activeHandle = 0
+      # If drawStart > drawEnd, handles were inverted,so flip values 
+      if drawStart > drawEnd
+          d = drawEnd
+          drawEnd = drawStart
+          drawStart = d
       dateStart = xScale.invert drawStart
       dateEnd   = xScale.invert drawEnd
       setPrevious 'drawStart', drawStart

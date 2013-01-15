@@ -822,17 +822,30 @@
         useCache = false;
       };
       dispatchAdjust = function(calculateDates) {
+        var d;
         calculateDates = calculateDates != null ? calculateDates : false;
         if (calculateDates) {
           dateStart = xScale.invert(drawStart);
           dateEnd = xScale.invert(drawEnd);
+          if (dateStart > dateEnd) {
+            d = dateEnd;
+            dateEnd = dateStart;
+            dateStart = d;
+          }
         }
+        console.log("Dispatcin: " + dateStart + " " + dateEnd);
         context.adjust(dateStart, dateEnd);
       };
       saveState = function() {
+        var d;
         dragging = false;
         stretching = false;
         activeHandle = 0;
+        if (drawStart > drawEnd) {
+          d = drawEnd;
+          drawEnd = drawStart;
+          drawStart = d;
+        }
         dateStart = xScale.invert(drawStart);
         dateEnd = xScale.invert(drawEnd);
         setPrevious('drawStart', drawStart);
