@@ -263,7 +263,9 @@
     dates = _.map(values, function(v) {
       return v.date;
     });
-    datesMap = _.object(dates, _.range(0, dates.length));
+    datesMap = _.map(dates, function(d) {
+      return context.utility().getDateKey(d);
+    });
     id = quandlism_line_id++;
     visible = true;
     color = '#000000';
@@ -335,12 +337,13 @@
         return null;
       }
     };
-    line.drawPoint = function(ctx, xS, yS, index, radius) {
-      if (!(this.visible() && (this.valueAt(index) != null))) {
+    line.drawPoint = function(ctx, xS, yS, dataPoint, radius) {
+      if (!this.visible()) {
         return;
       }
+      console.log(dataPoint);
       ctx.beginPath();
-      ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
+      ctx.arc(xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI * 2, true);
       ctx.fillStyle = this.color();
       ctx.fill();
       return ctx.closePath();
@@ -363,6 +366,11 @@
       ctx.strokeStyle = this.color();
       ctx.stroke();
       ctx.closePath();
+    };
+    line.getClosestDataPoint = function(date) {
+      return _.find(this.values(), function(v) {
+        return v.date >= date;
+      });
     };
     line.drawPoints = function(ctx, xS, yS, dateStart, dateEnd, radius) {
       var date, i, _i, _len, _ref, _results;
@@ -592,11 +600,11 @@
         }
         return false;
       };
-      drawTooltip = function(loc, x, line, hex) {
-        var inTooltip, pointSize, tooltipText, w;
-        draw(line.id());
-        pointSize = 3;
-        line.drawPoint(ctx, xScale, yScale, x, pointSize);
+      drawTooltip = function(loc, hit, dataPoint) {
+        var inTooltip, line_, tooltipText, w;
+        line_ = hit.line;
+        draw(line_.id());
+        line_.drawPoint(ctx, xScale, yScale, dataPoint, 3);
         return;
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
@@ -651,14 +659,14 @@
         }
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
-        var hit, loc;
+        var dataPoint, hit, loc;
         loc = d3.mouse(this);
         hit = lineHit(loc);
-        if (!!hit) {
-          console.log(xScale.invert(hit.x));
+        if (hit) {
+          dataPoint = hit.line.getClosestDataPoint(xScale.invert(hit.x));
         }
         if (hit !== false) {
-          drawTooltip(loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color);
+          drawTooltip(loc, hit, dataPoint);
         } else {
           clearTooltip();
         }
@@ -1375,6 +1383,9 @@
           divisor: 1000000000
         };
       }
+    };
+    utility.getDateKey = function(date) {
+      return "" + (date.getUTCFullYear()) + (date.getUTCMonth()) + (date.getUTCDay());
     };
     return utility;
   };

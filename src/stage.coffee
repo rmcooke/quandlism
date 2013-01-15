@@ -169,11 +169,11 @@ QuandlismContext_.stage = () ->
     # hex   - The color
     # 
     # Returns null
-    drawTooltip = (loc, x, line, hex) =>
+    drawTooltip = (loc, hit, dataPoint) =>
       # Draw the line with the point highlighted
-      draw line.id()
-      pointSize = 3
-      line.drawPoint ctx, xScale, yScale, x, pointSize
+      line_ = hit.line
+      draw line_.id()
+      line_.drawPoint ctx, xScale, yScale, dataPoint, 3
       return
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
@@ -259,9 +259,8 @@ QuandlismContext_.stage = () ->
     d3.select("##{canvasId}").on 'mousemove', (e) ->
       loc = d3.mouse @
       hit = lineHit loc
-      unless not hit
-        console.log xScale.invert hit.x
-      if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
+      dataPoint =  hit.line.getClosestDataPoint(xScale.invert(hit.x)) if hit
+      if hit isnt false then drawTooltip loc, hit, dataPoint else clearTooltip()
       return
  
     return

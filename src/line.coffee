@@ -6,7 +6,7 @@ QuandlismContext_.line = (data) ->
   name         = data.name
   values       = data.values.reverse()
   dates        = _.map values, (v) -> v.date
-  datesMap     = _.object dates, _.range(0, dates.length)
+  datesMap     = _.map(dates, (d) -> context.utility().getDateKey(d))
   id           = quandlism_line_id++
   visible      = true
   color        = '#000000'
@@ -80,10 +80,11 @@ QuandlismContext_.line = (data) ->
   # radius  - The radius of the point
   #
   # Returns null
-  line.drawPoint = (ctx, xS, yS, index, radius) ->
-    return unless @visible() and @valueAt(index)?
+  line.drawPoint = (ctx, xS, yS, dataPoint, radius) ->
+    return unless @visible()
+    console.log dataPoint
     ctx.beginPath()
-    ctx.arc xS(index), yS(@valueAt(index)), radius, 0, Math.PI*2, true
+    ctx.arc xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI*2, true
     ctx.fillStyle = @.color()
     ctx.fill()
     ctx.closePath()
@@ -115,6 +116,9 @@ QuandlismContext_.line = (data) ->
     
     return
   
+  line.getClosestDataPoint = (date) ->
+    _.find(@values(), (v) -> v.date >= date)
+
   # Given an array of objects {data, value}, draw the points  on the context
   line.drawPoints = (ctx, xS, yS, dateStart, dateEnd, radius) ->
     return unless @visible()

@@ -168,5 +168,7 @@ QuandlismContext_.utility = () ->
       {label: 'B', divisor: 1000000000}
       
 
+  utility.getDateKey = (date) =>
+    "#{date.getUTCFullYear()}#{date.getUTCMonth()}#{date.getUTCDay()}"
     
   utility
