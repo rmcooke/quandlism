@@ -70,6 +70,7 @@ QuandlismContext_.brush = () ->
 
       xScale.range [context.padding(), width-context.padding()]
       xScale.domain [_.first(line.dates()), _.last(line.dates())]
+      
       return
     
     # Calculates variables needed for drawing the brush (start, width)

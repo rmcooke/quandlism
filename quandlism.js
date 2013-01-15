@@ -363,6 +363,9 @@
       _ref = this.dates();
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         date = _ref[i];
+        if (!this.valueAt(i)) {
+          continue;
+        }
         if (!stage) {
           if (!(date <= dateEnd && date >= dateStart)) {
             continue;

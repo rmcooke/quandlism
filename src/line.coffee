@@ -108,7 +108,8 @@ QuandlismContext_.line = (data) ->
     stage = stage ? false
     ctx.beginPath()
     for date, i in @dates()
-      unless stage
+      continue unless @valueAt(i)
+      if not stage
         continue unless (date <= dateEnd and date >= dateStart)
       data.push {date: date, value: @valueAt(i)} if drawPoints
       ctx.lineTo xS(date), yS(@valueAt(i))
