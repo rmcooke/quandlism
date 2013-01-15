@@ -5,10 +5,11 @@ QuandlismContext_.line = (data) ->
   context      = @
   name         = data.name
   values       = data.values.reverse()
+  dates        = _.map values, (v) -> v.date
+  datesMap     = _.object dates, _.range(0, dates.length)
   id           = quandlism_line_id++
   visible      = true
   color        = '#000000'
-  
   
   # Instance methods
   
@@ -47,9 +48,7 @@ QuandlismContext_.line = (data) ->
       min = val if val < min
       max = val if val > max
     [min, max]
-    
-  line.dates = (start, end) =>
-    (v.date for v in values[start..end])
+  
     
   # Return the number of datapoints in the line
   line.length = () =>
@@ -69,7 +68,7 @@ QuandlismContext_.line = (data) ->
   #
   # Returns a string representing a date
   line.dateAt = (i) =>
-    if values[i]? then values[i].date else null
+    if dates[i]? then dates[i] else null
     
   
   # Renders an individual point on the canvas
@@ -101,17 +100,12 @@ QuandlismContext_.line = (data) ->
   # stage       - Is this coming from the stage?
   #
   # Returns null
-  line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth, drawPoints, stage) ->
+  line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth) ->    
     return unless @visible()
-    data = [] 
-    stage = stage ? false
     ctx.beginPath()
 
     for date, i in @dates()
       continue unless @valueAt(i)
-      data.push {date: date, value: @valueAt(i)} if drawPoints
-      # if stage
-      #   console.log "#{xS(date)} #{@valueAt(i)} #{yS(@valueAt(i))}"
       ctx.lineTo xS(date), yS(@valueAt(i))
         
     ctx.lineWidth = lineWidth
@@ -119,17 +113,15 @@ QuandlismContext_.line = (data) ->
     ctx.stroke()
     ctx.closePath()
     
-    # Use captured data points to draw points, if necessary
-    @drawPoints ctx, xS, yS, data if drawPoints
-    
     return
   
   # Given an array of objects {data, value}, draw the points  on the context
-  line.drawPoints = (ctx, xS, yS, data) ->
+  line.drawPoints = (ctx, xS, yS, dateStart, dateEnd, radius) ->
     return unless @visible()
-    for obj in data
+    for date, i in @dates()
+      continue unless date >= dateStart and date <= dateEnd
       ctx.beginPath()
-      ctx.arc xS(obj.date), yS(obj.value), 3, 0, Math.PI*2, true
+      ctx.arc xS(date), yS(@valueAt(i)), 3, 0, Math.PI*2, true
       ctx.fillStyle = @color()
       ctx.fill()
       ctx.closePath()
@@ -140,37 +132,14 @@ QuandlismContext_.line = (data) ->
     v = not @visible()
     @visible(v)
     v
-  
-  # Given a date range, determine how many visible, discrete data
-  # points exist on the continuous plot
-  #
-  # dateStart - The beginning of the date range
-  # dateEnd   - The end of the date range
-  #
-  # Returns and integer 
-  line.visiblePoints = (dateStart, dateEnd) ->
-    start = end = null
-    for date, i in @dates()
-      unless start?
-        if date is dateStart 
-          start = i
-        else if date > dateStart
-          start = (i-1)
-          start = 0 unless start > 0
-      if dateEnd is date
-        end = i
-        break
-      else if dateEnd < date
-        end = (i-1)
-        break
-    start = start ? 0
-    end   = end ? @length()-1
-    (end-start) 
-        
     
   
   # Getters and setters - expose attributes of the line
-  
+  line.dates = (_) =>
+    if not _? then return dates
+    dates = _
+    line
+    
   line.id = (_) =>
     if not _? then return id
     id = _

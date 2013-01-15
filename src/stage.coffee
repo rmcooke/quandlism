@@ -119,32 +119,20 @@ QuandlismContext_.stage = () ->
         
         
     # Draws the stage data
+    #
+    # lineId - The id of the line to be highlighted when drawing the lines (integer or null)
     draw = (lineId) =>
-      
+      lineId = lineId ? -1  
       # Refresh axis and gridlines
       drawAxis()
       ctx.clearRect 0, 0, width, height      
       drawGridLines()
 
-      # if lineId to highlight is not defined, set to an invalid index
-      lineId = if lineId? then lineId else -1
-      for line, j in lines
-        
+      for line, j in lines   
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
-        # If we are within the minimum threshold show points with line
-        # If we are on a single data point, show only a point
-        # Othwerwise, render a path
-        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth, (line.visiblePoints(dateStart, dateEnd) <= threshold), 3
-        # if (xEnd - xStart <= threshold)
-        #   line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
-        #   # for i in [xStart..xEnd]
-        #   #   line.drawPoint ctx, xScale, yScale, i, 3
-        # else if dateStart is dateEnd
-        #   line.drawPoint ctx, xScale, yScale, xStart, 3
-        # else
-        #   line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
-        
+        # Draw the path
+        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
       return
       
     # Detects line hit
