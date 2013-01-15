@@ -180,12 +180,13 @@ QuandlismContext_.brush = () ->
       if calculateDates
         dateStart = xScale.invert drawStart
         dateEnd   = xScale.invert drawEnd
+        # If dateStart > dateEnd, handles were inverted, so 
+        # reverse order of dispatch
         if dateStart > dateEnd
           d = dateEnd
           dateEnd = dateStart
           dateStart = d
         
-      console.log "Dispatcin: #{dateStart} #{dateEnd}"
       context.adjust dateStart, dateEnd
       return
       
