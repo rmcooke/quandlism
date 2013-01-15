@@ -302,6 +302,9 @@
           continue;
         }
         val = this.valueAt(i);
+        if (!(val != null)) {
+          continue;
+        }
         if (val < min) {
           min = val;
         }
@@ -833,7 +836,6 @@
             dateStart = d;
           }
         }
-        console.log("Dispatcin: " + dateStart + " " + dateEnd);
         context.adjust(dateStart, dateEnd);
       };
       saveState = function() {

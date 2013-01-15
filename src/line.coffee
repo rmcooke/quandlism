@@ -43,6 +43,7 @@ QuandlismContext_.line = (data) ->
     for date, i in @dates()
       continue unless date <= endDate and date >= startDate
       val = @valueAt i
+      continue if not val?
       min = val if val < min
       max = val if val > max
     [min, max]
@@ -105,9 +106,12 @@ QuandlismContext_.line = (data) ->
     data = [] 
     stage = stage ? false
     ctx.beginPath()
+
     for date, i in @dates()
       continue unless @valueAt(i)
       data.push {date: date, value: @valueAt(i)} if drawPoints
+      # if stage
+      #   console.log "#{xS(date)} #{@valueAt(i)} #{yS(@valueAt(i))}"
       ctx.lineTo xS(date), yS(@valueAt(i))
         
     ctx.lineWidth = lineWidth
