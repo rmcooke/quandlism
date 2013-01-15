@@ -19,7 +19,7 @@
     domlegend = null;
     domtooltip = null;
     padding = 0;
-    startPoint = 0.75;
+    startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -392,7 +392,6 @@
       _results = [];
       for (_i = 0, _len = data.length; _i < _len; _i++) {
         obj = data[_i];
-        console.log("" + obj.value + " " + (yS(obj.value)));
         ctx.beginPath();
         ctx.arc(xS(obj.date), yS(obj.value), 3, 0, Math.PI * 2, true);
         ctx.fillStyle = this.color();
@@ -508,10 +507,8 @@
         }
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
-        xScale.domain([dateStart, dateEnd]);
-        xScale.range([context.padding(), width - context.padding()]);
-        yAxis.tickSize(5, 3, 0);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
+        yAxis.tickSize(5, 3, 0);
         unitsObj = context.utility().getUnitAndDivisor(Math.round(extent[1]));
         yAxis.tickFormat(function(d) {
           var n;
@@ -520,6 +517,8 @@
           n = n.replace(/\.$/, '');
           return "" + n + " " + unitsObj['label'];
         });
+        xScale.domain([dateStart, dateEnd]);
+        xScale.range([context.padding(), width - context.padding()]);
       };
       drawAxis = function() {
         var xg, yg;
@@ -603,12 +602,11 @@
         return false;
       };
       drawTooltip = function(loc, x, line, hex) {
-        var date, inTooltip, pointSize, tooltipText, value, w;
-        date = new Date(line.dateAt(x));
-        value = line.valueAt(x);
+        var inTooltip, pointSize, tooltipText, w;
         draw(line.id());
-        pointSize = xEnd - xStart <= threshold ? 5 : 3;
+        pointSize = 3;
         line.drawPoint(ctx, xScale, yScale, x, pointSize);
+        return;
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
@@ -663,9 +661,11 @@
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var hit, loc;
-        return;
         loc = d3.mouse(this);
         hit = lineHit(loc);
+        if (!!hit) {
+          console.log(xScale.invert(hit.x));
+        }
         if (hit !== false) {
           drawTooltip(loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color);
         } else {
@@ -705,41 +705,28 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, buffer, canvas, canvasId, context, ctx, cursorClasses, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, pristine, stretchLimit, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
+    var activeHandle, brush, brushId, buffer, canvas, canvasId, context, ctx, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, pristine, stertchhMin, stretchLimit, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
       _this = this;
     context = this;
     height = Math.floor(context.h() * quandlism_brush.h);
     width = Math.floor(context.w() - quandlism_yaxis_width);
-    handleWidth = 10;
-    dateStart = null;
-    dateEnd = null;
-    drawStart = null;
-    drawEnd = null;
+    dateStart = dateEnd = drawStart = drawEnd = line = null;
+    dragging = dragEnabled = stretching = touchPoint = null;
+    canvas = ctx = canvasId = brushId = null;
+    extent = lines = [];
     xScale = d3.time.scale();
     yScale = d3.scale.linear();
-    canvas = null;
-    ctx = null;
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
-    canvasId = null;
-    extent = [];
-    lines = [];
     threshold = 10;
+    handleWidth = 10;
     stretchLimit = 6;
-    dragging = false;
-    dragEnabled = true;
-    stretching = false;
+    stertchhMin = 100;
     activeHandle = 0;
-    touchPoint = null;
-    cursorClasses = {
-      move: 'move',
-      resize: 'resize'
-    };
     buffer = document.createElement('canvas');
     useCache = false;
     pristine = {};
-    line = null;
     brush = function(selection) {
-      var addBrushClass, checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPristine, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushValues, setPristine, setScales, update, xAxisDOM;
+      var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPristine, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushClass, setBrushValues, setPristine, setScales, update, xAxisDOM;
       if (!(canvasId != null)) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
       }
@@ -770,9 +757,7 @@
         }
       };
       setScales = function() {
-        var ext;
-        ext = context.utility().getExtent(lines, null, null);
-        yScale.domain(ext);
+        yScale.domain(context.utility().getExtent(lines, null, null));
         yScale.range([height - context.padding(), context.padding()]);
         xScale.range([context.padding(), width - context.padding()]);
         xScale.domain([_.first(line.dates()), _.last(line.dates())]);
@@ -807,12 +792,10 @@
         xg.call(xAxis);
       };
       draw = function() {
-        var j, showPoints, _i, _len;
-        showPoints = line.length() <= threshold;
-        console.log("" + (line.length()) + " " + threshold + " " + showPoints);
+        var j, _i, _len;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, showPoints, false);
+          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, line.length() <= threshold, false);
         }
         saveCanvasData();
       };
@@ -873,19 +856,8 @@
       isRightHandle = function(x) {
         return x > drawEnd && x <= (drawEnd + handleWidth);
       };
-      addBrushClass = function(className) {
-        var classNames, key;
-        classNames = ((function() {
-          var _results;
-          _results = [];
-          for (key in cursorClasses) {
-            _results.push(key);
-          }
-          return _results;
-        })()).reduce(function(a, b) {
-          return "" + a + " " + b;
-        });
-        $(context.dombrush()).removeClass(classNames).addClass(className);
+      setBrushClass = function(className) {
+        document.getElementById("" + (context.dombrush().substring(1))).className = className;
       };
       setPristine = function(key, value) {
         pristine[key] = value;
@@ -952,6 +924,7 @@
         saveState();
       });
       canvas.on('mouseout', function(e) {
+        setBrushClass('');
         saveState();
       });
       return canvas.on('mousemove', function(e) {
@@ -976,11 +949,11 @@
           dispatchAdjust(true);
         } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
-            addBrushClass(cursorClasses['move']);
+            setBrushClass('move');
           } else if (isLeftHandle(m[0]) || isRightHandle(m[0])) {
-            addBrushClass(cursorClasses['resize']);
+            setBrushClass('resize');
           } else {
-            addBrushClass('');
+            setBrushClass('');
           }
         }
       });
@@ -1025,13 +998,6 @@
         return handleWidth;
       }
       handleWidth = _;
-      return brush;
-    };
-    brush.cursorClasses = function(_) {
-      if (!(_ != null)) {
-        return cursorClasses;
-      }
-      cursorClasses = _;
       return brush;
     };
     return brush;

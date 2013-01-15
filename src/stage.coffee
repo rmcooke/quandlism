@@ -59,23 +59,19 @@ QuandlismContext_.stage = () ->
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>
-      extent = context.utility().getExtentFromDates lines, dateStart, dateEnd
+      
       # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
       # on x-axis if all poitns are the same
-      unless extent[0] isnt extent[1]
-        extent = context.utility().getExtent lines, 0, line.length()
+      extent = context.utility().getExtentFromDates lines, dateStart, dateEnd
+      extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
-      yScale.range [(height - context.padding()), context.padding()]
+      yScale.range  [(height - context.padding()), context.padding()]
 
-      xScale.domain [dateStart, dateEnd]
-      xScale.range [context.padding(), (width-context.padding())]
-   
-      yAxis.tickSize 5, 3, 0
       yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
-   
-   
+      yAxis.tickSize 5, 3, 0
+
       # Build the yAxis tick formatting function
       unitsObj = context.utility().getUnitAndDivisor Math.round(extent[1])
   
@@ -86,13 +82,8 @@ QuandlismContext_.stage = () ->
         "#{n} #{unitsObj['label']}"
         
         
-      # # Build the xAxis tick formatting function
-      #     xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
-      #     xAxis.tickFormat (d) =>
-      #       if date = lines[0].dateAt d
-      #         date = new Date date
-      #         "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
-      #     
+      xScale.domain [dateStart, dateEnd]
+      xScale.range  [context.padding(), (width-context.padding())]
    
       return
     
@@ -132,12 +123,10 @@ QuandlismContext_.stage = () ->
         
     # Draws the stage data
     draw = (lineId) =>
-    
-      drawAxis()
-          
-      # Clear canvas before drawing
-      ctx.clearRect 0, 0, width, height
       
+      # Refresh axis and gridlines
+      drawAxis()
+      ctx.clearRect 0, 0, width, height      
       drawGridLines()
 
       # if lineId to highlight is not defined, set to an invalid index
@@ -167,7 +156,6 @@ QuandlismContext_.stage = () ->
     #
     # Returns false, or an object with keys x, color and line, if a match was found
     lineHit = (m) ->
-      
       # Check for a direct match under cursor
       hex = context.utility().getPixelRGB m, ctx
       
@@ -196,13 +184,11 @@ QuandlismContext_.stage = () ->
     # 
     # Returns null
     drawTooltip = (loc, x, line, hex) =>
-      date = new Date line.dateAt x
-      value = line.valueAt x
       # Draw the line with the point highlighted
       draw line.id()
-      pointSize = if (xEnd - xStart <= threshold) then 5 else 3
+      pointSize = 3
       line.drawPoint ctx, xScale, yScale, x, pointSize
-      
+      return
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
       w = if inTooltip then width-400 else width
@@ -285,9 +271,10 @@ QuandlismContext_.stage = () ->
       return
       
     d3.select("##{canvasId}").on 'mousemove', (e) ->
-      return
       loc = d3.mouse @
       hit = lineHit loc
+      unless not hit
+        console.log xScale.invert hit.x
       if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
       return
  

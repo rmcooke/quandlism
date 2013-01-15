@@ -1,36 +1,26 @@
 QuandlismContext_.brush = () ->
   context       = @
-  height        = Math.floor context.h() * quandlism_brush.h
+  height        = Math.floor context.h()*quandlism_brush.h
   width         = Math.floor context.w()-quandlism_yaxis_width
-  handleWidth   = 10
-  dateStart     = null
-  dateEnd       = null
-  drawStart     = null
-  drawEnd       = null
+  dateStart = dateEnd = drawStart = drawEnd = line = null
+  dragging = dragEnabled = stretching = touchPoint = null
+  canvas = ctx = canvasId = brushId = null
+  extent = lines = []
   xScale        = d3.time.scale()
   yScale        = d3.scale.linear()
-  canvas        = null
-  ctx           = null
   xAxis         = d3.svg.axis().orient('bottom').scale xScale  
-  canvasId      = null
-  extent        = []
-  lines         = []
   threshold     = 10
+  handleWidth   = 10
   stretchLimit  = 6
-  dragging      = false
-  dragEnabled   = true
-  stretching    = false
+  stertchhMin   = 100
   activeHandle  = 0
-  touchPoint    = null
-  cursorClasses = {move: 'move', resize: 'resize'}
   buffer        = document.createElement('canvas')
   useCache      = false
   pristine      = {}
-  line          = null
 
   brush = (selection) =>
     canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
-  
+    
     # For convenience, use refernce to first line
     lines = selection.datum()
     line  = _.first lines
@@ -38,6 +28,7 @@ QuandlismContext_.brush = () ->
     dateStart = _.first line.dates()
     dateEnd   = _.last  line.dates()
     
+    # Apply CSS to selection
     selection.attr "style", "position: absolute; top: #{context.h()*(quandlism_stage.h+quandlism_xaxis.h)}px; left: #{quandlism_yaxis_width}px"
     # append canvas and get reference to element and drawing context
     canvas = selection.append('canvas')
@@ -45,7 +36,7 @@ QuandlismContext_.brush = () ->
     canvas.attr "style", "position: absolute; left: 0px; top: 0px"
     ctx = canvas.node().getContext '2d'
     
-    # Start the xAxis
+    # xAxis
     xAxisDOM = selection.append 'svg'
     xAxisDOM.attr 'class', 'x axis'
     xAxisDOM.attr 'id', "x-axis-#{canvasId}"
@@ -74,13 +65,9 @@ QuandlismContext_.brush = () ->
     # 
     # Returns null
     setScales = () =>
-      
-      # Set yScale
-      ext = context.utility().getExtent lines, null, null 
-      yScale.domain ext 
+      yScale.domain context.utility().getExtent lines, null, null 
       yScale.range [height-context.padding(), context.padding()]
-            
-      # set xScale
+
       xScale.range [context.padding(), width-context.padding()]
       xScale.domain [_.first(line.dates()), _.last(line.dates())]
       return
@@ -135,10 +122,7 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     draw = () =>
-      showPoints = (line.length() <= threshold)
-      console.log "#{line.length()} #{threshold} #{showPoints}"
-      for line, j in lines
-        line.drawPath ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, showPoints, false
+      line.drawPath ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1, (line.length() <= threshold), false for line, j in lines
       saveCanvasData()
       return
       
@@ -242,9 +226,8 @@ QuandlismContext_.brush = () ->
       
     # Add classes to the brush
     # Removes any of the clases, defined in 'classes' variable before appending className
-    addBrushClass = (className) =>
-      classNames = (key for key of cursorClasses).reduce (a, b) -> "#{a} #{b}"
-      $(context.dombrush()).removeClass(classNames).addClass className
+    setBrushClass = (className) =>
+      document.getElementById("#{context.dombrush().substring(1)}").className = className
       return
       
     setPristine = (key, value) =>
@@ -335,6 +318,7 @@ QuandlismContext_.brush = () ->
       
     # Detect movement off of the canvas. Reset state
     canvas.on 'mouseout', (e) ->
+      setBrushClass ''
       saveState()  
       return
       
@@ -358,11 +342,11 @@ QuandlismContext_.brush = () ->
         
       else if dragEnabled
         if isDraggingLocation m[0]
-          addBrushClass cursorClasses['move']
+          setBrushClass 'move'
         else if isLeftHandle(m[0]) or isRightHandle(m[0])
-          addBrushClass cursorClasses['resize']
+          setBrushClass 'resize'
         else
-          addBrushClass ''
+          setBrushClass ''
       return
 
   # 
@@ -398,10 +382,6 @@ QuandlismContext_.brush = () ->
     handleWidth = _
     brush
     
-  brush.cursorClasses = (_) =>
-    if not _? then return cursorClasses
-    cursorClasses = _
-    brush
   
   brush
       
