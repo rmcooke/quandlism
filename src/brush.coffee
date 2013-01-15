@@ -188,7 +188,8 @@ QuandlismContext_.brush = () ->
           dateEnd = dateStart
           dateStart = d
         
-      context.adjust dateStart, dateEnd
+      console.log "start: #{drawStart} [#{dateStart}] #{line.getClosestIndex(dateStart)}"
+      context.adjust dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd)
       return
       
     # Resets the state of the brush control

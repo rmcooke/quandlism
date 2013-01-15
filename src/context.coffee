@@ -147,8 +147,8 @@ quandlism.context = () ->
   context.respond = _.throttle () => event.respond.call context, 500
   
   # Respond to adjust event
-  context.adjust = (x1, x2) =>
-    event.adjust.call context, x1, x2  
+  context.adjust = (d1, i1, d2, i2) =>
+    event.adjust.call context, d1, i1, d2, i2
     
   # Responds to toggle event
   context.toggle = () =>

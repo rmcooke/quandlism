@@ -183,8 +183,8 @@
     context.respond = _.throttle(function() {
       return event.respond.call(context, 500);
     });
-    context.adjust = function(x1, x2) {
-      return event.adjust.call(context, x1, x2);
+    context.adjust = function(d1, i1, d2, i2) {
+      return event.adjust.call(context, d1, i1, d2, i2);
     };
     context.toggle = function() {
       return event.toggle.call(context);
@@ -366,10 +366,31 @@
       ctx.stroke();
       ctx.closePath();
     };
+    line.drawPathFromIndicies = function(ctx, xS, yS, start, end, lineWidth) {
+      var i, _i;
+      if (!this.visible()) {
+        return;
+      }
+      ctx.beginPath();
+      for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
+        if (!this.valueAt(i)) {
+          continue;
+        }
+        ctx.lineTo(xS(this.dateAt(i)), yS(this.valueAt(i)));
+      }
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = this.color();
+      ctx.stroke();
+      return ctx.closePath();
+    };
     line.getClosestDataPoint = function(date) {
       return _.find(this.values(), function(v) {
         return v.date >= date;
       });
+    };
+    line.getClosestIndex = function(date) {
+      data = this.getClosestDataPoint(date);
+      return _.indexOf(datesMap, context.utility().getDateKey(data.date));
     };
     line.drawPoints = function(ctx, xS, yS, dateStart, dateEnd, radius) {
       var date, i, _i, _len, _ref, _results;
@@ -449,7 +470,7 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
+    var canvas, canvasId, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
       _this = this;
     context = this;
     canvasId = null;
@@ -467,6 +488,8 @@
     dateEnd = null;
     drawStart = null;
     drawEnd = null;
+    indexStart = null;
+    indexEnd = null;
     threshold = 10;
     canvas = null;
     ctx = null;
@@ -564,7 +587,7 @@
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          line.drawPath(ctx, xScale, yScale, dateStart, dateEnd, lineWidth);
+          line.drawPathFromIndicies(ctx, xScale, yScale, indexStart, indexEnd, lineWidth);
         }
       };
       lineHit = function(m) {
@@ -641,7 +664,9 @@
         setScales();
         draw();
       });
-      context.on('adjust.stage', function(_dateStart, _dateEnd) {
+      context.on('adjust.stage', function(_dateStart, _indexStart, _dateEnd, _indexEnd) {
+        indexStart = _indexStart;
+        indexEnd = _indexEnd;
         dateStart = _dateStart;
         dateEnd = _dateEnd;
         setScales();
@@ -842,7 +867,8 @@
             dateStart = d;
           }
         }
-        context.adjust(dateStart, dateEnd);
+        console.log("start: " + drawStart + " [" + dateStart + "] " + (line.getClosestIndex(dateStart)));
+        context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
       };
       saveState = function() {
         var d;

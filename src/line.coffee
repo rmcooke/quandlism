@@ -114,10 +114,26 @@ QuandlismContext_.line = (data) ->
     ctx.closePath()
     
     return
+    
+  line.drawPathFromIndicies = (ctx, xS, yS, start, end, lineWidth) ->
+    return unless @visible()
+    ctx.beginPath()
+    for i in [start..end]
+      continue unless @valueAt(i)
+      ctx.lineTo xS(@dateAt(i)), yS(@valueAt(i))
+      
+    ctx.lineWidth   = lineWidth
+    ctx.strokeStyle = @color()
+    ctx.stroke()
+    ctx.closePath() 
   
   line.getClosestDataPoint = (date) ->
     _.find(@values(), (v) -> v.date >= date)
-
+    
+  line.getClosestIndex     = (date) ->
+    data = @getClosestDataPoint(date)
+    _.indexOf datesMap, context.utility().getDateKey(data.date)
+    
   # Given an array of objects {data, value}, draw the points  on the context
   line.drawPoints = (ctx, xS, yS, dateStart, dateEnd, radius) ->
     return unless @visible()
@@ -128,7 +144,7 @@ QuandlismContext_.line = (data) ->
       ctx.fillStyle = @color()
       ctx.fill()
       ctx.closePath()
-      
+  
       
   # Toggle visibility of line
   line.toggle = () ->

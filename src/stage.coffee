@@ -15,6 +15,8 @@ QuandlismContext_.stage = () ->
   dateEnd     = null
   drawStart   = null
   drawEnd     = null
+  indexStart  = null
+  indexEnd    = null
   threshold   = 10
   canvas      = null
   ctx         = null
@@ -132,7 +134,8 @@ QuandlismContext_.stage = () ->
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
         # Draw the path
-        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
+        line.drawPathFromIndicies ctx, xScale, yScale, indexStart, indexEnd, lineWidth
+        #line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
       return
       
     # Detects line hit
@@ -237,9 +240,11 @@ QuandlismContext_.stage = () ->
       return
  
     # Respond to adjsut events from the brush
-    context.on 'adjust.stage', (_dateStart, _dateEnd) ->
-      dateStart = _dateStart
-      dateEnd = _dateEnd
+    context.on 'adjust.stage', (_dateStart, _indexStart, _dateEnd, _indexEnd) ->
+      indexStart  = _indexStart
+      indexEnd    = _indexEnd
+      dateStart   = _dateStart
+      dateEnd     = _dateEnd
       setScales()
       draw()
       return
