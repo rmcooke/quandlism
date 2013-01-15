@@ -10,6 +10,7 @@ QuandlismContext_.stage = () ->
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
   extent      = []
+  threshold   = 10
   dateStart   = null
   dateEnd     = null
   drawStart   = null
@@ -128,12 +129,13 @@ QuandlismContext_.stage = () ->
       # if lineId to highlight is not defined, set to an invalid index
       lineId = if lineId? then lineId else -1
       for line, j in lines
+        
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
         # If we are within the minimum threshold show points with line
         # If we are on a single data point, show only a point
         # Othwerwise, render a path
-        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth, false, 3
+        line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth, (line.visiblePoints(dateStart, dateEnd) <= threshold), 3
         # if (xEnd - xStart <= threshold)
         #   line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
         #   # for i in [xStart..xEnd]

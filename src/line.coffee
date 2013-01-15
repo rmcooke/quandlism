@@ -141,6 +141,34 @@ QuandlismContext_.line = (data) ->
     @visible(v)
     v
   
+  # Given a date range, determine how many visible, discrete data
+  # points exist on the continuous plot
+  #
+  # dateStart - The beginning of the date range
+  # dateEnd   - The end of the date range
+  #
+  # Returns and integer 
+  line.visiblePoints = (dateStart, dateEnd) ->
+    start = end = null
+    for date, i in @dates()
+      unless start?
+        if date is dateStart 
+          start = i
+        else if date > dateStart
+          start = (i-1)
+          start = 0 unless start > 0
+      if dateEnd is date
+        end = i
+        break
+      else if dateEnd < date
+        end = (i-1)
+        break
+    start = start ? 0
+    end   = end ? @length()-1
+    (end-start) 
+        
+    
+  
   # Getters and setters - expose attributes of the line
   
   line.id = (_) =>

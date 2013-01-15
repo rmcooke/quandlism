@@ -403,6 +403,34 @@
       this.visible(v);
       return v;
     };
+    line.visiblePoints = function(dateStart, dateEnd) {
+      var date, end, i, start, _i, _len, _ref;
+      start = end = null;
+      _ref = this.dates();
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        date = _ref[i];
+        if (start == null) {
+          if (date === dateStart) {
+            start = i;
+          } else if (date > dateStart) {
+            start = i - 1;
+            if (!(start > 0)) {
+              start = 0;
+            }
+          }
+        }
+        if (dateEnd === date) {
+          end = i;
+          break;
+        } else if (dateEnd < date) {
+          end = i - 1;
+          break;
+        }
+      }
+      start = start != null ? start : 0;
+      end = end != null ? end : this.length() - 1;
+      return end - start;
+    };
     line.id = function(_) {
       if (!(_ != null)) {
         return id;
@@ -461,6 +489,7 @@
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
     yAxis = d3.svg.axis().orient('left').scale(yScale);
     extent = [];
+    threshold = 10;
     dateStart = null;
     dateEnd = null;
     drawStart = null;
@@ -562,7 +591,7 @@
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          line.drawPath(ctx, xScale, yScale, dateStart, dateEnd, lineWidth, false, 3);
+          line.drawPath(ctx, xScale, yScale, dateStart, dateEnd, lineWidth, line.visiblePoints(dateStart, dateEnd) <= threshold, 3);
         }
       };
       lineHit = function(m) {
