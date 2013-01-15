@@ -349,10 +349,10 @@ QuandlismContext_.brush = () ->
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
           drawStart = getPrevious('drawStart') + dragDiff if activeHandle is -1
           drawEnd   = getPrevious('drawEnd') + dragDiff   if activeHandle is 1
-        
-          # if brushWidth <= stretchMin
-          #    drawStart = drawStart + (brushWidth-stretchMin) if activeHandle is -1
-          #         
+               
+        # Fix drawStart and drawEnd to constrain to dimensions
+        drawStart = if drawStart < 0 then 0 else drawStart
+        drawEnd   = if drawEnd > width then width else drawEnd
         dispatchAdjust(true)
         
       else if dragEnabled

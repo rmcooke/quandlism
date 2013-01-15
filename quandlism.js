@@ -983,6 +983,8 @@
               drawEnd = getPrevious('drawEnd') + dragDiff;
             }
           }
+          drawStart = drawStart < 0 ? 0 : drawStart;
+          drawEnd = drawEnd > width ? width : drawEnd;
           dispatchAdjust(true);
         } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
