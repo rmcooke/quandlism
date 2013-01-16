@@ -5,14 +5,21 @@ QuandlismContext_.line = (data) ->
   context      = @
   name         = data.name
   values       = data.values.reverse()
-  dates        = _.map values, (v) -> v.date
-  datesMap     = _.map(dates, (d) -> context.utility().getDateKey(d))
+  dates        = []
+  datesMap     = []
   id           = quandlism_line_id++
   visible      = true
   color        = '#000000'
   
   # Instance methods
-  
+  # setup!
+  line.setup = () ->
+    dates     = _.map values, (v) -> v.date
+    datesMap  = _.map(dates, (d) -> context.utility().getDateKey(d))
+    return
+    
+  line.setup()
+    
   # Calculates the minimum and maximum values of the lines between the start and end points
   #
   # start - The first index to consider

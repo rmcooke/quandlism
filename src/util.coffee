@@ -50,7 +50,8 @@ QuandlismContext_.utility = () ->
   utility.mergeLines = (lines, data) =>
     lines = utility.addNewLinesAndRefresh lines, data
     lines = utility.removeStaleLines lines, data.columns
-    lines[0].visible true  unless not lines[0]? or _.find(lines, (line) -> line.visible() is true)
+    line.setup() for line in lines
+    _.first(lines).visible true  unless not lines[0]? or _.find(lines, (line) -> line.visible() is true)
     lines
     
 

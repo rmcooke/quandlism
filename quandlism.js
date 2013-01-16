@@ -260,15 +260,20 @@
     context = this;
     name = data.name;
     values = data.values.reverse();
-    dates = _.map(values, function(v) {
-      return v.date;
-    });
-    datesMap = _.map(dates, function(d) {
-      return context.utility().getDateKey(d);
-    });
+    dates = [];
+    datesMap = [];
     id = quandlism_line_id++;
     visible = true;
     color = '#000000';
+    line.setup = function() {
+      dates = _.map(values, function(v) {
+        return v.date;
+      });
+      datesMap = _.map(dates, function(d) {
+        return context.utility().getDateKey(d);
+      });
+    };
+    line.setup();
     line.extent = function(start, end) {
       var i, max, min, n, val;
       i = start != null ? start : 0;
@@ -1293,12 +1298,17 @@
       });
     };
     utility.mergeLines = function(lines, data) {
+      var line, _i, _len;
       lines = utility.addNewLinesAndRefresh(lines, data);
       lines = utility.removeStaleLines(lines, data.columns);
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        line.setup();
+      }
       if (!(!(lines[0] != null) || _.find(lines, function(line) {
         return line.visible() === true;
       }))) {
-        lines[0].visible(true);
+        _.first(lines).visible(true);
       }
       return lines;
     };
