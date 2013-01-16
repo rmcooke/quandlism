@@ -997,9 +997,11 @@
         }
       });
       canvas.on('mouseup', function(e) {
+        dispatchAdjust(true);
         saveState();
       });
       canvas.on('mouseout', function(e) {
+        dispatchAdjust(true);
         setBrushClass('');
         saveState();
       });
@@ -1024,7 +1026,6 @@
           }
           drawStart = drawStart < 0 ? 0 : drawStart;
           drawEnd = drawEnd > width ? width : drawEnd;
-          dispatchAdjust(true);
         } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
             setBrushClass('move');

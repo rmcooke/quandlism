@@ -327,11 +327,13 @@ QuandlismContext_.brush = () ->
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
+      dispatchAdjust(true)
       saveState()
       return
       
     # Detect movement off of the canvas. Reset state
     canvas.on 'mouseout', (e) ->
+      dispatchAdjust(true)
       setBrushClass ''
       saveState()  
       return
@@ -354,7 +356,6 @@ QuandlismContext_.brush = () ->
         # Fix drawStart and drawEnd to constrain to dimensions
         drawStart = if drawStart < 0 then 0 else drawStart
         drawEnd   = if drawEnd > width then width else drawEnd
-        dispatchAdjust(true)
         
       else if dragEnabled
         if isDraggingLocation m[0]
