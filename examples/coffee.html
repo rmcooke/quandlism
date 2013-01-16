@@ -80,13 +80,8 @@
   
 </head>
 <body id="index" onload="">
-  
-  <p id='tooltip'></p>
-  
-  <div id='chart'>
-    <div id='stage'></div>
-    <div id='brush'></div>
-  </div>
+    
+  <div id='chart'></div>
   <ul id='legend'></ul>
 
   <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
@@ -97,11 +92,11 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend');
+  var quandlismChart = quandlism.context().chart($("#chart")).withLegend($("#legend"));
   
-  d3.json('/data/amex_bsjc.json', function(data) {    
-    lines = context.utility().createLines(data);
-    context.build().attachData(lines).render()
+  d3.json('/data/boj.json', function(data) {    
+    lines = quandlismChart.utility().createLines(data);
+    quandlismChart.build().attachData(lines).render()
   }); 
 
 

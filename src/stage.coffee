@@ -2,37 +2,42 @@ QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
   lines       = []
+  line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
   height      = Math.floor context.h() * quandlism_stage.h
-  xScale      = d3.scale.linear()
+  xScale      = d3.time.scale()
   yScale      = d3.scale.linear()
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
-  yAxisDOM    = null
-  xAxisDOM    = null
   extent      = []
-  xStart      = 0
-  xEnd        = width
+  threshold   = 10
+  dateStart   = null
+  dateEnd     = null
+  drawStart   = null
+  drawEnd     = null
+  indexStart  = null
+  indexEnd    = null
   threshold   = 10
   canvas      = null
   ctx         = null
   
   
   stage = (selection) =>
-    # Get lines and generate unique ID for the stage
-    lines = selection.datum()
+    
     canvasId = "canvas-stage-#{++quandlism_id_ref}" if not canvasId?
     
+    # Get lines and generate unique ID for the stage
+    lines = selection.datum()
+    line  = _.first lines
     selection.attr "style", "position: absolute; left: 0px; top: 0px;"
     
     # Build the yAxis
-    if not yAxisDOM? 
-      yAxisDOM = selection.insert 'svg'
-      yAxisDOM.attr 'class', 'y axis'
-      yAxisDOM.attr 'id', "y-axis-#{canvasId}"
-      yAxisDOM.attr 'width', quandlism_yaxis_width
-      yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
-      yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
+    yAxisDOM = selection.insert 'svg'
+    yAxisDOM.attr 'class', 'y axis'
+    yAxisDOM.attr 'id', "y-axis-#{canvasId}"
+    yAxisDOM.attr 'width', quandlism_yaxis_width
+    yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
+    yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
 
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
@@ -45,39 +50,27 @@ QuandlismContext_.stage = () ->
     ctx = canvas.node().getContext '2d'
    
     # Build the xAxis
-    if not xAxisDOM? 
-      xAxisDOM = selection.append 'svg'
-      xAxisDOM.attr 'class', 'x axis'
-      xAxisDOM.attr 'id', "x-axis-#{canvasId}"
-      xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
-      xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
-      
-    # Axis tick size
-    yAxis.tickSize 5, 3, 0
-    xAxis.tickSize 5, 3, 0
+    xAxisDOM = selection.append 'svg'
+    xAxisDOM.attr 'class', 'x axis'
+    xAxisDOM.attr 'id', "x-axis-#{canvasId}"
+    xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
+    xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
+    xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>
-      # Calculate the extent for the area between xStart and xEnd
-      extent = context.utility().getExtent lines, xStart, xEnd
       
       # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
       # on x-axis if all poitns are the same
-      unless extent[0] isnt extent[1]
-        extent = context.utility().getExtent lines, 0, lines[0].length()-1 
-      
+      extent = context.utility().getExtent indexStart, indexEnd
+      extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
-      yScale.range [(height - context.padding()), context.padding()]
+      yScale.range  [(height - context.padding()), context.padding()]
 
-      xScale.domain [xStart, xEnd]
-      xScale.range [context.padding(), (width-context.padding())]
-   
-      yAxis.tickSize 5, 3, 0
       yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
-   
-   
+      yAxis.tickSize 5, 3, 0
+
       # Build the yAxis tick formatting function
       unitsObj = context.utility().getUnitAndDivisor Math.round(extent[1])
   
@@ -88,14 +81,8 @@ QuandlismContext_.stage = () ->
         "#{n} #{unitsObj['label']}"
         
         
-      # Build the xAxis tick formatting function
-      xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
-      xAxis.tickFormat (d) =>
-        if date = lines[0].dateAt d
-          date = new Date date
-          "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
-      
-   
+      xScale.domain [dateStart, dateEnd]
+      xScale.range  [context.padding(), (width-context.padding())]
       return
     
     # Draw axis
@@ -131,35 +118,25 @@ QuandlismContext_.stage = () ->
         ctx.stroke()
         ctx.closePath()
         
+        
     # Draws the stage data
+    #
+    # lineId - The id of the line to be highlighted when drawing the lines (integer or null)
     draw = (lineId) =>
-    
+      lineId = lineId ? -1  
+      # Refresh axis and gridlines
       drawAxis()
-          
-      # Clear canvas before drawing
-      ctx.clearRect 0, 0, width, height
-      
+      ctx.clearRect 0, 0, width, height      
       drawGridLines()
-      
-      # if lineId to highlight is not defined, set to an invalid index
-      lineId = if lineId? then lineId else -1
-      
-      for line, j in lines
+
+      for line, j in lines   
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
-        
-        # If we are within the minimum threshold show points with line
-        # If we are on a single data point, show only a point
-        # Othwerwise, render a path
-        if (xEnd - xStart <= threshold)
-          line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
-          for i in [xStart..xEnd]
-            line.drawPoint ctx, xScale, yScale, i, 3
-        else if xEnd is xStart
-          line.drawPoint ctx, xScale, yScale, xStart, 3
-        else
-          line.drawPath ctx, xScale, yScale, xStart, xEnd, lineWidth
-        
+        line.drawPathFromIndicies ctx, xScale, yScale, indexStart, indexEnd, lineWidth
+        if ((indexEnd-indexStart) < threshold)
+          line.drawPointAtIndex ctx, xScale, yScale, i, 2 for i in [indexStart..indexEnd]
+          
+        #line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
       return
       
     # Detects line hit
@@ -169,7 +146,6 @@ QuandlismContext_.stage = () ->
     #
     # Returns false, or an object with keys x, color and line, if a match was found
     lineHit = (m) ->
-      
       # Check for a direct match under cursor
       hex = context.utility().getPixelRGB m, ctx
       
@@ -197,14 +173,15 @@ QuandlismContext_.stage = () ->
     # hex   - The color
     # 
     # Returns null
-    drawTooltip = (loc, x, line, hex) =>
-      date = new Date line.dateAt x
-      value = line.valueAt x
+    drawTooltip = (loc, hit, dataIndex) =>
       # Draw the line with the point highlighted
-      draw line.id()
-      pointSize = if (xEnd - xStart <= threshold) then 5 else 3
-      line.drawPoint ctx, xScale, yScale, x, pointSize
-      
+      line_ = hit.line
+      date  = line_.dateAt(dataIndex)
+      value = line_.valueAt(dataIndex)
+      draw line_.id()
+      line_.drawPointAtIndex ctx, xScale, yScale, dataIndex, 3
+  
+
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
       w = if inTooltip then width-400 else width
@@ -220,9 +197,9 @@ QuandlismContext_.stage = () ->
       tooltipText += "#{context.utility().formatNumberAsString value.toFixed 2}"
       ctx.fillText tooltipText, w-110, 10, 100
       # Line Name
-      ctx.fillStyle = line.color()
+      ctx.fillStyle = line_.color()
       ctx.textAlign = 'end'
-      ctx.fillText "#{context.utility().truncate line.name(), 20}", w-120, 10, 200
+      ctx.fillText "#{context.utility().truncate line_.name(), 20}", w-120, 10, 200
 
       return
       
@@ -237,8 +214,10 @@ QuandlismContext_.stage = () ->
     # stage to draw. If there isn't, force the stage to draw
     #
     unless context.dombrush()?
-      xStart = 0
-      xEnd = lines[0].length()-1
+      dateStart = _.first lines[0].dates()
+      dateEnd = _.last lines[0].dates()
+      indexStart = 0
+      indexEnd   = line.length()
       setScales()
       draw()
 
@@ -265,9 +244,11 @@ QuandlismContext_.stage = () ->
       return
  
     # Respond to adjsut events from the brush
-    context.on 'adjust.stage', (x1, x2) ->
-      xStart = if x1 > 0 then x1 else 0
-      xEnd = if lines[0].length() > x2 then x2 else lines[0].length()-1
+    context.on 'adjust.stage', (_dateStart, _indexStart, _dateEnd, _indexEnd) ->
+      indexStart  = _indexStart
+      indexEnd    = _indexEnd
+      dateStart   = _dateStart
+      dateEnd     = _dateEnd
       setScales()
       draw()
       return
@@ -281,6 +262,7 @@ QuandlismContext_.stage = () ->
     # Respond to refresh event. Update line data and re-draw
     context.on 'refresh.stage', () ->
       lines = selection.datum()
+      line  = _.first lines
       # Only draw if there is no brush to dispatch the adjust event
       draw() if not context.dombrush()
       return
@@ -288,7 +270,8 @@ QuandlismContext_.stage = () ->
     d3.select("##{canvasId}").on 'mousemove', (e) ->
       loc = d3.mouse @
       hit = lineHit loc
-      if hit isnt false then drawTooltip loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color else clearTooltip()
+      dataIndex =  hit.line.getClosestIndex(xScale.invert(hit.x)) if hit      
+      if hit isnt false then drawTooltip loc, hit, dataIndex else clearTooltip()
       return
  
     return
@@ -311,16 +294,6 @@ QuandlismContext_.stage = () ->
     if not _? then return yScale
     yScale = _
     stage
-
-  stage.xEnd = (_) =>
-    if not _? then return xEnd
-    xEnd = _
-    stage    
-
-  stage.xStart = (_) =>
-    if not _? then return xStart
-    xStart = _
-    stage        
     
   stage.threshold = (_) =>
     if not _? then return threshold

@@ -32,9 +32,10 @@ QuandlismContext_.utility = () ->
     
   # Conveneince method for returning mapped data for a given index
   utility.getLineData = (data, index) =>
+    formatter = d3.time.format("%Y-%m-%d")
     _.map data, (d) ->
       {
-        date: d[0]
+        date: formatter.parse(d[0])
         num:  d[(index+1)]
       }
   
@@ -49,7 +50,8 @@ QuandlismContext_.utility = () ->
   utility.mergeLines = (lines, data) =>
     lines = utility.addNewLinesAndRefresh lines, data
     lines = utility.removeStaleLines lines, data.columns
-    lines[0].visible true  unless not lines[0]? or _.find(lines, (line) -> line.visible() is true)
+    line.setup() for line in lines
+    _.first(lines).visible true  unless not _.first(lines)? or _.find(lines, (line) -> line.visible() is true)
     lines
     
 
@@ -93,7 +95,7 @@ QuandlismContext_.utility = () ->
   # Returns 0 if code is not present, or if dataset is not a futures dataset. Returns 4 otherwis
   utility.defaultColumn = (code) ->
     return 0 unless code?
-    if code.match /^FUTURE_/ then return 3 else return 0
+    if code.match /^(FUTURE_|NASDAQ_|INDEX_)/ then return 3 else return 0
     
   # Calculates the minimum and maxium values for all of the lines in the lines array
   # between the index values start, and end
@@ -107,6 +109,15 @@ QuandlismContext_.utility = () ->
     exes = (line.extent start, end for line in lines)
     [d3.min(exes, (m) -> m[0]), d3.max(exes, (m) -> m[1])]
  
+ 
+  # Calculates the extend of the set of lines, using a date range, rather than indicies
+  #
+  # lines - An array of quandlism.line objects
+  # startDate - the start of the date range
+  # endDate - The end of the date range
+  utility.getExtentFromDates = (lines, startDate, endDate) =>
+    exes = (line.extentByDate startDate, endDate for line in lines)
+    [d3.min(exes, (m) -> m[0]), d3.max(exes, (m) -> m[1])]
  
   # Returns the name of the month
   utility.getMonthName = (monthDigit) =>
@@ -157,27 +168,9 @@ QuandlismContext_.utility = () ->
     else 
       {label: 'B', divisor: 1000000000}
       
-  # Returns a string that can be parsed in the same format as the dates in the active graph.
-  # The number of - present indicate one of two date formats available.
-  # date - An example date
-  #  
-  # Returns a string representing the date format
-  utility.dateFormat = (date) ->
-    hyphenCount = date.split('-').length - 1
-    switch hyphenCount
-      when -1 then dateString = '%Y'
-      when 2  then dateString = '%Y-%m-%d'
-      else throw("Unknown date format: #{hyphenCount} #{date}")
-    dateString
 
-  # Parses the input date into a readable format for D3
-  # String format is a function of the datasets frequency parameter
-  #   
-  # date - A date to be parsed
-  #   
-  # Return a time formatter
-  utility.parseDate = (date) ->
-    dateString = @.dateFormat date
-    d3.time.format(dateString).parse;
+  utility.getDateKey = (date) =>
+    return null unless date?
+    date.valueOf()
     
   utility
