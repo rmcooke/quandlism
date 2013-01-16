@@ -62,7 +62,7 @@ QuandlismContext_.stage = () ->
       
       # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
       # on x-axis if all poitns are the same
-      extent = context.utility().getExtent indexStart, indexEnd
+      extent = context.utility().getExtent lines, indexStart, indexEnd
       extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
