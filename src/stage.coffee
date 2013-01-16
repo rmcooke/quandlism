@@ -216,6 +216,8 @@ QuandlismContext_.stage = () ->
     unless context.dombrush()?
       dateStart = _.first lines[0].dates()
       dateEnd = _.last lines[0].dates()
+      indexStart = 0
+      indexEnd   = line.length()
       setScales()
       draw()
 

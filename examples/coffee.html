@@ -92,7 +92,7 @@
 
 
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
-  var quandlismChart = quandlism.context().chart($("#chart")).withLegend($("#legend"));
+  var quandlismChart = quandlism.context().chart($("#chart"), false).withLegend($("#legend"));
   
   d3.json('/data/outlook.json', function(data) {    
     lines = quandlismChart.utility().createLines(data);
