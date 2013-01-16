@@ -428,7 +428,6 @@
           closest = diff;
           closestIndex = i;
         } else if (prevClosest < diff) {
-          console.log("BREAK!");
           break;
         }
       }
