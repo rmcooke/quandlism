@@ -351,16 +351,6 @@
         return null;
       }
     };
-    line.drawPoint = function(ctx, xS, yS, dataPoint, radius) {
-      if (!this.visible()) {
-        return;
-      }
-      ctx.beginPath();
-      ctx.arc(xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI * 2, true);
-      ctx.fillStyle = this.color();
-      ctx.fill();
-      return ctx.closePath();
-    };
     line.drawPointAtIndex = function(ctx, xS, yS, index, radius) {
       if (!this.visible()) {
         return;
@@ -371,7 +361,7 @@
       ctx.fill();
       return ctx.closePath();
     };
-    line.drawPath = function(ctx, xS, yS, dateStart, dateEnd, lineWidth) {
+    line.drawPath = function(ctx, xS, yS, lineWidth) {
       var date, i, _i, _len, _ref;
       if (!this.visible()) {
         return;

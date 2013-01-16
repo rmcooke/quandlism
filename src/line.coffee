@@ -46,6 +46,7 @@ QuandlismContext_.line = (data) ->
       
     [min, max]
     
+  # Get the extent of the line between the start and end dates
   line.extentByDate = (startDate, endDate) ->
     min = Infinity
     max = -Infinity
@@ -79,24 +80,8 @@ QuandlismContext_.line = (data) ->
   line.dateAt = (i) =>
     if dates[i]? then dates[i] else null
     
-  
-  # Renders an individual point on the canvas
-  #
-  # ctx     - The HTML canvas context
-  # xS      - The d3 scale for the x co-ordinate
-  # yS      - The d3 scale for the y co-ordinate
-  # index   - The array index of the point to render
-  # radius  - The radius of the point
-  #
-  # Returns null
-  line.drawPoint = (ctx, xS, yS, dataPoint, radius) ->
-    return unless @visible()
-    ctx.beginPath()
-    ctx.arc xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI*2, true
-    ctx.fillStyle = @color()
-    ctx.fill()
-    ctx.closePath()
     
+  # Draws a the point on the canvas at the dataPoint corresponding to 'index', for this line
   line.drawPointAtIndex = (ctx, xS, yS, index, radius) ->
     return unless @visible()
     ctx.beginPath()
@@ -105,19 +90,9 @@ QuandlismContext_.line = (data) ->
     ctx.fill()
     ctx.closePath()
     
-  # Draw a path on the drawing context
-  # Skips any values with null value
-  # ctx       - The HTML canvas context
-  # xS        - The d3 scale for the x co-ordinate
-  # yS        - The d3 scale for the y co-ordinate
-  # dateStart  - The first date that should be included on the plot
-  # dateEnd    - The final date that should be included on the plot
-  # lineWidth - The width of the line
-  # drawPoints  - should the individual data points be highlighted?
-  # stage       - Is this coming from the stage?
-  #
-  # Returns null
-  line.drawPath = (ctx, xS, yS, dateStart, dateEnd, lineWidth) ->    
+
+  # Draws the entire path of the line
+  line.drawPath = (ctx, xS, yS,lineWidth) ->    
     return unless @visible()
     ctx.beginPath()
 
@@ -132,6 +107,7 @@ QuandlismContext_.line = (data) ->
     
     return
     
+  # Draws the path between the start and end indicies
   line.drawPathFromIndicies = (ctx, xS, yS, start, end, lineWidth) ->
     return unless @visible()
     ctx.beginPath()
@@ -144,10 +120,12 @@ QuandlismContext_.line = (data) ->
     ctx.stroke()
     ctx.closePath() 
   
+  # Get the closes date in the data to the given date
   line.getClosestDataPoint = (date) ->
     index = @getClosestIndex date
     values[index]
     
+  # The the data index that has a date closest to the given date
   line.getClosestIndex = (date) ->
     closest = Infinity
     cloestIndex = 0
