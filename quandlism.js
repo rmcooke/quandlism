@@ -854,7 +854,7 @@
         var j, _i, _len;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1);
+          line.drawPath(ctx, xScale, yScale, 1);
         }
         if (line.length() <= threshold) {
           line.drawPoints(ctx, xScale, yScale, _.first(line.dates(), _.last(line.dates()), 3));

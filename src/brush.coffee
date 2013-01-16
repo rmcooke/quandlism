@@ -123,7 +123,7 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     draw = () =>
-      line.drawPath ctx, xScale, yScale, _.first(line.dates()), _.last(line.dates()), 1     for line, j in lines
+      line.drawPath ctx, xScale, yScale, 1     for line, j in lines
       line.drawPoints ctx, xScale, yScale, _.first(line.dates(), _.last(line.dates()), 3)   if (line.length() <= threshold)
       saveCanvasData()
       return
