@@ -19,7 +19,6 @@ QuandlismContext_.utility = () ->
     if not context.lines().length
       keys = data.columns[1..]        
       lineData = _.map keys, (key, i) => utility.getLineData data.data, i 
-      console.log data
       defaultColumn = utility.defaultColumn data.code
       # Build lines
       lines = _.map keys, (key, i) =>
