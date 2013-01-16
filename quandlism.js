@@ -355,7 +355,6 @@
       if (!this.visible()) {
         return;
       }
-      return;
       ctx.beginPath();
       ctx.arc(xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI * 2, true);
       ctx.fillStyle = this.color();
@@ -381,7 +380,7 @@
       _ref = this.dates();
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         date = _ref[i];
-        if (!this.valueAt(i)) {
+        if (this.valueAt(i) == null) {
           continue;
         }
         ctx.lineTo(xS(date), yS(this.valueAt(i)));
@@ -398,7 +397,7 @@
       }
       ctx.beginPath();
       for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
-        if (!this.valueAt(i)) {
+        if (this.valueAt(i) == null) {
           continue;
         }
         ctx.lineTo(xS(this.dateAt(i)), yS(this.valueAt(i)));

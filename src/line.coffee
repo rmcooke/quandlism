@@ -91,7 +91,6 @@ QuandlismContext_.line = (data) ->
   # Returns null
   line.drawPoint = (ctx, xS, yS, dataPoint, radius) ->
     return unless @visible()
-    return
     ctx.beginPath()
     ctx.arc xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI*2, true
     ctx.fillStyle = @color()
@@ -123,7 +122,7 @@ QuandlismContext_.line = (data) ->
     ctx.beginPath()
 
     for date, i in @dates()
-      continue unless @valueAt(i)
+      continue unless @valueAt(i)?
       ctx.lineTo xS(date), yS(@valueAt(i))
         
     ctx.lineWidth = lineWidth
@@ -137,7 +136,7 @@ QuandlismContext_.line = (data) ->
     return unless @visible()
     ctx.beginPath()
     for i in [start..end]
-      continue unless @valueAt(i)
+      continue unless @valueAt(i)?
       ctx.lineTo xS(@dateAt(i)), yS(@valueAt(i))
       
     ctx.lineWidth   = lineWidth
