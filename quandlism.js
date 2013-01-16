@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.5.1'
+    version: '0.6.0'
   };
 
   quandlism.context = function() {
@@ -19,7 +19,7 @@
     domlegend = null;
     domtooltip = null;
     padding = 0;
-    startPoint = 0.75;
+    startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -59,7 +59,7 @@
       h = $(dom).height();
       return context;
     };
-    context.setupWithContainer = function(container, brush_) {
+    context.chart = function(container, brush_) {
       var brush, brushId, stageId;
       if (!container.length) {
         throw 'Invalid container';
@@ -80,7 +80,7 @@
       }
       return context;
     };
-    context.legendWithSelector = function(container) {
+    context.withLegend = function(container) {
       if (!container.length) {
         throw 'Invalid container';
       }
@@ -89,6 +89,12 @@
       }
       domlegend = "#" + (container.attr('id'));
       return context;
+    };
+    context.setupWithContainer = function(container, brush_) {
+      return context.chart(container, brush_);
+    };
+    context.legendWithSelector = function(container) {
+      return context.withLegend(container);
     };
     context.addColorsIfNecessary = function(lines_) {
       var brightness, colorsNeeded, i, rgb;
@@ -177,8 +183,8 @@
     context.respond = _.throttle(function() {
       return event.respond.call(context, 500);
     });
-    context.adjust = function(x1, x2) {
-      return event.adjust.call(context, x1, x2);
+    context.adjust = function(d1, i1, d2, i2) {
+      return event.adjust.call(context, d1, i1, d2, i2);
     };
     context.toggle = function() {
       return event.toggle.call(context);
@@ -248,15 +254,35 @@
   })();
 
   QuandlismContext_.line = function(data) {
-    var color, context, id, line, name, values, visible,
+    var color, context, dates, datesMap, id, line, name, values, visible,
       _this = this;
     line = new QuandlismLine();
     context = this;
     name = data.name;
     values = data.values.reverse();
+    dates = [];
+    datesMap = [];
     id = quandlism_line_id++;
     visible = true;
     color = '#000000';
+    line.setup = function() {
+      var v;
+      dates = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = values.length; _i < _len; _i++) {
+          v = values[_i];
+          _results.push(v.date);
+        }
+        return _results;
+      })();
+      datesMap = _.map(dates, function(d) {
+        return context.utility().getDateKey(d);
+      });
+      window.dates = dates;
+      datesMap = datesMap;
+    };
+    line.setup();
     line.extent = function(start, end) {
       var i, max, min, n, val;
       i = start != null ? start : 0;
@@ -282,15 +308,31 @@
       }
       return [min, max];
     };
-    line.dates = function(start, end) {
-      var v, _i, _len, _ref, _results;
-      _ref = values.slice(start, end + 1 || 9e9);
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        v = _ref[_i];
-        _results.push(v.date);
+    line.extentByDate = function(startDate, endDate) {
+      var date, i, max, min, val, _i, _len, _ref;
+      min = Infinity;
+      max = -Infinity;
+      if (!this.visible()) {
+        return [min, max];
       }
-      return _results;
+      _ref = this.dates();
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        date = _ref[i];
+        if (!(date <= endDate && date >= startDate)) {
+          continue;
+        }
+        val = this.valueAt(i);
+        if (!(val != null)) {
+          continue;
+        }
+        if (val < min) {
+          min = val;
+        }
+        if (val > max) {
+          max = val;
+        }
+      }
+      return [min, max];
     };
     line.length = function() {
       return values.length;
@@ -303,45 +345,115 @@
       }
     };
     line.dateAt = function(i) {
-      if (values[i] != null) {
-        return values[i].date;
+      if (dates[i] != null) {
+        return dates[i];
       } else {
         return null;
       }
     };
-    line.drawPoint = function(ctx, xS, yS, index, radius) {
-      if (this.visible()) {
-        if (this.valueAt(index) == null) {
-          return;
+    line.drawPointAtIndex = function(ctx, xS, yS, index, radius) {
+      if (!this.visible()) {
+        return;
+      }
+      ctx.beginPath();
+      ctx.arc(xS(this.dateAt(index)), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
+      ctx.fillStyle = this.color();
+      ctx.fill();
+      return ctx.closePath();
+    };
+    line.drawPath = function(ctx, xS, yS, lineWidth) {
+      var date, i, _i, _len, _ref;
+      if (!this.visible()) {
+        return;
+      }
+      ctx.beginPath();
+      _ref = this.dates();
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        date = _ref[i];
+        if (this.valueAt(i) == null) {
+          continue;
+        }
+        ctx.lineTo(xS(date), yS(this.valueAt(i)));
+      }
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = this.color();
+      ctx.stroke();
+      ctx.closePath();
+    };
+    line.drawPathFromIndicies = function(ctx, xS, yS, start, end, lineWidth) {
+      var i, _i;
+      if (!this.visible()) {
+        return;
+      }
+      ctx.beginPath();
+      for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
+        if (this.valueAt(i) == null) {
+          continue;
+        }
+        ctx.lineTo(xS(this.dateAt(i)), yS(this.valueAt(i)));
+      }
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = this.color();
+      ctx.stroke();
+      return ctx.closePath();
+    };
+    line.getClosestDataPoint = function(date) {
+      var index;
+      index = this.getClosestIndex(date);
+      return values[index];
+    };
+    line.getClosestIndex = function(date) {
+      var cloestIndex, closest, closestIndex, d, dateKey, diff, i, key, prevClosest, _i, _len;
+      closest = Infinity;
+      cloestIndex = 0;
+      prevClosest = Infinity;
+      dateKey = context.utility().getDateKey(date);
+      for (i = _i = 0, _len = datesMap.length; _i < _len; i = ++_i) {
+        d = datesMap[i];
+        key = context.utility().getDateKey(d);
+        diff = Math.abs(key - dateKey);
+        if (diff < closest) {
+          prevClosest = closest;
+          closest = diff;
+          closestIndex = i;
+        } else if (prevClosest < diff) {
+          break;
+        }
+      }
+      return closestIndex;
+    };
+    line.drawPoints = function(ctx, xS, yS, dateStart, dateEnd, radius) {
+      var date, i, _i, _len, _ref, _results;
+      if (!this.visible()) {
+        return;
+      }
+      _ref = this.dates();
+      _results = [];
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        date = _ref[i];
+        if (!(date >= dateStart && date <= dateEnd)) {
+          continue;
         }
         ctx.beginPath();
-        ctx.arc(xS(index), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
+        ctx.arc(xS(date), yS(this.valueAt(i)), 3, 0, Math.PI * 2, true);
         ctx.fillStyle = this.color();
         ctx.fill();
-        return ctx.closePath();
+        _results.push(ctx.closePath());
       }
-    };
-    line.drawPath = function(ctx, xS, yS, start, end, lineWidth) {
-      var i, _i;
-      if (this.visible()) {
-        ctx.beginPath();
-        for (i = _i = start; start <= end ? _i <= end : _i >= end; i = start <= end ? ++_i : --_i) {
-          if (this.valueAt(i) == null) {
-            continue;
-          }
-          ctx.lineTo(xS(i), yS(this.valueAt(i)));
-        }
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = this.color();
-        ctx.stroke();
-        return ctx.closePath();
-      }
+      return _results;
     };
     line.toggle = function() {
       var v;
       v = !this.visible();
       this.visible(v);
       return v;
+    };
+    line.dates = function(_) {
+      if (!(_ != null)) {
+        return dates;
+      }
+      dates = _;
+      return line;
     };
     line.id = function(_) {
       if (!(_ != null)) {
@@ -381,41 +493,50 @@
     return line;
   };
 
+  QuandlismContext_.timeScale = function() {
+    var context, scale;
+    context = this;
+    return scale = d3.time.scale();
+  };
+
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, extent, height, lines, stage, threshold, width, xAxis, xAxisDOM, xEnd, xScale, xStart, yAxis, yAxisDOM, yScale,
+    var canvas, canvasId, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
       _this = this;
     context = this;
     canvasId = null;
     lines = [];
+    line = null;
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
     height = Math.floor(context.h() * quandlism_stage.h);
-    xScale = d3.scale.linear();
+    xScale = d3.time.scale();
     yScale = d3.scale.linear();
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
     yAxis = d3.svg.axis().orient('left').scale(yScale);
-    yAxisDOM = null;
-    xAxisDOM = null;
     extent = [];
-    xStart = 0;
-    xEnd = width;
+    threshold = 10;
+    dateStart = null;
+    dateEnd = null;
+    drawStart = null;
+    drawEnd = null;
+    indexStart = null;
+    indexEnd = null;
     threshold = 10;
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales;
-      lines = selection.datum();
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, xAxisDOM, yAxisDOM;
       if (!(canvasId != null)) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
+      lines = selection.datum();
+      line = _.first(lines);
       selection.attr("style", "position: absolute; left: 0px; top: 0px;");
-      if (!(yAxisDOM != null)) {
-        yAxisDOM = selection.insert('svg');
-        yAxisDOM.attr('class', 'y axis');
-        yAxisDOM.attr('id', "y-axis-" + canvasId);
-        yAxisDOM.attr('width', quandlism_yaxis_width);
-        yAxisDOM.attr('height', Math.floor(context.h() * quandlism_stage.h));
-        yAxisDOM.attr("style", "position: absolute; left: 0px; top: 0px;");
-      }
+      yAxisDOM = selection.insert('svg');
+      yAxisDOM.attr('class', 'y axis');
+      yAxisDOM.attr('id', "y-axis-" + canvasId);
+      yAxisDOM.attr('width', quandlism_yaxis_width);
+      yAxisDOM.attr('height', Math.floor(context.h() * quandlism_stage.h));
+      yAxisDOM.attr("style", "position: absolute; left: 0px; top: 0px;");
       canvas = selection.append('canvas');
       canvas.attr('width', width);
       canvas.attr('height', height);
@@ -423,28 +544,22 @@
       canvas.attr('id', canvasId);
       canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px;");
       ctx = canvas.node().getContext('2d');
-      if (!(xAxisDOM != null)) {
-        xAxisDOM = selection.append('svg');
-        xAxisDOM.attr('class', 'x axis');
-        xAxisDOM.attr('id', "x-axis-" + canvasId);
-        xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
-        xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
-        xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
-      }
-      yAxis.tickSize(5, 3, 0);
-      xAxis.tickSize(5, 3, 0);
+      xAxisDOM = selection.append('svg');
+      xAxisDOM.attr('class', 'x axis');
+      xAxisDOM.attr('id', "x-axis-" + canvasId);
+      xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
+      xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
+      xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       setScales = function() {
         var unitsObj;
-        extent = context.utility().getExtent(lines, xStart, xEnd);
+        extent = context.utility().getExtent(indexStart, indexEnd);
         if (extent[0] === extent[1]) {
-          extent = context.utility().getExtent(lines, 0, lines[0].length() - 1);
+          extent = context.utility().getExtent(lines, 0, line.length());
         }
         yScale.domain([extent[0], extent[1]]);
         yScale.range([height - context.padding(), context.padding()]);
-        xScale.domain([xStart, xEnd]);
-        xScale.range([context.padding(), width - context.padding()]);
-        yAxis.tickSize(5, 3, 0);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
+        yAxis.tickSize(5, 3, 0);
         unitsObj = context.utility().getUnitAndDivisor(Math.round(extent[1]));
         yAxis.tickFormat(function(d) {
           var n;
@@ -453,14 +568,8 @@
           n = n.replace(/\.$/, '');
           return "" + n + " " + unitsObj['label'];
         });
-        xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
-        xAxis.tickFormat(function(d) {
-          var date;
-          if (date = lines[0].dateAt(d)) {
-            date = new Date(date);
-            return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
-          }
-        });
+        xScale.domain([dateStart, dateEnd]);
+        xScale.range([context.padding(), width - context.padding()]);
       };
       drawAxis = function() {
         var xg, yg;
@@ -500,23 +609,19 @@
         return _results;
       };
       draw = function(lineId) {
-        var i, j, line, lineWidth, _i, _j, _len;
+        var i, j, lineWidth, _i, _j, _len;
+        lineId = lineId != null ? lineId : -1;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
         drawGridLines();
-        lineId = lineId != null ? lineId : -1;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          if (xEnd - xStart <= threshold) {
-            line.drawPath(ctx, xScale, yScale, xStart, xEnd, lineWidth);
-            for (i = _j = xStart; xStart <= xEnd ? _j <= xEnd : _j >= xEnd; i = xStart <= xEnd ? ++_j : --_j) {
-              line.drawPoint(ctx, xScale, yScale, i, 3);
+          line.drawPathFromIndicies(ctx, xScale, yScale, indexStart, indexEnd, lineWidth);
+          if ((indexEnd - indexStart) < threshold) {
+            for (i = _j = indexStart; indexStart <= indexEnd ? _j <= indexEnd : _j >= indexEnd; i = indexStart <= indexEnd ? ++_j : --_j) {
+              line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
             }
-          } else if (xEnd === xStart) {
-            line.drawPoint(ctx, xScale, yScale, xStart, 3);
-          } else {
-            line.drawPath(ctx, xScale, yScale, xStart, xEnd, lineWidth);
           }
         }
       };
@@ -552,13 +657,13 @@
         }
         return false;
       };
-      drawTooltip = function(loc, x, line, hex) {
-        var date, inTooltip, pointSize, tooltipText, value, w;
-        date = new Date(line.dateAt(x));
-        value = line.valueAt(x);
-        draw(line.id());
-        pointSize = xEnd - xStart <= threshold ? 5 : 3;
-        line.drawPoint(ctx, xScale, yScale, x, pointSize);
+      drawTooltip = function(loc, hit, dataIndex) {
+        var date, inTooltip, line_, tooltipText, value, w;
+        line_ = hit.line;
+        date = line_.dateAt(dataIndex);
+        value = line_.valueAt(dataIndex);
+        draw(line_.id());
+        line_.drawPointAtIndex(ctx, xScale, yScale, dataIndex, 3);
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
@@ -570,16 +675,18 @@
         tooltipText = "" + (context.utility().getMonthName(date.getUTCMonth())) + "  " + (date.getUTCDate()) + ", " + (date.getFullYear()) + ": ";
         tooltipText += "" + (context.utility().formatNumberAsString(value.toFixed(2)));
         ctx.fillText(tooltipText, w - 110, 10, 100);
-        ctx.fillStyle = line.color();
+        ctx.fillStyle = line_.color();
         ctx.textAlign = 'end';
-        ctx.fillText("" + (context.utility().truncate(line.name(), 20)), w - 120, 10, 200);
+        ctx.fillText("" + (context.utility().truncate(line_.name(), 20)), w - 120, 10, 200);
       };
       clearTooltip = function() {
         draw();
       };
       if (context.dombrush() == null) {
-        xStart = 0;
-        xEnd = lines[0].length() - 1;
+        dateStart = _.first(lines[0].dates());
+        dateEnd = _.last(lines[0].dates());
+        indexStart = 0;
+        indexEnd = line.length();
         setScales();
         draw();
       }
@@ -594,9 +701,11 @@
         setScales();
         draw();
       });
-      context.on('adjust.stage', function(x1, x2) {
-        xStart = x1 > 0 ? x1 : 0;
-        xEnd = lines[0].length() > x2 ? x2 : lines[0].length() - 1;
+      context.on('adjust.stage', function(_dateStart, _indexStart, _dateEnd, _indexEnd) {
+        indexStart = _indexStart;
+        indexEnd = _indexEnd;
+        dateStart = _dateStart;
+        dateEnd = _dateEnd;
         setScales();
         draw();
       });
@@ -606,16 +715,20 @@
       });
       context.on('refresh.stage', function() {
         lines = selection.datum();
+        line = _.first(lines);
         if (!context.dombrush()) {
           draw();
         }
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
-        var hit, loc;
+        var dataIndex, hit, loc;
         loc = d3.mouse(this);
         hit = lineHit(loc);
+        if (hit) {
+          dataIndex = hit.line.getClosestIndex(xScale.invert(hit.x));
+        }
         if (hit !== false) {
-          drawTooltip(loc, Math.round(xScale.invert(hit.x)), hit.line, hit.color);
+          drawTooltip(loc, hit, dataIndex);
         } else {
           clearTooltip();
         }
@@ -642,20 +755,6 @@
       yScale = _;
       return stage;
     };
-    stage.xEnd = function(_) {
-      if (!(_ != null)) {
-        return xEnd;
-      }
-      xEnd = _;
-      return stage;
-    };
-    stage.xStart = function(_) {
-      if (!(_ != null)) {
-        return xStart;
-      }
-      xStart = _;
-      return stage;
-    };
     stage.threshold = function(_) {
       if (!(_ != null)) {
         return threshold;
@@ -667,86 +766,72 @@
   };
 
   QuandlismContext_.brush = function() {
-    var activeHandle, brush, brushWidth, brushWidth0, buffer, canvas, canvasId, context, ctx, cursorClasses, dragEnabled, dragging, extent, handleWidth, height, height0, lines, stretchLimit, stretchMin, stretching, threshold, touchPoint, useCache, width, width0, xAxis, xAxisDOM, xScale, xStart, xStart0, yScale,
+    var activeHandle, brush, brushId, buffer, canvas, canvasId, context, ctx, dateEnd, dateStart, dragEnabled, dragging, drawEnd, drawStart, extent, handleWidth, height, line, lines, previous, stertchhMin, stretchLimit, stretching, threshold, touchPoint, useCache, width, xAxis, xScale, yScale,
       _this = this;
     context = this;
     height = Math.floor(context.h() * quandlism_brush.h);
-    height0 = height;
     width = Math.floor(context.w() - quandlism_yaxis_width);
-    width0 = width;
-    brushWidth = null;
-    brushWidth0 = null;
-    handleWidth = 10;
-    xStart = null;
-    xStart0 = null;
-    xScale = d3.scale.linear();
+    dateStart = dateEnd = drawStart = drawEnd = line = null;
+    dragging = dragEnabled = stretching = touchPoint = null;
+    canvas = ctx = canvasId = brushId = null;
+    extent = lines = [];
+    xScale = d3.time.scale();
     yScale = d3.scale.linear();
-    canvas = null;
-    ctx = null;
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
-    xAxisDOM = null;
-    canvasId = null;
-    extent = [];
-    lines = [];
     threshold = 10;
-    dragging = false;
-    dragEnabled = true;
-    stretching = false;
+    handleWidth = 10;
     stretchLimit = 6;
-    stretchMin = 0;
+    stertchhMin = 100;
     activeHandle = 0;
-    touchPoint = null;
-    cursorClasses = {
-      move: 'move',
-      resize: 'resize'
-    };
     buffer = document.createElement('canvas');
     useCache = false;
+    previous = {};
     brush = function(selection) {
-      var addBrushClass, checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, resetState, saveCanvasData, setBrushValues, setScales, update;
-      lines = selection.datum();
+      var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPrevious, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushClass, setBrushValues, setPrevious, setScales, update, xAxisDOM;
       if (!(canvasId != null)) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
       }
+      lines = selection.datum();
+      line = _.first(lines);
+      dateStart = _.first(line.dates());
+      dateEnd = _.last(line.dates());
       selection.attr("style", "position: absolute; top: " + (context.h() * (quandlism_stage.h + quandlism_xaxis.h)) + "px; left: " + quandlism_yaxis_width + "px");
       canvas = selection.append('canvas');
       canvas.attr('id', canvasId);
       canvas.attr("style", "position: absolute; left: 0px; top: 0px");
       ctx = canvas.node().getContext('2d');
-      if (!(xAxisDOM != null)) {
-        xAxisDOM = selection.append('svg');
-        xAxisDOM.attr('class', 'x axis');
-        xAxisDOM.attr('id', "x-axis-" + canvasId);
-        xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
-        xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
-        xAxisDOM.attr("style", "position: absolute; top: " + (context.h() * quandlism_brush.h) + "px; left: 0px");
-      }
-      xAxis.tickSize(5, 3, 0);
+      xAxisDOM = selection.append('svg');
+      xAxisDOM.attr('class', 'x axis');
+      xAxisDOM.attr('id', "x-axis-" + canvasId);
+      xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
+      xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
+      xAxisDOM.attr("style", "position: absolute; top: " + (context.h() * quandlism_brush.h) + "px; left: 0px");
+      checkDragState = function() {
+        if ((line.length()) <= stretchLimit) {
+          dateStart = _.first(line.dates());
+          dateEnd = _.last(line.dates());
+          drawStart = xScale(dateStart);
+          drawEnd = xScale(dateEnd);
+          return dragEnabled = false;
+        } else {
+          return dragEnabled = true;
+        }
+      };
       setScales = function() {
-        extent = context.utility().getExtent(lines, null, null);
-        yScale.domain([extent[0], extent[1]]);
+        yScale.domain(context.utility().getExtent(lines, null, null));
         yScale.range([height - context.padding(), context.padding()]);
-        xScale.domain([0, lines[0].length() - 1]);
         xScale.range([context.padding(), width - context.padding()]);
-        stretchMin = Math.floor(xScale(stretchLimit));
-        xAxis.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
-        xAxis.tickFormat(function(d) {
-          var date;
-          date = new Date(lines[0].dateAt(d));
-          return "" + (context.utility().getMonthName(date.getUTCMonth())) + " " + (date.getUTCDate()) + ", " + (date.getUTCFullYear());
-        });
+        xScale.domain([_.first(line.dates()), _.last(line.dates())]);
       };
       setBrushValues = function() {
-        xStart = xScale(context.startPoint() * lines[0].length());
-        xStart0 = xStart;
-        brushWidth = width - xStart;
-        brushWidth0 = brushWidth;
-        if (brushWidth < stretchMin) {
-          brushWidth = stretchMin;
-          brushWidth0 = brushWidth;
-          xStart = width - brushWidth;
-          xStart0 = xStart;
-        }
+        dateStart = line.dateAt(Math.floor(context.startPoint() * line.length()));
+        dateEnd = _.last(line.dates());
+        drawStart = xScale(dateStart);
+        drawEnd = xScale(dateEnd);
+        setPrevious('dateStart', dateStart);
+        setPrevious('dateEnd', dateEnd);
+        setPrevious('drawStart', drawStart);
+        setPrevious('drawEnd', drawEnd);
       };
       update = function() {
         clearCanvas();
@@ -758,7 +843,7 @@
         drawBrush();
       };
       clearCanvas = function() {
-        ctx.clearRect(0, 0, width0, height0);
+        ctx.clearRect(0, 0, getPrevious('width'), getPrevious('height'));
         canvas.attr('width', width).attr('height', height);
       };
       drawAxis = function() {
@@ -768,14 +853,13 @@
         xg.call(xAxis);
       };
       draw = function() {
-        var j, line, showPoints, _i, _len;
-        showPoints = lines[0].length() <= threshold;
+        var j, _i, _len;
         for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
           line = lines[j];
-          line.drawPath(ctx, xScale, yScale, 0, lines[0].length(), 1);
-          if (showPoints) {
-            line.drawPoint(ctx, xScale, yScale, j, 2);
-          }
+          line.drawPath(ctx, xScale, yScale, 1);
+        }
+        if (line.length() <= threshold) {
+          line.drawPoints(ctx, xScale, yScale, _.first(line.dates(), _.last(line.dates()), 3));
         }
         saveCanvasData();
       };
@@ -793,69 +877,73 @@
         ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)';
         ctx.beginPath();
         ctx.fillStyle = 'rgba(237, 237, 237, 0.80)';
-        ctx.fillRect(xStart, 0, brushWidth, height);
-        ctx.lineWidth = 1;
-        ctx.lineTo(xStart, height);
+        ctx.fillRect(drawStart, 0, drawEnd - drawStart, height);
         ctx.closePath();
         ctx.beginPath();
         ctx.fillStyle = '#D9D9D9';
-        ctx.fillRect(xStart - handleWidth, 0, handleWidth, height);
+        ctx.fillRect(drawStart - handleWidth, 0, handleWidth, height);
         ctx.closePath();
         ctx.beginPath();
         ctx.fillStyle = '#D9D9D9';
-        ctx.fillRect(xStart + brushWidth, 0, handleWidth, height);
+        ctx.fillRect(drawEnd, 0, handleWidth, height);
         ctx.closePath();
-      };
-      checkDragState = function() {
-        if ((lines[0].length() - 1) <= stretchLimit) {
-          xStart = 0;
-          brushWidth0 = width;
-          brushWidth = width;
-          return dragEnabled = false;
-        } else {
-          return dragEnabled = true;
-        }
       };
       removeCache = function() {
         buffer = document.createElement('canvas');
         useCache = false;
       };
-      dispatchAdjust = function() {
-        var x1, x2;
-        x1 = xScale.invert(xStart);
-        x2 = xScale.invert(xStart + brushWidth);
-        context.adjust(Math.ceil(x1), Math.ceil(x2));
+      dispatchAdjust = function(calculateDates) {
+        var d;
+        calculateDates = calculateDates != null ? calculateDates : false;
+        if (calculateDates) {
+          dateStart = xScale.invert(drawStart);
+          dateEnd = xScale.invert(drawEnd);
+          if (dateStart > dateEnd) {
+            d = dateEnd;
+            dateEnd = dateStart;
+            dateStart = d;
+          }
+        }
+        context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
       };
-      resetState = function() {
+      saveState = function() {
+        var d;
         dragging = false;
         stretching = false;
         activeHandle = 0;
-        xStart0 = xStart;
-        brushWidth0 = brushWidth;
+        if (drawStart > drawEnd) {
+          d = drawEnd;
+          drawEnd = drawStart;
+          drawStart = d;
+        }
+        dateStart = xScale.invert(drawStart);
+        dateEnd = xScale.invert(drawEnd);
+        setPrevious('drawStart', drawStart);
+        setPrevious('dateStart', dateStart);
+        setPrevious('drawEnd', drawEnd);
+        setPrevious('dateEnd', dateEnd);
       };
       isDraggingLocation = function(x) {
-        return x <= (brushWidth + xStart) && x >= xStart;
+        return x <= drawEnd && x >= drawStart;
       };
       isLeftHandle = function(x) {
-        return x >= (xStart - handleWidth) && x < xStart;
+        return x >= (drawStart - handleWidth) && x < drawStart;
       };
       isRightHandle = function(x) {
-        return x > (xStart + brushWidth) && x <= (xStart + brushWidth + handleWidth);
+        return x > drawEnd && x <= (drawEnd + handleWidth);
       };
-      addBrushClass = function(className) {
-        var classNames, key;
-        classNames = ((function() {
-          var _results;
-          _results = [];
-          for (key in cursorClasses) {
-            _results.push(key);
-          }
-          return _results;
-        })()).reduce(function(a, b) {
-          return "" + a + " " + b;
-        });
-        $(context.dombrush()).removeClass(classNames).addClass(className);
+      setBrushClass = function(className) {
+        document.getElementById("" + (context.dombrush().substring(1))).className = className;
       };
+      setPrevious = function(key, value) {
+        previous[key] = value;
+      };
+      getPrevious = function(key) {
+        var _ref;
+        return (_ref = previous[key]) != null ? _ref : null;
+      };
+      setPrevious('width', width);
+      setPrevious('height', height);
       setScales();
       checkDragState();
       if (dragEnabled) {
@@ -865,21 +953,21 @@
       dispatchAdjust();
       setInterval(update, 70);
       context.on("respond.brush", function() {
-        height0 = height;
-        width0 = width;
+        setPrevious('height', height);
+        setPrevious('width', width);
         height = Math.floor(context.h() * quandlism_brush.h);
         width = Math.floor(context.w() - quandlism_yaxis_width);
-        xStart = Math.floor(xStart / width0 * width);
-        xStart0 = Math.floor(xStart0 / width0 * width);
-        brushWidth = Math.floor(brushWidth / width0 * width);
-        brushWidth0 = brushWidth;
-        xAxisDOM.attr('width', width);
         removeCache();
         setScales();
+        drawStart = xScale(dateStart);
+        drawEnd = xScale(dateEnd);
+        saveState();
+        xAxisDOM.attr('width', width);
         drawAxis();
       });
       context.on('refresh.brush', function() {
         lines = selection.datum();
+        line = _.first(lines);
         removeCache();
         setScales();
         checkDragState();
@@ -909,10 +997,11 @@
         }
       });
       canvas.on('mouseup', function(e) {
-        resetState();
+        saveState();
       });
       canvas.on('mouseout', function(e) {
-        resetState();
+        setBrushClass('');
+        saveState();
       });
       return canvas.on('mousemove', function(e) {
         var dragDiff, m;
@@ -920,30 +1009,29 @@
         if (dragging || stretching) {
           dragDiff = m[0] - touchPoint;
           if (dragging && dragEnabled) {
-            xStart = xStart0 + dragDiff;
+            drawStart = getPrevious('drawStart') + dragDiff;
+            drawEnd = getPrevious('drawEnd') + dragDiff;
           } else if (stretching) {
             if (activeHandle !== 0 && activeHandle !== (-1) && activeHandle !== 1) {
               throw "Error: Unknown stretching direction";
             }
-            brushWidth = activeHandle === -1 ? brushWidth0 - dragDiff : brushWidth0 + dragDiff;
             if (activeHandle === -1) {
-              xStart = xStart0 + dragDiff;
+              drawStart = getPrevious('drawStart') + dragDiff;
             }
-            if (brushWidth <= stretchMin) {
-              if (activeHandle === -1) {
-                xStart = xStart + (brushWidth - stretchMin);
-              }
-              brushWidth = stretchMin;
+            if (activeHandle === 1) {
+              drawEnd = getPrevious('drawEnd') + dragDiff;
             }
           }
-          dispatchAdjust();
+          drawStart = drawStart < 0 ? 0 : drawStart;
+          drawEnd = drawEnd > width ? width : drawEnd;
+          dispatchAdjust(true);
         } else if (dragEnabled) {
           if (isDraggingLocation(m[0])) {
-            addBrushClass(cursorClasses['move']);
+            setBrushClass('move');
           } else if (isLeftHandle(m[0]) || isRightHandle(m[0])) {
-            addBrushClass(cursorClasses['resize']);
+            setBrushClass('resize');
           } else {
-            addBrushClass('');
+            setBrushClass('');
           }
         }
       });
@@ -960,6 +1048,13 @@
         return xScale;
       }
       xScale = _;
+      return brush;
+    };
+    brush.yScale = function(_) {
+      if (!(_ != null)) {
+        return yScale;
+      }
+      yScale = _;
       return brush;
     };
     brush.threshold = function(_) {
@@ -981,13 +1076,6 @@
         return handleWidth;
       }
       handleWidth = _;
-      return brush;
-    };
-    brush.cursorClasses = function(_) {
-      if (!(_ != null)) {
-        return cursorClasses;
-      }
-      cursorClasses = _;
       return brush;
     };
     return brush;
@@ -1217,20 +1305,27 @@
       return lines;
     };
     utility.getLineData = function(data, index) {
+      var formatter;
+      formatter = d3.time.format("%Y-%m-%d");
       return _.map(data, function(d) {
         return {
-          date: d[0],
+          date: formatter.parse(d[0]),
           num: d[index + 1]
         };
       });
     };
     utility.mergeLines = function(lines, data) {
+      var line, _i, _len;
       lines = utility.addNewLinesAndRefresh(lines, data);
       lines = utility.removeStaleLines(lines, data.columns);
-      if (!(!(lines[0] != null) || _.find(lines, function(line) {
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        line.setup();
+      }
+      if (!(!(_.first(lines) != null) || _.find(lines, function(line) {
         return line.visible() === true;
       }))) {
-        lines[0].visible(true);
+        _.first(lines).visible(true);
       }
       return lines;
     };
@@ -1270,7 +1365,7 @@
       if (code == null) {
         return 0;
       }
-      if (code.match(/^FUTURE_/)) {
+      if (code.match(/^(FUTURE_|NASDAQ_|INDEX_)/)) {
         return 3;
       } else {
         return 0;
@@ -1284,6 +1379,25 @@
         for (_i = 0, _len = lines.length; _i < _len; _i++) {
           line = lines[_i];
           _results.push(line.extent(start, end));
+        }
+        return _results;
+      })();
+      return [
+        d3.min(exes, function(m) {
+          return m[0];
+        }), d3.max(exes, function(m) {
+          return m[1];
+        })
+      ];
+    };
+    utility.getExtentFromDates = function(lines, startDate, endDate) {
+      var exes, line;
+      exes = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = lines.length; _i < _len; _i++) {
+          line = lines[_i];
+          _results.push(line.extentByDate(startDate, endDate));
         }
         return _results;
       })();
@@ -1337,25 +1451,11 @@
         };
       }
     };
-    utility.dateFormat = function(date) {
-      var dateString, hyphenCount;
-      hyphenCount = date.split('-').length - 1;
-      switch (hyphenCount) {
-        case -1:
-          dateString = '%Y';
-          break;
-        case 2:
-          dateString = '%Y-%m-%d';
-          break;
-        default:
-          throw "Unknown date format: " + hyphenCount + " " + date;
+    utility.getDateKey = function(date) {
+      if (date == null) {
+        return null;
       }
-      return dateString;
-    };
-    utility.parseDate = function(date) {
-      var dateString;
-      dateString = this.dateFormat(date);
-      return d3.time.format(dateString).parse;
+      return date.valueOf();
     };
     return utility;
   };

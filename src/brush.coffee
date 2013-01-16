@@ -1,40 +1,34 @@
 QuandlismContext_.brush = () ->
   context       = @
-  height        = Math.floor context.h() * quandlism_brush.h
-  height0       = height
+  height        = Math.floor context.h()*quandlism_brush.h
   width         = Math.floor context.w()-quandlism_yaxis_width
-  width0        = width
-  brushWidth    = null
-  brushWidth0   = null
-  handleWidth   = 10
-  xStart        = null
-  xStart0       = null
-  xScale        = d3.scale.linear()
+  dateStart = dateEnd = drawStart = drawEnd = line = null
+  dragging = dragEnabled = stretching = touchPoint = null
+  canvas = ctx = canvasId = brushId = null
+  extent = lines = []
+  xScale        = d3.time.scale()
   yScale        = d3.scale.linear()
-  canvas        = null
-  ctx           = null
-  xAxis         = d3.svg.axis().orient('bottom').scale xScale
-  xAxisDOM      = null
-  canvasId      = null
-  extent        = []
-  lines         = []
+  xAxis         = d3.svg.axis().orient('bottom').scale xScale  
   threshold     = 10
-  dragging      = false
-  dragEnabled   = true
-  stretching    = false
+  handleWidth   = 10
   stretchLimit  = 6
-  stretchMin    = 0
+  stertchhMin   = 100
   activeHandle  = 0
-  touchPoint    = null
-  cursorClasses = {move: 'move', resize: 'resize'}
   buffer        = document.createElement('canvas')
   useCache      = false
-
+  previous      = {}
 
   brush = (selection) =>
-    lines = selection.datum()
     canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
-
+    
+    # For convenience, use refernce to first line
+    lines = selection.datum()
+    line  = _.first lines
+    # Extract the default start and end dates
+    dateStart = _.first line.dates()
+    dateEnd   = _.last  line.dates()
+    
+    # Apply CSS to selection
     selection.attr "style", "position: absolute; top: #{context.h()*(quandlism_stage.h+quandlism_xaxis.h)}px; left: #{quandlism_yaxis_width}px"
     # append canvas and get reference to element and drawing context
     canvas = selection.append('canvas')
@@ -42,39 +36,40 @@ QuandlismContext_.brush = () ->
     canvas.attr "style", "position: absolute; left: 0px; top: 0px"
     ctx = canvas.node().getContext '2d'
     
-    # if xAxis not defined, create it
+    # xAxis
+    xAxisDOM = selection.append 'svg'
+    xAxisDOM.attr 'class', 'x axis'
+    xAxisDOM.attr 'id', "x-axis-#{canvasId}"
+    xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
+    xAxisDOM.attr 'width', Math.floor context.w()-quandlism_yaxis_width
+    xAxisDOM.attr "style", "position: absolute; top: #{context.h()*quandlism_brush.h}px; left: 0px"
     
-    if not xAxisDOM?
-      xAxisDOM = selection.append 'svg'
-      xAxisDOM.attr 'class', 'x axis'
-      xAxisDOM.attr 'id', "x-axis-#{canvasId}"
-      xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
-      xAxisDOM.attr 'width', Math.floor context.w()-quandlism_yaxis_width
-      xAxisDOM.attr "style", "position: absolute; top: #{context.h()*quandlism_brush.h}px; left: 0px"
-    
-    # Setup xAxis
-    xAxis.tickSize 5, 3, 0
-    
+
+    # Determines if the there are enough points that in the dataset
+    # to allow dragging. If not, set the start and width of the brush
+    # to fill the entire canvas context
+    #
+    # Returns null
+    checkDragState = () =>
+      if (line.length()) <= stretchLimit
+        dateStart = _.first line.dates()
+        dateEnd   = _.last  line.dates()
+        drawStart = xScale dateStart
+        drawEnd   = xScale dateEnd
+        dragEnabled = false
+      else
+        dragEnabled = true
     
     # Calculate the y and x scales. Sets the domain and ranges of the
     # scales and creates the x axis labelling functions
     # 
     # Returns null
     setScales = () =>
-      extent = context.utility().getExtent lines, null, null    
-      yScale.domain [extent[0], extent[1]]
+      yScale.domain context.utility().getExtent lines, null, null 
       yScale.range [height-context.padding(), context.padding()]
-      xScale.domain [0, lines[0].length()-1]
+
       xScale.range [context.padding(), width-context.padding()]
-            
-      # Set the minimum brush size when scale is calculated
-      stretchMin = Math.floor xScale stretchLimit
-      
-      # Determine x Axis formatting
-      xAxis.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
-      xAxis.tickFormat (d) =>
-        date = new Date (lines[0].dateAt(d))
-        "#{context.utility().getMonthName date.getUTCMonth()} #{date.getUTCDate()}, #{date.getUTCFullYear()}"
+      xScale.domain [_.first(line.dates()), _.last(line.dates())]
       
       return
     
@@ -83,15 +78,15 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     setBrushValues = () =>
-      xStart = xScale context.startPoint()*lines[0].length()
-      xStart0 = xStart
-      brushWidth = width - xStart
-      brushWidth0 = brushWidth
-      if brushWidth < stretchMin
-        brushWidth = stretchMin
-        brushWidth0 = brushWidth
-        xStart = width - brushWidth
-        xStart0 = xStart
+      # Set the date and x-value of the date, for the endpoints
+      dateStart = line.dateAt Math.floor(context.startPoint()*line.length())
+      dateEnd   = _.last line.dates()
+      drawStart = xScale dateStart 
+      drawEnd   = xScale dateEnd
+      setPrevious 'dateStart', dateStart
+      setPrevious 'dateEnd', dateEnd
+      setPrevious 'drawStart', drawStart
+      setPrevious 'drawEnd', drawEnd
       return
       
     # Update function drives the brush element. This is called on invertal
@@ -110,7 +105,7 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     clearCanvas = () =>
-      ctx.clearRect 0, 0, width0, height0
+      ctx.clearRect 0, 0, getPrevious('width'), getPrevious('height')
       canvas.attr('width', width).attr('height', height)
       return
       
@@ -128,10 +123,8 @@ QuandlismContext_.brush = () ->
     #
     # Returns null
     draw = () =>
-      showPoints = (lines[0].length() <= threshold)
-      for line, j in lines
-        line.drawPath ctx, xScale, yScale, 0, lines[0].length(), 1
-        line.drawPoint ctx, xScale, yScale, j, 2 if showPoints
+      line.drawPath ctx, xScale, yScale, 1     for line, j in lines
+      line.drawPoints ctx, xScale, yScale, _.first(line.dates(), _.last(line.dates()), 3)   if (line.length() <= threshold)
       saveCanvasData()
       return
       
@@ -157,35 +150,19 @@ QuandlismContext_.brush = () ->
       ctx.strokeStyle = 'rgba(237, 237, 237, 0.80)'
       ctx.beginPath()
       ctx.fillStyle = 'rgba(237, 237, 237, 0.80)'
-      ctx.fillRect xStart, 0, brushWidth, height
-      ctx.lineWidth = 1
-      ctx.lineTo xStart, height
+      ctx.fillRect drawStart, 0, (drawEnd-drawStart), height
       ctx.closePath()
     
       ctx.beginPath()
       ctx.fillStyle = '#D9D9D9'
-      ctx.fillRect xStart-handleWidth, 0, handleWidth, height
+      ctx.fillRect drawStart-handleWidth, 0, handleWidth, height
       ctx.closePath()
       
       ctx.beginPath()
       ctx.fillStyle = '#D9D9D9'
-      ctx.fillRect xStart + brushWidth, 0, handleWidth, height
+      ctx.fillRect drawEnd, 0, handleWidth, height
       ctx.closePath()
       return
-      
-    # Determines if the there are enough points that in the dataset
-    # to allow dragging. If not, set the start and width of the brush
-    # to fill the entire canvas context
-    #
-    # Returns null
-    checkDragState = () =>
-      if (lines[0].length()-1) <= stretchLimit
-        xStart = 0
-        brushWidth0 = width
-        brushWidth = width
-        dragEnabled = false
-      else
-        dragEnabled = true
         
     # Resets the buffer element and sets useCache to be false
     #
@@ -194,26 +171,45 @@ QuandlismContext_.brush = () ->
       useCache = false
       return
         
-    # Calculates the start and end points of the brushWidth and
+    # Send the new start and end dates that should be rendered on the sage
     # triggers the context.adjust event with those parameters
     #
+    # calculateDates - Re-calcualte date end points before dispatching?
     # Returns null
-    dispatchAdjust = () =>
-      x1 = xScale.invert xStart
-      x2 = xScale.invert xStart + brushWidth
-      context.adjust Math.ceil(x1), Math.ceil(x2)
+    dispatchAdjust = (calculateDates) =>
+      calculateDates = calculateDates ? false
+      if calculateDates
+        dateStart = xScale.invert drawStart
+        dateEnd   = xScale.invert drawEnd
+        # If dateStart > dateEnd, handles were inverted, so 
+        # reverse order of dispatch
+        if dateStart > dateEnd
+          d = dateEnd
+          dateEnd = dateStart
+          dateStart = d
+        
+      context.adjust dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd)
       return
       
     # Resets the state of the brush control
     # Sets dragging and stretching to to false and saves the xStart and brushWidth values
     #
     # Returns null
-    resetState = () =>
+    saveState = () =>
       dragging = false
       stretching = false
       activeHandle = 0
-      xStart0 = xStart
-      brushWidth0 = brushWidth
+      # If drawStart > drawEnd, handles were inverted,so flip values 
+      if drawStart > drawEnd
+          d = drawEnd
+          drawEnd = drawStart
+          drawStart = d
+      dateStart = xScale.invert drawStart
+      dateEnd   = xScale.invert drawEnd
+      setPrevious 'drawStart', drawStart
+      setPrevious 'dateStart', dateStart
+      setPrevious 'drawEnd', drawEnd
+      setPrevious 'dateEnd', dateEnd
       return
       
       
@@ -223,7 +219,7 @@ QuandlismContext_.brush = () ->
     # 
     # Returns boolean
     isDraggingLocation = (x) =>
-      x <= (brushWidth + xStart) and x >= xStart
+      x <= (drawEnd) and x >= drawStart
 
     # Determines if the mouse cursor location corresponds to the left handle of the brush control
     #
@@ -231,7 +227,7 @@ QuandlismContext_.brush = () ->
     # 
     # Returns boolean      
     isLeftHandle = (x) =>
-      x >= (xStart-handleWidth) and x < (xStart)
+      x >= (drawStart-handleWidth) and x < (drawStart)
 
     # Determines if the mouse cursor location corresponds to the right handle of the brush control
     #
@@ -239,17 +235,25 @@ QuandlismContext_.brush = () ->
     # 
     # Returns boolean      
     isRightHandle = (x) =>
-      x > (xStart + brushWidth) and x <= (xStart + brushWidth + handleWidth)
+      x > drawEnd and x <= (drawEnd + handleWidth)
     
       
     # Add classes to the brush
     # Removes any of the clases, defined in 'classes' variable before appending className
-    addBrushClass = (className) =>
-      classNames = (key for key of cursorClasses).reduce (a, b) -> "#{a} #{b}"
-      $(context.dombrush()).removeClass(classNames).addClass className
+    setBrushClass = (className) =>
+      document.getElementById("#{context.dombrush().substring(1)}").className = className
       return
-  
+      
+    setPrevious = (key, value) =>
+      previous[key] = value
+      return
+      
+    getPrevious = (key) =>
+      previous[key] ? null  
     
+    # Save intial values of height and width
+    setPrevious 'width', width
+    setPrevious 'height', height
      
     #  
     # Intial drawing of brush
@@ -259,31 +263,32 @@ QuandlismContext_.brush = () ->
     setBrushValues() if dragEnabled
     drawAxis()
     dispatchAdjust()
-    
+        
     # Set drawing interval
     setInterval update, 70
+ 
 
     # Event listners
   
     # Respond to resized browser by recalculating key points and redrawing
     context.on "respond.brush", () ->
-      height0 = height
-      width0 = width
+      setPrevious 'height', height
+      setPrevious 'width', width
       height = Math.floor context.h()*quandlism_brush.h
       width = Math.floor context.w()-quandlism_yaxis_width
-      xStart = Math.floor xStart/width0*width
-      xStart0 = Math.floor xStart0/width0*width
-      brushWidth = Math.floor brushWidth/width0*width
-      brushWidth0 = brushWidth
-      xAxisDOM.attr 'width', width
       removeCache()
       setScales()
+      drawStart = xScale dateStart
+      drawEnd   = xScale dateEnd
+      saveState()
+      xAxisDOM.attr 'width', width
       drawAxis()
       return
       
     # Respond to refresh event
     context.on 'refresh.brush', () ->
       lines = selection.datum()
+      line  = _.first lines
       removeCache()
       setScales()
       checkDragState()
@@ -322,12 +327,13 @@ QuandlismContext_.brush = () ->
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
-      resetState()
+      saveState()
       return
       
     # Detect movement off of the canvas. Reset state
     canvas.on 'mouseout', (e) ->
-      resetState()  
+      setBrushClass ''
+      saveState()  
       return
       
     # Calculate various points for animating dragging and stretching
@@ -336,25 +342,27 @@ QuandlismContext_.brush = () ->
       if dragging or stretching
         dragDiff = m[0]-touchPoint
         if dragging and dragEnabled
-          xStart = xStart0 + dragDiff
+          drawStart = getPrevious('drawStart') + dragDiff
+          drawEnd   = getPrevious('drawEnd') + dragDiff
+          
         else if stretching
           # Calculate new brushWidth and xStart values, ensuring the the brush does not have a width less than stretchMin
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
-          brushWidth = if activeHandle is -1 then brushWidth0 - dragDiff else brushWidth0 + dragDiff
-          xStart = xStart0 + dragDiff if activeHandle is -1
-          if brushWidth <= stretchMin
-            xStart = xStart + (brushWidth-stretchMin) if activeHandle is -1
-            brushWidth = stretchMin
-        
-        dispatchAdjust()
+          drawStart = getPrevious('drawStart') + dragDiff if activeHandle is -1
+          drawEnd   = getPrevious('drawEnd') + dragDiff   if activeHandle is 1
+               
+        # Fix drawStart and drawEnd to constrain to dimensions
+        drawStart = if drawStart < 0 then 0 else drawStart
+        drawEnd   = if drawEnd > width then width else drawEnd
+        dispatchAdjust(true)
         
       else if dragEnabled
         if isDraggingLocation m[0]
-          addBrushClass cursorClasses['move']
+          setBrushClass 'move'
         else if isLeftHandle(m[0]) or isRightHandle(m[0])
-          addBrushClass cursorClasses['resize']
+          setBrushClass 'resize'
         else
-          addBrushClass ''
+          setBrushClass ''
       return
 
   # 
@@ -368,6 +376,11 @@ QuandlismContext_.brush = () ->
   brush.xScale = (_) =>
     if not _? then return xScale
     xScale = _
+    brush
+    
+  brush.yScale = (_) =>
+    if not _? then return yScale
+    yScale = _
     brush
     
   brush.threshold = (_) =>
@@ -385,10 +398,6 @@ QuandlismContext_.brush = () ->
     handleWidth = _
     brush
     
-  brush.cursorClasses = (_) =>
-    if not _? then return cursorClasses
-    cursorClasses = _
-    brush
   
   brush
       

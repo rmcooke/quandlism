@@ -5,13 +5,23 @@ QuandlismContext_.line = (data) ->
   context      = @
   name         = data.name
   values       = data.values.reverse()
+  dates        = []
+  datesMap     = []
   id           = quandlism_line_id++
   visible      = true
   color        = '#000000'
   
-  
   # Instance methods
-  
+  # setup!
+  line.setup = () ->
+    dates     = (v.date for v in values)
+    datesMap  = _.map dates, (d) -> context.utility().getDateKey(d)
+    window.dates = dates
+    datesMap = datesMap
+    return
+    
+  line.setup()
+    
   # Calculates the minimum and maximum values of the lines between the start and end points
   #
   # start - The first index to consider
@@ -20,13 +30,13 @@ QuandlismContext_.line = (data) ->
   # Returns an array of two values
   line.extent = (start, end) ->
     i = if start? then start else 0
-    n = if end? then end else (@.length()-1)
+    n = if end? then end else (@length()-1)
     min = Infinity
     max = -Infinity
-    return [min, max] if not @.visible()
+    return [min, max] unless @visible()
 
     while i <= n
-      val = @.valueAt i
+      val = @valueAt i
       if not val?
         i++
         continue
@@ -36,9 +46,19 @@ QuandlismContext_.line = (data) ->
       
     [min, max]
     
-    
-  line.dates = (start, end) =>
-    (v.date for v in values[start..end])
+  # Get the extent of the line between the start and end dates
+  line.extentByDate = (startDate, endDate) ->
+    min = Infinity
+    max = -Infinity
+    return [min, max] unless @visible()
+    for date, i in @dates()
+      continue unless date <= endDate and date >= startDate
+      val = @valueAt i
+      continue if not val?
+      min = val if val < min
+      max = val if val > max
+    [min, max]
+  
     
   # Return the number of datapoints in the line
   line.length = () =>
@@ -58,60 +78,98 @@ QuandlismContext_.line = (data) ->
   #
   # Returns a string representing a date
   line.dateAt = (i) =>
-    if values[i]? then values[i].date else null
+    if dates[i]? then dates[i] else null
     
+    
+  # Draws a the point on the canvas at the dataPoint corresponding to 'index', for this line
+  line.drawPointAtIndex = (ctx, xS, yS, index, radius) ->
+    return unless @visible()
+    ctx.beginPath()
+    ctx.arc xS(@dateAt(index)), yS(@valueAt(index)), radius, 0, Math.PI*2, true
+    ctx.fillStyle = @color()
+    ctx.fill()
+    ctx.closePath()
+    
+
+  # Draws the entire path of the line
+  line.drawPath = (ctx, xS, yS,lineWidth) ->    
+    return unless @visible()
+    ctx.beginPath()
+
+    for date, i in @dates()
+      continue unless @valueAt(i)?
+      ctx.lineTo xS(date), yS(@valueAt(i))
+        
+    ctx.lineWidth = lineWidth
+    ctx.strokeStyle = @color()
+    ctx.stroke()
+    ctx.closePath()
+    
+    return
+    
+  # Draws the path between the start and end indicies
+  line.drawPathFromIndicies = (ctx, xS, yS, start, end, lineWidth) ->
+    return unless @visible()
+    ctx.beginPath()
+    for i in [start..end]
+      continue unless @valueAt(i)?
+      ctx.lineTo xS(@dateAt(i)), yS(@valueAt(i))
+      
+    ctx.lineWidth   = lineWidth
+    ctx.strokeStyle = @color()
+    ctx.stroke()
+    ctx.closePath() 
   
-  # Renders an individual point on the canvas
-  #
-  # ctx     - The HTML canvas context
-  # xS      - The d3 scale for the x co-ordinate
-  # yS      - The d3 scale for the y co-ordinate
-  # index   - The array index of the point to render
-  # radius  - The radius of the point
-  #
-  # Returns null
-  line.drawPoint = (ctx, xS, yS, index, radius) ->
-      # do something\
-    if @visible()
-      return unless @valueAt(index)?
+  # Get the closes date in the data to the given date
+  line.getClosestDataPoint = (date) ->
+    index = @getClosestIndex date
+    values[index]
+    
+  # The the data index that has a date closest to the given date
+  line.getClosestIndex = (date) ->
+    closest = Infinity
+    cloestIndex = 0
+    prevClosest = Infinity
+    dateKey = context.utility().getDateKey(date)
+    for d, i in datesMap
+      key = context.utility().getDateKey(d)
+      diff = Math.abs(key-dateKey)
+      if diff < closest
+        prevClosest = closest
+        closest = diff
+        closestIndex = i
+      else if prevClosest < diff
+        # Dates are sequential. If we are are nearest calculation is gettin further from diff, then we've passed 
+        # nearest date
+        break
+    closestIndex
+    
+    
+  # Given an array of objects {data, value}, draw the points  on the context
+  line.drawPoints = (ctx, xS, yS, dateStart, dateEnd, radius) ->
+    return unless @visible()
+    for date, i in @dates()
+      continue unless date >= dateStart and date <= dateEnd
       ctx.beginPath()
-      ctx.arc xS(index), yS(@valueAt(index)), radius, 0, Math.PI*2, true
-      ctx.fillStyle = @.color()
+      ctx.arc xS(date), yS(@valueAt(i)), 3, 0, Math.PI*2, true
+      ctx.fillStyle = @color()
       ctx.fill()
       ctx.closePath()
-
-  # Draw a path on the drawing context
-  # Skips any values with null value
-  # ctx       - The HTML canvas context
-  # xS        - The d3 scale for the x co-ordinate
-  # yS        - The d3 scale for the y co-ordinate
-  # start     - The first array index for the line
-  # end       - The final array index for the line
-  # lineWidth - The width of the line
-  #
-  # Returns null
-  line.drawPath = (ctx, xS, yS, start, end, lineWidth) ->
-    if @.visible()
-      ctx.beginPath()
-      for i in [start..end]
-        continue unless @valueAt(i)?
-        ctx.lineTo xS(i), yS(@valueAt(i))
-
-        
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = @.color()
-      ctx.stroke()
-      ctx.closePath()
-      
+  
       
   # Toggle visibility of line
   line.toggle = () ->
-    v = not @.visible()
-    @.visible(v)
+    v = not @visible()
+    @visible(v)
     v
+    
   
   # Getters and setters - expose attributes of the line
-  
+  line.dates = (_) =>
+    if not _? then return dates
+    dates = _
+    line
+    
   line.id = (_) =>
     if not _? then return id
     id = _

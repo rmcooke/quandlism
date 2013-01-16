@@ -9,7 +9,7 @@ quandlism.context = () ->
   domlegend     = null
   domtooltip    = null
   padding       = 0 
-  startPoint    = 0.75
+  startPoint    = 0.70
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
@@ -42,15 +42,9 @@ quandlism.context = () ->
     w = $(dom).width()
     h = $(dom).height()
     context
-    
-  # Convenience method for building the quanlism chart with ONLY a container selector
-  # Remove all children of container and creates brush and stage elements
-  #
-  # container - The jQuery selector 
-  # brush     - Boolean indicating whether or not to include the brush
-  #
-  # Return self
-  context.setupWithContainer = (container, brush_) =>
+  
+  
+  context.chart = (container, brush_) =>
     throw 'Invalid container' if not container.length
     brush = brush_ ? true
     # Add ID to container if not present
@@ -66,12 +60,19 @@ quandlism.context = () ->
       dombrush = "##{brushId}"
     context  
     
-  # Setup the legend via selector
-  context.legendWithSelector = (container) =>
+  context.withLegend = (container) =>
     throw 'Invalid container' if not container.length
     container.attr('id', "quandlism-legend-#{++quandlism_id_ref}") if not container.attr('id')
     domlegend = "##{container.attr('id')}"
     context
+  
+  context.setupWithContainer = (container, brush_) =>
+    return context.chart container, brush_
+    
+
+  # Setup the legend via selector
+  context.legendWithSelector = (container) =>
+    return context.withLegend container
 
       
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
@@ -146,8 +147,8 @@ quandlism.context = () ->
   context.respond = _.throttle () => event.respond.call context, 500
   
   # Respond to adjust event
-  context.adjust = (x1, x2) =>
-    event.adjust.call context, x1, x2  
+  context.adjust = (d1, i1, d2, i2) =>
+    event.adjust.call context, d1, i1, d2, i2
     
   # Responds to toggle event
   context.toggle = () =>
