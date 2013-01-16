@@ -352,7 +352,6 @@
         return;
       }
       ctx.beginPath();
-      console.log("" + index + " " + (xS(this.dateAt(index))) + " " + (yS(this.valueAt(index))));
       ctx.arc(xS(this.dateAt(index)), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
       ctx.fillStyle = this.color();
       ctx.fill();
@@ -601,7 +600,7 @@
           line.drawPathFromIndicies(ctx, xScale, yScale, indexStart, indexEnd, lineWidth);
           if ((indexEnd - indexStart) < threshold) {
             for (i = _j = indexStart; indexStart <= indexEnd ? _j <= indexEnd : _j >= indexEnd; i = indexStart <= indexEnd ? ++_j : --_j) {
-              line.drawPointAtIndex(ctx, xScale, yScale, i, 3);
+              line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
             }
           }
         }
@@ -644,7 +643,7 @@
         date = dataPoint.date;
         value = dataPoint.num;
         draw(line_.id());
-        line_.drawPoint(ctx, xScale, yScale, dataPoint, 5);
+        line_.drawPoint(ctx, xScale, yScale, dataPoint, 3);
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
@@ -883,7 +882,6 @@
             dateStart = d;
           }
         }
-        console.log("start: " + drawStart + " [" + dateStart + "] " + (line.getClosestIndex(dateStart)));
         context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
       };
       saveState = function() {
