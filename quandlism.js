@@ -414,17 +414,22 @@
       return values[index];
     };
     line.getClosestIndex = function(date) {
-      var cloestIndex, closest, closestIndex, d, dateKey, diff, i, key, _i, _len;
+      var cloestIndex, closest, closestIndex, d, dateKey, diff, i, key, prevClosest, _i, _len;
       closest = Infinity;
       cloestIndex = 0;
+      prevClosest = Infinity;
       dateKey = context.utility().getDateKey(date);
       for (i = _i = 0, _len = datesMap.length; _i < _len; i = ++_i) {
         d = datesMap[i];
         key = context.utility().getDateKey(d);
         diff = Math.abs(key - dateKey);
         if (diff < closest) {
+          prevClosest = closest;
           closest = diff;
           closestIndex = i;
+        } else if (prevClosest < diff) {
+          console.log("BREAK!");
+          break;
         }
       }
       return closestIndex;

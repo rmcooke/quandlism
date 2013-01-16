@@ -152,13 +152,19 @@ QuandlismContext_.line = (data) ->
   line.getClosestIndex = (date) ->
     closest = Infinity
     cloestIndex = 0
+    prevClosest = Infinity
     dateKey = context.utility().getDateKey(date)
     for d, i in datesMap
       key = context.utility().getDateKey(d)
       diff = Math.abs(key-dateKey)
       if diff < closest
+        prevClosest = closest
         closest = diff
         closestIndex = i
+      else if prevClosest < diff
+        # Dates are sequential. If we are are nearest calculation is gettin further from diff, then we've passed 
+        # nearest date
+        break
     closestIndex
     
     
