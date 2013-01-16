@@ -19,6 +19,7 @@ QuandlismContext_.utility = () ->
     if not context.lines().length
       keys = data.columns[1..]        
       lineData = _.map keys, (key, i) => utility.getLineData data.data, i 
+      console.log data
       defaultColumn = utility.defaultColumn data.code
       # Build lines
       lines = _.map keys, (key, i) =>
@@ -51,7 +52,7 @@ QuandlismContext_.utility = () ->
     lines = utility.addNewLinesAndRefresh lines, data
     lines = utility.removeStaleLines lines, data.columns
     line.setup() for line in lines
-    _.first(lines).visible true  unless not lines[0]? or _.find(lines, (line) -> line.visible() is true)
+    _.first(lines).visible true  unless not _.first(lines)? or _.find(lines, (line) -> line.visible() is true)
     lines
     
 
@@ -95,7 +96,7 @@ QuandlismContext_.utility = () ->
   # Returns 0 if code is not present, or if dataset is not a futures dataset. Returns 4 otherwis
   utility.defaultColumn = (code) ->
     return 0 unless code?
-    if code.match /^FUTURE_/ then return 3 else return 0
+    if code.match /^(FUTURE_|NASDAQ_|INDEX_)/ then return 3 else return 0
     
   # Calculates the minimum and maxium values for all of the lines in the lines array
   # between the index values start, and end

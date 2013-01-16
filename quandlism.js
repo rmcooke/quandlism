@@ -1269,6 +1269,7 @@
         lineData = _.map(keys, function(key, i) {
           return utility.getLineData(data.data, i);
         });
+        console.log(data);
         defaultColumn = utility.defaultColumn(data.code);
         lines = _.map(keys, function(key, i) {
           return context.line({
@@ -1305,7 +1306,7 @@
         line = lines[_i];
         line.setup();
       }
-      if (!(!(lines[0] != null) || _.find(lines, function(line) {
+      if (!(!(_.first(lines) != null) || _.find(lines, function(line) {
         return line.visible() === true;
       }))) {
         _.first(lines).visible(true);
@@ -1348,7 +1349,7 @@
       if (code == null) {
         return 0;
       }
-      if (code.match(/^FUTURE_/)) {
+      if (code.match(/^(FUTURE_|NASDAQ_|INDEX_)/)) {
         return 3;
       } else {
         return 0;
