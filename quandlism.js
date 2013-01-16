@@ -552,7 +552,7 @@
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       setScales = function() {
         var unitsObj;
-        extent = context.utility().getExtentFromDates(lines, dateStart, dateEnd);
+        extent = context.utility().getExtent(indexStart, indexEnd);
         if (extent[0] === extent[1]) {
           extent = context.utility().getExtent(lines, 0, line.length());
         }
