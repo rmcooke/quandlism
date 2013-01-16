@@ -64,7 +64,6 @@ QuandlismContext_.stage = () ->
       # on x-axis if all poitns are the same
       extent = context.utility().getExtentFromDates lines, dateStart, dateEnd
       extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
-      
       # Update the linear x and y scales with calculated extent
       yScale.domain [extent[0], extent[1]]
       yScale.range  [(height - context.padding()), context.padding()]
@@ -174,14 +173,15 @@ QuandlismContext_.stage = () ->
     # hex   - The color
     # 
     # Returns null
-    drawTooltip = (loc, hit, dataPoint) =>
+    drawTooltip = (loc, hit, dataIndex) =>
       # Draw the line with the point highlighted
       line_ = hit.line
-      date  = dataPoint.date
-      value = dataPoint.num
-      
+      date  = line_.dateAt(dataIndex)
+      value = line_.valueAt(dataIndex)
       draw line_.id()
-      line_.drawPoint ctx, xScale, yScale, dataPoint, 3
+      line_.drawPointAtIndex ctx, xScale, yScale, dataIndex, 3
+  
+
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
       w = if inTooltip then width-400 else width
@@ -268,8 +268,8 @@ QuandlismContext_.stage = () ->
     d3.select("##{canvasId}").on 'mousemove', (e) ->
       loc = d3.mouse @
       hit = lineHit loc
-      dataPoint =  hit.line.getClosestDataPoint(xScale.invert(hit.x)) if hit
-      if hit isnt false then drawTooltip loc, hit, dataPoint else clearTooltip()
+      dataIndex =  hit.line.getClosestIndex(xScale.invert(hit.x)) if hit      
+      if hit isnt false then drawTooltip loc, hit, dataIndex else clearTooltip()
       return
  
     return

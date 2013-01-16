@@ -170,6 +170,7 @@ QuandlismContext_.utility = () ->
       
 
   utility.getDateKey = (date) =>
-    "#{date.getUTCFullYear()}#{date.getUTCMonth()}#{date.getUTCDay()}"
+    return null unless date?
+    date.valueOf()
     
   utility

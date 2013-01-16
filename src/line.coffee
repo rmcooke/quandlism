@@ -14,8 +14,10 @@ QuandlismContext_.line = (data) ->
   # Instance methods
   # setup!
   line.setup = () ->
-    dates     = _.map values, (v) -> v.date
-    datesMap  = _.map(dates, (d) -> context.utility().getDateKey(d))
+    dates     = (v.date for v in values)
+    datesMap  = _.map dates, (d) -> context.utility().getDateKey(d)
+    window.dates = dates
+    datesMap = datesMap
     return
     
   line.setup()
@@ -89,6 +91,7 @@ QuandlismContext_.line = (data) ->
   # Returns null
   line.drawPoint = (ctx, xS, yS, dataPoint, radius) ->
     return unless @visible()
+    return
     ctx.beginPath()
     ctx.arc xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI*2, true
     ctx.fillStyle = @color()
@@ -143,11 +146,21 @@ QuandlismContext_.line = (data) ->
     ctx.closePath() 
   
   line.getClosestDataPoint = (date) ->
-    _.find(@values(), (v) -> v.date >= date)
+    index = @getClosestIndex date
+    values[index]
     
-  line.getClosestIndex     = (date) ->
-    data = @getClosestDataPoint(date)
-    _.indexOf datesMap, context.utility().getDateKey(data.date)
+  line.getClosestIndex = (date) ->
+    closest = Infinity
+    cloestIndex = 0
+    dateKey = context.utility().getDateKey(date)
+    for d, i in datesMap
+      key = context.utility().getDateKey(d)
+      diff = Math.abs(key-dateKey)
+      if diff < closest
+        closest = diff
+        closestIndex = i
+    closestIndex
+    
     
   # Given an array of objects {data, value}, draw the points  on the context
   line.drawPoints = (ctx, xS, yS, dateStart, dateEnd, radius) ->

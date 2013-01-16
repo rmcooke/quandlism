@@ -266,12 +266,21 @@
     visible = true;
     color = '#000000';
     line.setup = function() {
-      dates = _.map(values, function(v) {
-        return v.date;
-      });
+      var v;
+      dates = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = values.length; _i < _len; _i++) {
+          v = values[_i];
+          _results.push(v.date);
+        }
+        return _results;
+      })();
       datesMap = _.map(dates, function(d) {
         return context.utility().getDateKey(d);
       });
+      window.dates = dates;
+      datesMap = datesMap;
     };
     line.setup();
     line.extent = function(start, end) {
@@ -346,6 +355,7 @@
       if (!this.visible()) {
         return;
       }
+      return;
       ctx.beginPath();
       ctx.arc(xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI * 2, true);
       ctx.fillStyle = this.color();
@@ -399,13 +409,25 @@
       return ctx.closePath();
     };
     line.getClosestDataPoint = function(date) {
-      return _.find(this.values(), function(v) {
-        return v.date >= date;
-      });
+      var index;
+      index = this.getClosestIndex(date);
+      return values[index];
     };
     line.getClosestIndex = function(date) {
-      data = this.getClosestDataPoint(date);
-      return _.indexOf(datesMap, context.utility().getDateKey(data.date));
+      var cloestIndex, closest, closestIndex, d, dateKey, diff, i, key, _i, _len;
+      closest = Infinity;
+      cloestIndex = 0;
+      dateKey = context.utility().getDateKey(date);
+      for (i = _i = 0, _len = datesMap.length; _i < _len; i = ++_i) {
+        d = datesMap[i];
+        key = context.utility().getDateKey(d);
+        diff = Math.abs(key - dateKey);
+        if (diff < closest) {
+          closest = diff;
+          closestIndex = i;
+        }
+      }
+      return closestIndex;
     };
     line.drawPoints = function(ctx, xS, yS, dateStart, dateEnd, radius) {
       var date, i, _i, _len, _ref, _results;
@@ -642,13 +664,13 @@
         }
         return false;
       };
-      drawTooltip = function(loc, hit, dataPoint) {
+      drawTooltip = function(loc, hit, dataIndex) {
         var date, inTooltip, line_, tooltipText, value, w;
         line_ = hit.line;
-        date = dataPoint.date;
-        value = dataPoint.num;
+        date = line_.dateAt(dataIndex);
+        value = line_.valueAt(dataIndex);
         draw(line_.id());
-        line_.drawPoint(ctx, xScale, yScale, dataPoint, 3);
+        line_.drawPointAtIndex(ctx, xScale, yScale, dataIndex, 3);
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
@@ -704,14 +726,14 @@
         }
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
-        var dataPoint, hit, loc;
+        var dataIndex, hit, loc;
         loc = d3.mouse(this);
         hit = lineHit(loc);
         if (hit) {
-          dataPoint = hit.line.getClosestDataPoint(xScale.invert(hit.x));
+          dataIndex = hit.line.getClosestIndex(xScale.invert(hit.x));
         }
         if (hit !== false) {
-          drawTooltip(loc, hit, dataPoint);
+          drawTooltip(loc, hit, dataIndex);
         } else {
           clearTooltip();
         }
@@ -1269,7 +1291,6 @@
         lineData = _.map(keys, function(key, i) {
           return utility.getLineData(data.data, i);
         });
-        console.log(data);
         defaultColumn = utility.defaultColumn(data.code);
         lines = _.map(keys, function(key, i) {
           return context.line({
@@ -1436,7 +1457,10 @@
       }
     };
     utility.getDateKey = function(date) {
-      return "" + (date.getUTCFullYear()) + (date.getUTCMonth()) + (date.getUTCDay());
+      if (date == null) {
+        return null;
+      }
+      return date.valueOf();
     };
     return utility;
   };
