@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.6.0'
+    version: '0.6.1'
   };
 
   quandlism.context = function() {
@@ -552,7 +552,7 @@
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       setScales = function() {
         var unitsObj;
-        extent = context.utility().getExtent(indexStart, indexEnd);
+        extent = context.utility().getExtent(lines, indexStart, indexEnd);
         if (extent[0] === extent[1]) {
           extent = context.utility().getExtent(lines, 0, line.length());
         }
