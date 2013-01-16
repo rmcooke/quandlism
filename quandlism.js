@@ -347,6 +347,17 @@
       ctx.fill();
       return ctx.closePath();
     };
+    line.drawPointAtIndex = function(ctx, xS, yS, index, radius) {
+      if (!this.visible()) {
+        return;
+      }
+      ctx.beginPath();
+      console.log("" + index + " " + (xS(this.dateAt(index))) + " " + (yS(this.valueAt(index))));
+      ctx.arc(xS(this.dateAt(index)), yS(this.valueAt(index)), radius, 0, Math.PI * 2, true);
+      ctx.fillStyle = this.color();
+      ctx.fill();
+      return ctx.closePath();
+    };
     line.drawPath = function(ctx, xS, yS, dateStart, dateEnd, lineWidth) {
       var date, i, _i, _len, _ref;
       if (!this.visible()) {
@@ -579,7 +590,7 @@
         return _results;
       };
       draw = function(lineId) {
-        var j, lineWidth, _i, _len;
+        var i, j, lineWidth, _i, _j, _len;
         lineId = lineId != null ? lineId : -1;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
@@ -588,6 +599,11 @@
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           line.drawPathFromIndicies(ctx, xScale, yScale, indexStart, indexEnd, lineWidth);
+          if ((indexEnd - indexStart) < threshold) {
+            for (i = _j = indexStart; indexStart <= indexEnd ? _j <= indexEnd : _j >= indexEnd; i = indexStart <= indexEnd ? ++_j : --_j) {
+              line.drawPointAtIndex(ctx, xScale, yScale, i, 3);
+            }
+          }
         }
       };
       lineHit = function(m) {
@@ -628,7 +644,7 @@
         date = dataPoint.date;
         value = dataPoint.num;
         draw(line_.id());
-        line_.drawPoint(ctx, xScale, yScale, dataPoint, 3);
+        line_.drawPoint(ctx, xScale, yScale, dataPoint, 5);
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();

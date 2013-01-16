@@ -84,10 +84,19 @@ QuandlismContext_.line = (data) ->
     return unless @visible()
     ctx.beginPath()
     ctx.arc xS(dataPoint.date), yS(dataPoint.num), radius, 0, Math.PI*2, true
-    ctx.fillStyle = @.color()
+    ctx.fillStyle = @color()
     ctx.fill()
     ctx.closePath()
-
+    
+  line.drawPointAtIndex = (ctx, xS, yS, index, radius) ->
+    return unless @visible()
+    ctx.beginPath()
+    console.log "#{index} #{xS(@dateAt(index))} #{yS(@valueAt(index))}"
+    ctx.arc xS(@dateAt(index)), yS(@valueAt(index)), radius, 0, Math.PI*2, true
+    ctx.fillStyle = @color()
+    ctx.fill()
+    ctx.closePath()
+    
   # Draw a path on the drawing context
   # Skips any values with null value
   # ctx       - The HTML canvas context

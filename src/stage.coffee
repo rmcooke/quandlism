@@ -133,8 +133,10 @@ QuandlismContext_.stage = () ->
       for line, j in lines   
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
-        # Draw the path
         line.drawPathFromIndicies ctx, xScale, yScale, indexStart, indexEnd, lineWidth
+        if ((indexEnd-indexStart) < threshold)
+          line.drawPointAtIndex ctx, xScale, yScale, i, 3 for i in [indexStart..indexEnd]
+          
         #line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
       return
       
@@ -179,7 +181,7 @@ QuandlismContext_.stage = () ->
       value = dataPoint.num
       
       draw line_.id()
-      line_.drawPoint ctx, xScale, yScale, dataPoint, 3
+      line_.drawPoint ctx, xScale, yScale, dataPoint, 5
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
       w = if inTooltip then width-400 else width
