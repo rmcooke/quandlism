@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.6.3'
+    version: '0.6.4'
   };
 
   quandlism.context = function() {
@@ -1363,8 +1363,6 @@
       });
     };
     utility.defaultColumn = function(code, sourceCode) {
-      console.log(code);
-      console.log(sourceCode);
       if (!((code != null) && (sourceCode != null))) {
         return 0;
       }
