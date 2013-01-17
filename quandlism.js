@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.6.3'
+    version: '0.6.4'
   };
 
   quandlism.context = function() {
@@ -1287,7 +1287,7 @@
         lineData = _.map(keys, function(key, i) {
           return utility.getLineData(data.data, i);
         });
-        defaultColumn = utility.defaultColumn(data.code);
+        defaultColumn = utility.defaultColumn(data.code, data.source_code);
         lines = _.map(keys, function(key, i) {
           return context.line({
             name: key,
@@ -1362,11 +1362,11 @@
         return _ref = line.name(), __indexOf.call(columns, _ref) < 0;
       });
     };
-    utility.defaultColumn = function(code) {
-      if (code == null) {
+    utility.defaultColumn = function(code, sourceCode) {
+      if (!((code != null) && (sourceCode != null))) {
         return 0;
       }
-      if (code.match(/^(FUTURE_|NASDAQ_|INDEX_)/)) {
+      if ((code.match(/^(FUTURE_)/) != null) || (sourceCode.match(/^(GOOG|YAHOO)/) != null)) {
         return 3;
       } else {
         return 0;
