@@ -94,7 +94,7 @@
   // var context = quandlism.context().dom('#chart').domstage('#stage').dombrush('#brush').domlegend('#legend').domtooltip('#tooltip');
   var quandlismChart = quandlism.context().chart($("#chart")).withLegend($("#legend"));
   
-  d3.json('/data/yahoo.json', function(data) {    
+  d3.json('/data/bank.json', function(data) {    
     lines = quandlismChart.utility().createLines(data);
     quandlismChart.build().attachData(lines).render()
   }); 
