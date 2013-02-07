@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.7.1'
+    version: '0.7.2'
   };
 
   quandlism.context = function() {
@@ -63,8 +63,8 @@
     };
     context.update = function() {
       context.build();
-      context.refresh();
       context.respond();
+      context.refresh();
       return context;
     };
     context.build = function() {
@@ -122,9 +122,6 @@
         colorList.push(rgb.toString());
         i++;
       }
-    };
-    context.process = function() {
-      return context;
     };
     context.lines = function(_) {
       if (!_) {
@@ -279,7 +276,7 @@
     dates = [];
     datesMap = [];
     id = quandlism_line_id++;
-    visible = true;
+    visible = false;
     color = '#000000';
     line.setup = function() {
       var v;
@@ -1316,7 +1313,9 @@
       for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
         line = lines[i];
         line.color(context.colorList()[i]);
-        line.visible((__indexOf.call(attributes.show, i) >= 0));
+        if (!line.visible()) {
+          line.visible((__indexOf.call(attributes.show, i) >= 0));
+        }
       }
       return lines;
     };
@@ -1331,8 +1330,13 @@
       });
     };
     utility.mergeLines = function(lines, attributes) {
+      var line, _i, _len;
       lines = utility.addNewLinesAndRefresh(lines, attributes);
       lines = utility.removeStaleLines(lines, attributes.columns);
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        line.setup();
+      }
       return lines;
     };
     utility.addNewLinesAndRefresh = function(lines, attributes) {

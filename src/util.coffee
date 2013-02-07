@@ -19,7 +19,8 @@ QuandlismContext_.utility = () ->
     context.addColorsIfNecessary(lines)
     for line, i in lines
       line.color context.colorList()[i]
-      line.visible ( i in attributes.show )
+      unless line.visible()
+        line.visible ( i in attributes.show )
     lines
     
   # Conveneince method for returning mapped data for a given index
@@ -34,6 +35,7 @@ QuandlismContext_.utility = () ->
   utility.mergeLines = (lines, attributes) =>
     lines = utility.addNewLinesAndRefresh lines, attributes
     lines = utility.removeStaleLines lines, attributes.columns
+    line.setup() for line in lines
     lines
   
 
@@ -57,7 +59,6 @@ QuandlismContext_.utility = () ->
         line = context.line { name: column, values: lineData}
         lines.push line
 
-        
     lines
     
   # Removes any lines that do not have a name present in keys
