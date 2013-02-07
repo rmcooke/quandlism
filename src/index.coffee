@@ -1,1 +1,1 @@
-quandlism = exports.quandlism = { version: '0.6.4' }
+quandlism = exports.quandlism = { version: '0.7.0' }
