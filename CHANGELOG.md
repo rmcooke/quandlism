@@ -1,3 +1,7 @@
+## 0.7.1
+
+* Add build files!!
+
 ## 0.7.0
 
 * Simplify build. render and refresh functions now being called inside of update and render functions.
