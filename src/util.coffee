@@ -19,7 +19,8 @@ QuandlismContext_.utility = () ->
     context.addColorsIfNecessary(lines)
     for line, i in lines
       line.color context.colorList()[i]
-      line.visible ( i in attributes.show )
+      unless line.visible()
+        line.visible ( i in attributes.show )
     lines
     
   # Conveneince method for returning mapped data for a given index

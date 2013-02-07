@@ -8,7 +8,7 @@ QuandlismContext_.line = (data) ->
   dates        = []
   datesMap     = []
   id           = quandlism_line_id++
-  visible      = true
+  visible      = false
   color        = '#000000'
   
   # Instance methods

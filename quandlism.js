@@ -279,7 +279,7 @@
     dates = [];
     datesMap = [];
     id = quandlism_line_id++;
-    visible = true;
+    visible = false;
     color = '#000000';
     line.setup = function() {
       var v;
@@ -1316,7 +1316,9 @@
       for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
         line = lines[i];
         line.color(context.colorList()[i]);
-        line.visible((__indexOf.call(attributes.show, i) >= 0));
+        if (!line.visible()) {
+          line.visible((__indexOf.call(attributes.show, i) >= 0));
+        }
       }
       return lines;
     };
