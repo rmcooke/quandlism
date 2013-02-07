@@ -23,14 +23,19 @@
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
-    context.attachData = function(lines_) {
-      var i, line, _i, _len;
-      context.addColorsIfNecessary(lines_);
-      for (i = _i = 0, _len = lines_.length; _i < _len; i = ++_i) {
-        line = lines_[i];
-        line.color(colorList[i]);
-      }
-      lines = lines_;
+    context.attachData = function(attributes) {
+      lines = context.utility().buildLines(attributes);
+      lines = context.utility().processLines(lines, attributes);
+      context.bindToElements();
+      return context;
+    };
+    context.updateData = function(attributes) {
+      lines = context.utility().mergeLines(lines, attributes);
+      lines = context.utility().processLines(lines, attributes);
+      context.bindToElements();
+      return context;
+    };
+    context.bindToElements = function() {
       if (domstage) {
         d3.select(domstage).datum(lines);
       }
@@ -43,6 +48,7 @@
       return context;
     };
     context.render = function() {
+      context.build();
       if (domstage) {
         d3.select(domstage).call(context.stage());
       }
@@ -52,6 +58,13 @@
       if (domlegend) {
         d3.select(domlegend).call(context.legend());
       }
+      context.respond();
+      return context;
+    };
+    context.update = function() {
+      context.build();
+      context.refresh();
+      context.respond();
       return context;
     };
     context.build = function() {
@@ -80,6 +93,9 @@
       }
       return context;
     };
+    context.setupWithContainer = function(container, brush_) {
+      return context.chart(container, brush_);
+    };
     context.withLegend = function(container) {
       if (!container.length) {
         throw 'Invalid container';
@@ -89,9 +105,6 @@
       }
       domlegend = "#" + (container.attr('id'));
       return context;
-    };
-    context.setupWithContainer = function(container, brush_) {
-      return context.chart(container, brush_);
     };
     context.legendWithSelector = function(container) {
       return context.withLegend(container);
@@ -109,6 +122,9 @@
         colorList.push(rgb.toString());
         i++;
       }
+    };
+    context.process = function() {
+      return context;
     };
     context.lines = function(_) {
       if (!_) {
@@ -1280,28 +1296,27 @@
         return word;
       }
     };
-    utility.createLines = function(data) {
-      var defaultColumn, i, keys, line, lineData, lines, _i, _len;
-      if (!context.lines().length) {
-        keys = data.columns.slice(1);
-        lineData = _.map(keys, function(key, i) {
-          return utility.getLineData(data.data, i);
+    utility.buildLines = function(attributes) {
+      var keys, lineData, lines;
+      keys = attributes.columns.slice(1);
+      lineData = _.map(keys, function(key, i) {
+        return utility.getLineData(attributes.data, i);
+      });
+      lines = _.map(keys, function(key, i) {
+        return context.line({
+          name: key,
+          values: lineData[i]
         });
-        defaultColumn = utility.defaultColumn(data.code, data.source_code);
-        lines = _.map(keys, function(key, i) {
-          return context.line({
-            name: key,
-            values: lineData[i]
-          });
-        });
-        for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
-          line = lines[i];
-          if (i !== defaultColumn) {
-            line.visible(false);
-          }
-        }
-      } else {
-        lines = utility.mergeLines(context.lines(), data);
+      });
+      return lines;
+    };
+    utility.processLines = function(lines, attributes) {
+      var i, line, _i, _len;
+      context.addColorsIfNecessary(lines);
+      for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
+        line = lines[i];
+        line.color(context.colorList()[i]);
+        line.visible((__indexOf.call(attributes.show, i) >= 0));
       }
       return lines;
     };
@@ -1315,28 +1330,18 @@
         };
       });
     };
-    utility.mergeLines = function(lines, data) {
-      var line, _i, _len;
-      lines = utility.addNewLinesAndRefresh(lines, data);
-      lines = utility.removeStaleLines(lines, data.columns);
-      for (_i = 0, _len = lines.length; _i < _len; _i++) {
-        line = lines[_i];
-        line.setup();
-      }
-      if (!(!(_.first(lines) != null) || _.find(lines, function(line) {
-        return line.visible() === true;
-      }))) {
-        _.first(lines).visible(true);
-      }
+    utility.mergeLines = function(lines, attributes) {
+      lines = utility.addNewLinesAndRefresh(lines, attributes);
+      lines = utility.removeStaleLines(lines, attributes.columns);
       return lines;
     };
-    utility.addNewLinesAndRefresh = function(lines, data) {
+    utility.addNewLinesAndRefresh = function(lines, attributes) {
       var column, columnIndex, found, i, line, lineData, _i, _j, _len, _len1, _ref;
-      _ref = data.columns.slice(1);
+      _ref = attributes.columns.slice(1);
       for (columnIndex = _i = 0, _len = _ref.length; _i < _len; columnIndex = ++_i) {
         column = _ref[columnIndex];
         found = false;
-        lineData = utility.getLineData(data.data, columnIndex);
+        lineData = utility.getLineData(attributes.data, columnIndex);
         for (i = _j = 0, _len1 = lines.length; _j < _len1; i = ++_j) {
           line = lines[i];
           if (line.name() === column) {
@@ -1350,7 +1355,6 @@
             name: column,
             values: lineData
           });
-          line.visible(false);
           lines.push(line);
         }
       }

@@ -16,34 +16,50 @@ quandlism.context = () ->
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
-  context.attachData = (lines_) =>    
+  context.attachData = (attributes) =>    
     # Set colors whenever data is attached, to support cases when a new line is added
-    context.addColorsIfNecessary(lines_)
-    line.color(colorList[i]) for line, i in lines_
-            
-    lines = lines_
-        
-    d3.select(domstage).datum lines if domstage
-    d3.select(dombrush).datum lines if dombrush
-    d3.select(domlegend).datum lines if domlegend 
+    lines = context.utility().buildLines(attributes)
+    lines = context.utility().processLines(lines, attributes)                
+    context.bindToElements()
     context
 
+  context.updateData = (attributes) =>
+    lines  = context.utility().mergeLines(lines, attributes)
+    lines  = context.utility().processLines(lines, attributes)
+    context.bindToElements()
+    context
+    
+  context.bindToElements = () =>
+    d3.select(domstage).datum lines if domstage
+    d3.select(dombrush).datum lines if dombrush
+    d3.select(domlegend).datum lines if domlegend
+    context
 
   # render
   # Conveneince method for calling method for each declared DOM element
   context.render = () =>
+    context.build()
     d3.select(domstage).call context.stage() if domstage
     d3.select(dombrush).call context.brush() if dombrush
     d3.select(domlegend).call context.legend() if domlegend 
+    context.respond()
     context
   
-  # Update the height and width 
+  
+  # Convenience method for calling functions needed to update and redraw quandlism
+  context.update = () =>
+    context.build()
+    context.refresh()
+    context.respond()
+    context
+  
+  # use jQuery to get height and width of context container  
   context.build = () =>
     w = $(dom).width()
     h = $(dom).height()
     context
   
-  
+  # Build the stage and brush elements using the container
   context.chart = (container, brush_) =>
     throw 'Invalid container' if not container.length
     brush = brush_ ? true
@@ -60,20 +76,21 @@ quandlism.context = () ->
       dombrush = "##{brushId}"
     context  
     
+  
+  # Alias for chart
+  context.setupWithContainer = (container, brush_) =>
+    return context.chart container, brush_
+    
+  # Builds the legend elements with the given container
   context.withLegend = (container) =>
     throw 'Invalid container' if not container.length
     container.attr('id', "quandlism-legend-#{++quandlism_id_ref}") if not container.attr('id')
     domlegend = "##{container.attr('id')}"
     context
-  
-  context.setupWithContainer = (container, brush_) =>
-    return context.chart container, brush_
-    
 
-  # Setup the legend via selector
+  # Alias for withLegen
   context.legendWithSelector = (container) =>
     return context.withLegend container
-
       
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
   # by applying functions to the existing codes until there are lines.length number of unique codes
@@ -87,6 +104,11 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
+    
+  
+  # Process the attached or updated data before rendering
+  context.process = () =>
+    context
     
     
   # Expose attributes via getters and settesr
