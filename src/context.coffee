@@ -20,16 +20,19 @@ quandlism.context = () ->
     # Set colors whenever data is attached, to support cases when a new line is added
     lines = context.utility().buildLines(attributes)
     lines = context.utility().processLines(lines, attributes)                
-                    
-    d3.select(domstage).datum lines if domstage
-    d3.select(dombrush).datum lines if dombrush
-    d3.select(domlegend).datum lines if domlegend 
+    context.bindToElements()
     context
 
   context.updateData = (attributes) =>
     lines  = context.utility().mergeLines(lines, attributes)
     lines  = context.utility().processLines(lines, attributes)
+    context.bindToElements()
+    context
     
+  context.bindToElements = () =>
+    d3.select(domstage).datum lines if domstage
+    d3.select(dombrush).datum lines if dombrush
+    d3.select(domlegend).datum lines if domlegend
     context
 
   # render

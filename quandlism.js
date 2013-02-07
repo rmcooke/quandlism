@@ -26,6 +26,16 @@
     context.attachData = function(attributes) {
       lines = context.utility().buildLines(attributes);
       lines = context.utility().processLines(lines, attributes);
+      context.bindToElements();
+      return context;
+    };
+    context.updateData = function(attributes) {
+      lines = context.utility().mergeLines(lines, attributes);
+      lines = context.utility().processLines(lines, attributes);
+      context.bindToElements();
+      return context;
+    };
+    context.bindToElements = function() {
       if (domstage) {
         d3.select(domstage).datum(lines);
       }
@@ -35,11 +45,6 @@
       if (domlegend) {
         d3.select(domlegend).datum(lines);
       }
-      return context;
-    };
-    context.updateData = function(attributes) {
-      lines = context.utility().mergeLines(lines, attributes);
-      lines = context.utility().processLines(lines, attributes);
       return context;
     };
     context.render = function() {
