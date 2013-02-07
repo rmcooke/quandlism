@@ -35,6 +35,7 @@ QuandlismContext_.utility = () ->
   utility.mergeLines = (lines, attributes) =>
     lines = utility.addNewLinesAndRefresh lines, attributes
     lines = utility.removeStaleLines lines, attributes.columns
+    line.setup() for line in lines
     lines
   
 
@@ -58,7 +59,6 @@ QuandlismContext_.utility = () ->
         line = context.line { name: column, values: lineData}
         lines.push line
 
-        
     lines
     
   # Removes any lines that do not have a name present in keys

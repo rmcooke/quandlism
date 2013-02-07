@@ -63,8 +63,8 @@
     };
     context.update = function() {
       context.build();
-      context.refresh();
       context.respond();
+      context.refresh();
       return context;
     };
     context.build = function() {
@@ -122,9 +122,6 @@
         colorList.push(rgb.toString());
         i++;
       }
-    };
-    context.process = function() {
-      return context;
     };
     context.lines = function(_) {
       if (!_) {
@@ -1333,8 +1330,13 @@
       });
     };
     utility.mergeLines = function(lines, attributes) {
+      var line, _i, _len;
       lines = utility.addNewLinesAndRefresh(lines, attributes);
       lines = utility.removeStaleLines(lines, attributes.columns);
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        line.setup();
+      }
       return lines;
     };
     utility.addNewLinesAndRefresh = function(lines, attributes) {

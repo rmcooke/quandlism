@@ -49,8 +49,8 @@ quandlism.context = () ->
   # Convenience method for calling functions needed to update and redraw quandlism
   context.update = () =>
     context.build()
-    context.refresh()
     context.respond()
+    context.refresh()
     context
   
   # use jQuery to get height and width of context container  
@@ -61,7 +61,7 @@ quandlism.context = () ->
   
   # Build the stage and brush elements using the container
   context.chart = (container, brush_) =>
-    throw 'Invalid container' if not container.length
+    throw 'Invalid container' unless container.length
     brush = brush_ ? true
     # Add ID to container if not present
     container.children().remove()
@@ -104,13 +104,7 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
-    
-  
-  # Process the attached or updated data before rendering
-  context.process = () =>
-    context
-    
-    
+
   # Expose attributes via getters and settesr
   context.lines = (_) =>
     if not _ then return lines
