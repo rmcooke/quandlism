@@ -1,3 +1,8 @@
+## 0.7.2
+
+* Call line::setup function when merging data to refresh the date value for line data points.
+* attributes.show is used to activate columns, NOT disable. This allows frequency/tranformation to be changed on datasets and line visibility to be maintained.
+
 ## 0.7.1
 
 * Add build files!!
