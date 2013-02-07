@@ -1,3 +1,7 @@
+## 0.7.3:
+
+* Check for attributes.show. Don't operate on line visibility if it is not present.
+
 ## 0.7.2
 
 * Call line::setup function when merging data to refresh the date value for line data points.
@@ -12,3 +16,4 @@
 * Simplify build. render and refresh functions now being called inside of update and render functions.
 * updateData function added. attachData only called when chart is built for the first time.
 * Remove column visibility logic. Column visibility is determined by attributes.show, which is an array of column indicies.
+
