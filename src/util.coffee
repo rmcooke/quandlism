@@ -14,12 +14,14 @@ QuandlismContext_.utility = () ->
     lineData  = _.map keys, (key, i) => utility.getLineData(attributes.data, i)
     lines     = _.map keys, (key, i) => context.line {name: key, values: lineData[i]}
     lines
-    
+  
+  # Process lines
+  # Add colors and toggle visibility of constructed lines
   utility.processLines = (lines, attributes) =>
     context.addColorsIfNecessary(lines)
     for line, i in lines
       line.color context.colorList()[i]
-      unless line.visible()
+      if attributes.show? and attributes.show.length
         line.visible ( i in attributes.show )
     lines
     
@@ -70,16 +72,6 @@ QuandlismContext_.utility = () ->
     _.reject lines, (line) ->
        line.name() not in columns
        
-  # Get the default column to show when the dataset is drawn
-  # 
-  # code - The dataset code
-  # sourceCode - The source code
-  #
-  # Returns 0 if code is not present, or if dataset is not a futures dataset. Returns 4 otherwis
-  utility.defaultColumn = (code, sourceCode) ->
-    return 0 unless code? and sourceCode?
-    if code.match(/^(FUTURE_)/)? or sourceCode.match(/^(GOOG|YAHOO)/)? then return 3 else return 0
-
     
   # Calculates the minimum and maxium values for all of the lines in the lines array
   # between the index values start, and end

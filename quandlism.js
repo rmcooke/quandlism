@@ -1313,7 +1313,7 @@
       for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
         line = lines[i];
         line.color(context.colorList()[i]);
-        if (!line.visible()) {
+        if ((attributes.show != null) && attributes.show.length) {
           line.visible((__indexOf.call(attributes.show, i) >= 0));
         }
       }
@@ -1369,16 +1369,6 @@
         var _ref;
         return _ref = line.name(), __indexOf.call(columns, _ref) < 0;
       });
-    };
-    utility.defaultColumn = function(code, sourceCode) {
-      if (!((code != null) && (sourceCode != null))) {
-        return 0;
-      }
-      if ((code.match(/^(FUTURE_)/) != null) || (sourceCode.match(/^(GOOG|YAHOO)/) != null)) {
-        return 3;
-      } else {
-        return 0;
-      }
     };
     utility.getExtent = function(lines, start, end) {
       var exes, line;
