@@ -1,3 +1,7 @@
+## 0.7.4
+
+* Build file from 0.7.3 was not included in 0.7.3 release. This release simply is a proper build of 0.7.3.
+
 ## 0.7.3:
 
 * Check for attributes.show. Don't operate on line visibility if it is not present.
