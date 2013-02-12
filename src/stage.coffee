@@ -71,7 +71,7 @@ QuandlismContext_.stage = () ->
       _yMax = context.yMax() ? extent[1]
       _yMin = context.yMin() ? extent[0]
       
-      yScale.domain [_yMin, yMax]
+      yScale.domain [_yMin, _yMax]
       yScale.range  [(height - context.padding()), context.padding()]
 
       yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30

@@ -583,7 +583,7 @@
         }
         _yMax = (_ref = context.yMax()) != null ? _ref : extent[1];
         _yMin = (_ref1 = context.yMin()) != null ? _ref1 : extent[0];
-        yScale.domain([_yMin, yMax]);
+        yScale.domain([_yMin, _yMax]);
         yScale.range([height - context.padding(), context.padding()]);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
         yAxis.tickSize(5, 3, 0);
