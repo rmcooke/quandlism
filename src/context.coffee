@@ -75,12 +75,7 @@ quandlism.context = () ->
       container.append "<div class='brush' id='#{brushId}'></div>"
       dombrush = "##{brushId}"
     context  
-    
-  
-  # Alias for chart
-  context.setupWithContainer = (container, brush_) =>
-    return context.chart container, brush_
-    
+
   # Builds the legend elements with the given container
   context.withLegend = (container) =>
     throw 'Invalid container' if not container.length
@@ -88,9 +83,6 @@ quandlism.context = () ->
     domlegend = "##{container.attr('id')}"
     context
 
-  # Alias for withLegen
-  context.legendWithSelector = (container) =>
-    return context.withLegend container
       
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
   # by applying functions to the existing codes until there are lines.length number of unique codes

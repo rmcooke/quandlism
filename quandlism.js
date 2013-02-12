@@ -93,9 +93,6 @@
       }
       return context;
     };
-    context.setupWithContainer = function(container, brush_) {
-      return context.chart(container, brush_);
-    };
     context.withLegend = function(container) {
       if (!container.length) {
         throw 'Invalid container';
@@ -105,9 +102,6 @@
       }
       domlegend = "#" + (container.attr('id'));
       return context;
-    };
-    context.legendWithSelector = function(container) {
-      return context.withLegend(container);
     };
     context.addColorsIfNecessary = function(lines_) {
       var brightness, colorsNeeded, i, rgb;
