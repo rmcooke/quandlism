@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, startPoint, w,
+    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, startPoint, w, yMax, yMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -18,6 +18,8 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
+    yMin = null;
+    yMax = null;
     padding = 0;
     startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
@@ -150,6 +152,20 @@
         return h;
       }
       h = _;
+      return context;
+    };
+    context.yMin = function(_) {
+      if (!(_ != null)) {
+        return yMin;
+      }
+      yMin = _;
+      return context;
+    };
+    context.yMax = function(_) {
+      if (!(_ != null)) {
+        return yMax;
+      }
+      yMax = _;
       return context;
     };
     context.dom = function(_) {
@@ -558,12 +574,16 @@
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       setScales = function() {
-        var unitsObj;
-        extent = context.utility().getExtent(lines, indexStart, indexEnd);
-        if (extent[0] === extent[1]) {
-          extent = context.utility().getExtent(lines, 0, line.length());
+        var unitsObj, _ref, _ref1, _yMax, _yMin;
+        if (!((context.yMax() != null) && (context.yMin() != null))) {
+          extent = context.utility().getExtent(lines, indexStart, indexEnd);
+          if (extent[0] === extent[1]) {
+            extent = context.utility().getExtent(lines, 0, line.length());
+          }
         }
-        yScale.domain([extent[0], extent[1]]);
+        _yMax = (_ref = context.yMax()) != null ? _ref : extent[1];
+        _yMin = (_ref1 = context.yMin()) != null ? _ref1 : extent[0];
+        yScale.domain([_yMin, yMax]);
         yScale.range([height - context.padding(), context.padding()]);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
         yAxis.tickSize(5, 3, 0);

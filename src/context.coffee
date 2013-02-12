@@ -8,6 +8,8 @@ quandlism.context = () ->
   dombrush      = null
   domlegend     = null
   domtooltip    = null
+  yMin          = null
+  yMax          = null
   padding       = 0 
   startPoint    = 0.70
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
@@ -112,6 +114,8 @@ quandlism.context = () ->
     if not _? then return startPoint
     startPoint = _
     context
+    
+    
   
   context.w = (_) =>
     if not _? then return w
@@ -121,6 +125,16 @@ quandlism.context = () ->
   context.h = (_) =>
     if not _? then return h
     h = _
+    context
+    
+  context.yMin = (_) =>
+    if not _? then return yMin
+    yMin = _
+    context
+    
+  context.yMax = (_) =>
+    if not _? then return yMax
+    yMax = _
     context
     
   context.dom = (_) =>
@@ -170,6 +184,8 @@ quandlism.context = () ->
     if not listener? then return event.on type
     event.on type, listener
     context
+    
+
 
  
   # Listen for page resize

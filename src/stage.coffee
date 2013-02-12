@@ -60,12 +60,18 @@ QuandlismContext_.stage = () ->
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       
-      # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
-      # on x-axis if all poitns are the same
-      extent = context.utility().getExtent lines, indexStart, indexEnd
-      extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
+      # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line on x-axis if all poitns are the same
+      # Only calculate extend if the y max and min weren't already set by the user
+      unless context.yMax()? and context.yMin()?
+        extent = context.utility().getExtent lines, indexStart, indexEnd
+        extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
-      yScale.domain [extent[0], extent[1]]
+      
+      
+      _yMax = context.yMax() ? extent[1]
+      _yMin = context.yMin() ? extent[0]
+      
+      yScale.domain [_yMin, yMax]
       yScale.range  [(height - context.padding()), context.padding()]
 
       yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
