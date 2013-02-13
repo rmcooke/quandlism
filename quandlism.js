@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, processes, startPoint, w, yAxisMax, yAxisMin,
+    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, processes, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -26,6 +26,33 @@
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
     processes = ["BUILD", "MERGE"];
+    callbacks = {
+      'update': [],
+      'build': [],
+      'adjust': []
+    };
+    context.addCallback = function(callback_type, fn) {
+      if (__indexOf.call(keys(callbacks), callback_type) >= 0 && _.isFunction(fn)) {
+        callbacks["" + callback_type].push(fn);
+      }
+      return context;
+    };
+    context.clearCallbacks = function(callback_type) {
+      if (__indexOf.call(keys(callbacks), callback_type) >= 0) {
+        callbacks["" + callback_type] = [];
+      }
+      return context;
+    };
+    context.runCallbacks = function(callback_type, args) {
+      var callback, _i, _len, _ref;
+      if (__indexOf.call(keys(callbacks), callback_type) >= 0) {
+        _ref = callbacks["" + callback_type](args);
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          callback = _ref[_i];
+          callback();
+        }
+      }
+    };
     context.attachData = function(attributes, process) {
       var _ref;
       if (process == null) {
@@ -542,10 +569,11 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
+    var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
       _this = this;
     context = this;
     canvasId = null;
+    canvasNode = null;
     lines = [];
     line = null;
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
@@ -566,7 +594,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, xAxisDOM, yAxisDOM;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, updateDataAttributes, xAxisDOM, yAxisDOM;
       if (!(canvasId != null)) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
@@ -585,6 +613,8 @@
       canvas.attr('class', 'stage');
       canvas.attr('id', canvasId);
       canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px;");
+      canvas.attr('data-y_min', null);
+      canvas.attr('data-y_max', null);
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
@@ -592,6 +622,13 @@
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
+      updateDataAttributes = function(min, max) {
+        if (canvasNode == null) {
+          canvasNode = document.getElementById("" + canvasId);
+        }
+        canvasNode.setAttribute('data-y_min', min);
+        canvasNode.setAttribute('data-y_max', max);
+      };
       setScales = function() {
         var unitsObj, _ref, _ref1, _yMax, _yMin;
         if (!((context.yAxisMax() != null) && (context.yAxisMin() != null))) {
@@ -602,6 +639,7 @@
         }
         _yMax = (_ref = context.yAxisMax()) != null ? _ref : extent[1];
         _yMin = (_ref1 = context.yAxisMin()) != null ? _ref1 : extent[0];
+        updateDataAttributes(_yMin, _yMax);
         yScale.domain([_yMin, _yMax]);
         yScale.range([height - context.padding(), context.padding()]);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));

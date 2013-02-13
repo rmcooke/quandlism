@@ -16,6 +16,24 @@ quandlism.context = () ->
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
   processes     = ["BUILD", "MERGE"]
+  callbacks     = {'update': [], 'build': [], 'adjust': []}
+  
+  
+  # Callbacks
+  context.addCallback = (callback_type, fn) =>
+    if callback_type in keys(callbacks) and _.isFunction(fn)
+      callbacks["#{callback_type}"].push fn
+    context
+    
+  context.clearCallbacks = (callback_type) =>
+    if callback_type in keys(callbacks)
+      callbacks["#{callback_type}"] = []
+    context
+    
+  context.runCallbacks = (callback_type, args) =>
+    if callback_type in keys(callbacks)
+      callback() for callback in callbacks["#{callback_type}"](args)
+    return
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
@@ -109,7 +127,6 @@ quandlism.context = () ->
     yAxisMin = yAxisMax = null
     return
     
-
   # Expose attributes via getters and settesr
   context.lines = (_) =>
     if not _ then return lines

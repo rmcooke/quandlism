@@ -1,6 +1,7 @@
 QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
+  canvasNode  = null
   lines       = []
   line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
@@ -20,6 +21,7 @@ QuandlismContext_.stage = () ->
   threshold   = 10
   canvas      = null
   ctx         = null
+  
   
   
   stage = (selection) =>
@@ -46,6 +48,8 @@ QuandlismContext_.stage = () ->
     canvas.attr 'class', 'stage'
     canvas.attr 'id', canvasId
     canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px;"
+    canvas.attr 'data-y_min', null
+    canvas.attr 'data-y_max', null
   
     ctx = canvas.node().getContext '2d'
    
@@ -57,6 +61,12 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
 
+    updateDataAttributes = (min, max) =>
+      canvasNode = document.getElementById("#{canvasId}") unless canvasNode?
+      canvasNode.setAttribute 'data-y_min', min
+      canvasNode.setAttribute 'data-y_max', max
+      return
+      
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       
@@ -70,6 +80,8 @@ QuandlismContext_.stage = () ->
       _yMax = context.yAxisMax() ? extent[1]
       _yMin = context.yAxisMin() ? extent[0]
             
+      updateDataAttributes _yMin, _yMax
+      
       yScale.domain [_yMin, _yMax]
       yScale.range  [(height - context.padding()), context.padding()]
 
