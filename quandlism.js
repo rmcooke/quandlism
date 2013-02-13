@@ -4,11 +4,11 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.7.4'
+    version: '0.8.0'
   };
 
   quandlism.context = function() {
-    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, startPoint, w,
+    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, processes, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -18,20 +18,46 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
+    yAxisMin = null;
+    yAxisMax = null;
     padding = 0;
     startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
-    context.attachData = function(attributes) {
-      lines = context.utility().buildLines(attributes);
-      lines = context.utility().processLines(lines, attributes);
-      context.bindToElements();
-      return context;
+    processes = ["BUILD", "MERGE"];
+    callbacks = {};
+    context.addCallback = function(event, fn) {
+      if (!((event != null) && _.isFunction(fn))) {
+        return;
+      }
+      if (callbacks["" + event] == null) {
+        callbacks["" + event] = [];
+      }
+      callbacks["" + event].push(fn);
     };
-    context.updateData = function(attributes) {
-      lines = context.utility().mergeLines(lines, attributes);
-      lines = context.utility().processLines(lines, attributes);
+    context.runCallbacks = function(event) {
+      var callback, _i, _len, _ref;
+      if (!((callbacks["" + event] != null) && callbacks["" + event].length)) {
+        return;
+      }
+      _ref = callbacks["" + event];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        callback = _ref[_i];
+        callback();
+      }
+    };
+    context.attachData = function(attributes, process) {
+      var _ref;
+      if (process == null) {
+        process = "build";
+      }
+      if (!((process != null) && (_ref = process.toUpperCase(), __indexOf.call(processes, _ref) >= 0))) {
+        throw "Unknown process " + process;
+      }
+      context.extractArguments(attributes);
+      lines = context.utility()["" + (process.toLowerCase()) + "Lines"](attributes, lines != null ? lines : null);
+      lines = context.utility().processLines(attributes, lines);
       context.bindToElements();
       return context;
     };
@@ -45,6 +71,24 @@
       if (domlegend) {
         d3.select(domlegend).datum(lines);
       }
+      return context;
+    };
+    context.extractArguments = function(attributes) {
+      var attr, value;
+      for (attr in attributes) {
+        value = attributes[attr];
+        switch (attr) {
+          case "y_axis_min":
+            context.yAxisMin(value);
+            break;
+          case "y_axis_max":
+            context.yAxisMax(value);
+        }
+      }
+    };
+    context.resetArguments = function() {
+      yAxisMin = null;
+      yAxisMax = null;
       return context;
     };
     context.render = function() {
@@ -93,9 +137,6 @@
       }
       return context;
     };
-    context.setupWithContainer = function(container, brush_) {
-      return context.chart(container, brush_);
-    };
     context.withLegend = function(container) {
       if (!container.length) {
         throw 'Invalid container';
@@ -105,9 +146,6 @@
       }
       domlegend = "#" + (container.attr('id'));
       return context;
-    };
-    context.legendWithSelector = function(container) {
-      return context.withLegend(container);
     };
     context.addColorsIfNecessary = function(lines_) {
       var brightness, colorsNeeded, i, rgb;
@@ -122,6 +160,9 @@
         colorList.push(rgb.toString());
         i++;
       }
+    };
+    context.resetState = function() {
+      yAxisMin = yAxisMax = null;
     };
     context.lines = function(_) {
       if (!_) {
@@ -156,6 +197,20 @@
         return h;
       }
       h = _;
+      return context;
+    };
+    context.yAxisMin = function(_) {
+      if (!(_ != null)) {
+        return yAxisMin;
+      }
+      yAxisMin = _;
+      return context;
+    };
+    context.yAxisMax = function(_) {
+      if (!(_ != null)) {
+        return yAxisMax;
+      }
+      yAxisMax = _;
       return context;
     };
     context.dom = function(_) {
@@ -193,17 +248,25 @@
       padding = _;
       return context;
     };
+    context.callbacks = function(_) {
+      if (!(_ != null)) {
+        return callbacks;
+      }
+      callbacks = _;
+      return context;
+    };
     context.respond = _.throttle(function() {
       return event.respond.call(context, 500);
     });
     context.adjust = function(d1, i1, d2, i2) {
-      return event.adjust.call(context, d1, i1, d2, i2);
+      event.adjust.call(context, d1, i1, d2, i2);
+      return context.runCallbacks('adjust');
     };
     context.toggle = function() {
       return event.toggle.call(context);
     };
     context.refresh = function() {
-      return event.refresh.call(context);
+      event.refresh.call(context);
     };
     context.on = function(type, listener) {
       if (!(listener != null)) {
@@ -513,10 +576,11 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
+    var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
       _this = this;
     context = this;
     canvasId = null;
+    canvasNode = null;
     lines = [];
     line = null;
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
@@ -553,9 +617,11 @@
       canvas = selection.append('canvas');
       canvas.attr('width', width);
       canvas.attr('height', height);
-      canvas.attr('class', 'stage');
+      canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
       canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px;");
+      canvas.attr('data-y_min', null);
+      canvas.attr('data-y_max', null);
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
@@ -564,12 +630,26 @@
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       setScales = function() {
-        var unitsObj;
-        extent = context.utility().getExtent(lines, indexStart, indexEnd);
-        if (extent[0] === extent[1]) {
-          extent = context.utility().getExtent(lines, 0, line.length());
+        var unitsObj, _yMax, _yMin;
+        if (!(context.yAxisMax() && context.yAxisMin())) {
+          extent = context.utility().getExtent(lines, indexStart, indexEnd);
+          if (extent[0] === extent[1]) {
+            extent = context.utility().getExtent(lines, 0, line.length());
+          }
         }
-        yScale.domain([extent[0], extent[1]]);
+        _yMin = context.yAxisMin();
+        _yMax = context.yAxisMax();
+        if (_.isString(_yMin) && _.isEmpty(_yMin)) {
+          _yMin = null;
+        }
+        if (_.isString(_yMax) && _.isEmpty(_yMax)) {
+          _yMax = null;
+        }
+        _yMin = _yMin != null ? _yMin : extent[0];
+        _yMax = _yMax != null ? _yMax : extent[1];
+        context.yAxisMin(_yMin);
+        context.yAxisMax(_yMax);
+        yScale.domain([_yMin, _yMax]);
         yScale.range([height - context.padding(), context.padding()]);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
         yAxis.tickSize(5, 3, 0);
@@ -1010,6 +1090,7 @@
         }
       });
       canvas.on('mouseup', function(e) {
+        context.resetState();
         dispatchAdjust(true);
         saveState();
       });
@@ -1307,7 +1388,7 @@
       });
       return lines;
     };
-    utility.processLines = function(lines, attributes) {
+    utility.processLines = function(attributes, lines) {
       var i, line, _i, _len;
       context.addColorsIfNecessary(lines);
       for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
@@ -1329,7 +1410,7 @@
         };
       });
     };
-    utility.mergeLines = function(lines, attributes) {
+    utility.mergeLines = function(attributes, lines) {
       var line, _i, _len;
       lines = utility.addNewLinesAndRefresh(lines, attributes);
       lines = utility.removeStaleLines(lines, attributes.columns);

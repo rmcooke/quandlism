@@ -20,10 +20,11 @@ QuandlismContext_.brush = () ->
 
   brush = (selection) =>
     canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
-    
+
     # For convenience, use refernce to first line
     lines = selection.datum()
     line  = _.first lines
+    
     # Extract the default start and end dates
     dateStart = _.first line.dates()
     dateEnd   = _.last  line.dates()
@@ -188,6 +189,7 @@ QuandlismContext_.brush = () ->
           dateEnd = dateStart
           dateStart = d
         
+      # Before dispatching to stage, reset the y min and max 
       context.adjust dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd)
       return
       
@@ -294,7 +296,7 @@ QuandlismContext_.brush = () ->
       checkDragState()
       setBrushValues() if dragEnabled
       drawAxis()
-      dispatchAdjust()      
+      dispatchAdjust()
       return
       
       
@@ -327,6 +329,7 @@ QuandlismContext_.brush = () ->
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
+      context.resetState() # reset the state on explicit user event
       dispatchAdjust(true)
       saveState()
       return
@@ -352,6 +355,7 @@ QuandlismContext_.brush = () ->
           throw "Error: Unknown stretching direction" if activeHandle not in [0, -1, 1]
           drawStart = getPrevious('drawStart') + dragDiff if activeHandle is -1
           drawEnd   = getPrevious('drawEnd') + dragDiff   if activeHandle is 1
+          # If brush has been moved, remove any transformations on the stage of the graph (ie. y axis changes)
                
         # Fix drawStart and drawEnd to constrain to dimensions
         drawStart = if drawStart < 0 then 0 else drawStart
