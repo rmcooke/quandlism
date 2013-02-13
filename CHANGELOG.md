@@ -1,3 +1,10 @@
+## 0.8.0
+
+* Basic callback support for adjust action.
+* yAxisMin and yAxisMax attributes to override calculated extent.
+* Lines are attached and processed through a single function for DRYness.
+* Old constructors nuked.
+
 ## 0.7.4
 
 * Build file from 0.7.3 was not included in 0.7.3 release. This release simply is a proper build of 0.7.3.
