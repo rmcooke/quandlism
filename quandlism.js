@@ -762,9 +762,8 @@
       context.on('refresh.stage', function() {
         lines = selection.datum();
         line = _.first(lines);
-        if (!context.dombrush()) {
-          draw();
-        }
+        setScales();
+        draw();
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var dataIndex, hit, loc;
@@ -1022,7 +1021,6 @@
           setBrushValues();
         }
         drawAxis();
-        dispatchAdjust();
       });
       context.on("toggle.brush", function() {
         removeCache();

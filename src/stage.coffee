@@ -269,7 +269,8 @@ QuandlismContext_.stage = () ->
       lines = selection.datum()
       line  = _.first lines
       # Only draw if there is no brush to dispatch the adjust event
-      draw() if not context.dombrush()
+      setScales() 
+      draw()
       return
       
     d3.select("##{canvasId}").on 'mousemove', (e) ->

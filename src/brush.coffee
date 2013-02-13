@@ -297,7 +297,6 @@ QuandlismContext_.brush = () ->
       checkDragState()
       setBrushValues() if dragEnabled
       drawAxis()
-      dispatchAdjust()      
       return
       
       
