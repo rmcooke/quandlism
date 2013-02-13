@@ -20,10 +20,11 @@ QuandlismContext_.brush = () ->
 
   brush = (selection) =>
     canvasId = "canvas-brush-#{++quandlism_id_ref}" if not canvasId?
-    
+
     # For convenience, use refernce to first line
     lines = selection.datum()
     line  = _.first lines
+    
     # Extract the default start and end dates
     dateStart = _.first line.dates()
     dateEnd   = _.last  line.dates()

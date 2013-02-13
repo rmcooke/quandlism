@@ -17,7 +17,7 @@ QuandlismContext_.utility = () ->
   
   # Process lines
   # Add colors and toggle visibility of constructed lines
-  utility.processLines = (lines, attributes) =>
+  utility.processLines = (attributes, lines) =>
     context.addColorsIfNecessary(lines)
     for line, i in lines
       line.color context.colorList()[i]
@@ -34,7 +34,7 @@ QuandlismContext_.utility = () ->
         num:  d[(index+1)]
       }
   
-  utility.mergeLines = (lines, attributes) =>
+  utility.mergeLines = (attributes, lines) =>
     lines = utility.addNewLinesAndRefresh lines, attributes
     lines = utility.removeStaleLines lines, attributes.columns
     line.setup() for line in lines

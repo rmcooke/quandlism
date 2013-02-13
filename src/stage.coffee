@@ -62,14 +62,14 @@ QuandlismContext_.stage = () ->
       
       # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line on x-axis if all poitns are the same
       # Only calculate extend if the y max and min weren't already set by the user
-      unless context.yMax()? and context.yMin()?
+      unless context.yAxisMax()? and context.yAxisMin()?
         extent = context.utility().getExtent lines, indexStart, indexEnd
         extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
       
       
-      _yMax = context.yMax() ? extent[1]
-      _yMin = context.yMin() ? extent[0]
+      _yMax = context.yAxisMax() ? extent[1]
+      _yMin = context.yAxisMin() ? extent[0]
       
       yScale.domain [_yMin, _yMax]
       yScale.range  [(height - context.padding()), context.padding()]

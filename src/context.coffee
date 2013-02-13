@@ -8,26 +8,22 @@ quandlism.context = () ->
   dombrush      = null
   domlegend     = null
   domtooltip    = null
-  yMin          = null
-  yMax          = null
+  yAxisMin      = null
+  yAxisMax      = null
   padding       = 0 
   startPoint    = 0.70
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
+  processes     = ["BUILD", "MERGE"]
   
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
-  context.attachData = (attributes) =>    
-    # Set colors whenever data is attached, to support cases when a new line is added
-    lines = context.utility().buildLines(attributes)
-    lines = context.utility().processLines(lines, attributes)                
-    context.bindToElements()
-    context
-
-  context.updateData = (attributes) =>
-    lines  = context.utility().mergeLines(lines, attributes)
-    lines  = context.utility().processLines(lines, attributes)
+  context.attachData = (attributes, process = "build") =>    
+    throw "Unknown process #{process}" unless process? and process.toUpperCase() in processes
+    context.extractArguments attributes
+    lines = context.utility()["#{process.toLowerCase()}Lines"](attributes, lines ? null)
+    lines = context.utility().processLines(attributes, lines)     
     context.bindToElements()
     context
     
@@ -36,6 +32,15 @@ quandlism.context = () ->
     d3.select(dombrush).datum lines if dombrush
     d3.select(domlegend).datum lines if domlegend
     context
+    
+  # Extract optional quandlism parameters and execute assignment and calculation
+  context.extractArguments = (attributes) =>
+    for attr, value of attributes
+      switch attr
+        when "y_axis_min" then context.yAxisMin(value)
+        when "y_axis_max" then context.yAxisMax(value)
+    return
+    
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -127,14 +132,14 @@ quandlism.context = () ->
     h = _
     context
     
-  context.yMin = (_) =>
-    if not _? then return yMin
-    yMin = _
+  context.yAxisMin = (_) =>
+    if not _? then return yAxisMin
+    yAxisMin = _
     context
     
-  context.yMax = (_) =>
-    if not _? then return yMax
-    yMax = _
+  context.yAxisMax = (_) =>
+    if not _? then return yAxisMax
+    yAxisMax = _
     context
     
   context.dom = (_) =>

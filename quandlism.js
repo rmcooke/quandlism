@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, startPoint, w, yMax, yMin,
+    var colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, processes, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -18,22 +18,25 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
-    yMin = null;
-    yMax = null;
+    yAxisMin = null;
+    yAxisMax = null;
     padding = 0;
     startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
-    context.attachData = function(attributes) {
-      lines = context.utility().buildLines(attributes);
-      lines = context.utility().processLines(lines, attributes);
-      context.bindToElements();
-      return context;
-    };
-    context.updateData = function(attributes) {
-      lines = context.utility().mergeLines(lines, attributes);
-      lines = context.utility().processLines(lines, attributes);
+    processes = ["BUILD", "MERGE"];
+    context.attachData = function(attributes, process) {
+      var _ref;
+      if (process == null) {
+        process = "build";
+      }
+      if (!((process != null) && (_ref = process.toUpperCase(), __indexOf.call(processes, _ref) >= 0))) {
+        throw "Unknown process " + process;
+      }
+      context.extractArguments(attributes);
+      lines = context.utility()["" + (process.toLowerCase()) + "Lines"](attributes, lines != null ? lines : null);
+      lines = context.utility().processLines(attributes, lines);
       context.bindToElements();
       return context;
     };
@@ -48,6 +51,19 @@
         d3.select(domlegend).datum(lines);
       }
       return context;
+    };
+    context.extractArguments = function(attributes) {
+      var attr, value;
+      for (attr in attributes) {
+        value = attributes[attr];
+        switch (attr) {
+          case "y_axis_min":
+            context.yAxisMin(value);
+            break;
+          case "y_axis_max":
+            context.yAxisMax(value);
+        }
+      }
     };
     context.render = function() {
       context.build();
@@ -154,18 +170,18 @@
       h = _;
       return context;
     };
-    context.yMin = function(_) {
+    context.yAxisMin = function(_) {
       if (!(_ != null)) {
-        return yMin;
+        return yAxisMin;
       }
-      yMin = _;
+      yAxisMin = _;
       return context;
     };
-    context.yMax = function(_) {
+    context.yAxisMax = function(_) {
       if (!(_ != null)) {
-        return yMax;
+        return yAxisMax;
       }
-      yMax = _;
+      yAxisMax = _;
       return context;
     };
     context.dom = function(_) {
@@ -575,14 +591,14 @@
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
       setScales = function() {
         var unitsObj, _ref, _ref1, _yMax, _yMin;
-        if (!((context.yMax() != null) && (context.yMin() != null))) {
+        if (!((context.yAxisMax() != null) && (context.yAxisMin() != null))) {
           extent = context.utility().getExtent(lines, indexStart, indexEnd);
           if (extent[0] === extent[1]) {
             extent = context.utility().getExtent(lines, 0, line.length());
           }
         }
-        _yMax = (_ref = context.yMax()) != null ? _ref : extent[1];
-        _yMin = (_ref1 = context.yMin()) != null ? _ref1 : extent[0];
+        _yMax = (_ref = context.yAxisMax()) != null ? _ref : extent[1];
+        _yMin = (_ref1 = context.yAxisMin()) != null ? _ref1 : extent[0];
         yScale.domain([_yMin, _yMax]);
         yScale.range([height - context.padding(), context.padding()]);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
@@ -1321,7 +1337,7 @@
       });
       return lines;
     };
-    utility.processLines = function(lines, attributes) {
+    utility.processLines = function(attributes, lines) {
       var i, line, _i, _len;
       context.addColorsIfNecessary(lines);
       for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
@@ -1343,7 +1359,7 @@
         };
       });
     };
-    utility.mergeLines = function(lines, attributes) {
+    utility.mergeLines = function(attributes, lines) {
       var line, _i, _len;
       lines = utility.addNewLinesAndRefresh(lines, attributes);
       lines = utility.removeStaleLines(lines, attributes.columns);
