@@ -15,26 +15,22 @@ quandlism.context = () ->
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
-  processes     = ["BUILD", "MERGE"]
-  callbacks     = {'update': [], 'build': [], 'adjust': []}
-  
-  
-  # Callbacks
-  context.addCallback = (callback_type, fn) =>
-    if callback_type in keys(callbacks) and _.isFunction(fn)
-      callbacks["#{callback_type}"].push fn
-    context
-    
-  context.clearCallbacks = (callback_type) =>
-    if callback_type in keys(callbacks)
-      callbacks["#{callback_type}"] = []
-    context
-    
-  context.runCallbacks = (callback_type, args) =>
-    if callback_type in keys(callbacks)
-      callback() for callback in callbacks["#{callback_type}"](args)
+  processes     = ["BUILD", "MERGE"]  
+  callbacks     = {}
+
+
+  context.addCallback = (event, fn) ->
+    return unless event? and _.isFunction(fn)
+    callbacks["#{event}"] = []  unless callbacks["#{event}"]?
+    callbacks["#{event}"].push fn
     return
-  
+    
+  context.runCallbacks = (event) ->
+    return unless callbacks["#{event}"]? and callbacks["#{event}"].length
+    callback() for callback in callbacks["#{event}"]
+    return
+    
+    
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
   context.attachData = (attributes, process = "build") =>    
@@ -58,6 +54,11 @@ quandlism.context = () ->
         when "y_axis_min" then context.yAxisMin(value)
         when "y_axis_max" then context.yAxisMax(value)
     return
+    
+  context.resetArguments = () =>
+    yAxisMin = null
+    yAxisMax = null
+    context
     
 
   # render
@@ -190,6 +191,11 @@ quandlism.context = () ->
     padding = _
     context
     
+  context.callbacks = (_) =>
+    if not _? then return callbacks
+    callbacks = _
+    context
+    
   # Event listner and dispatchers
   
  
@@ -199,6 +205,7 @@ quandlism.context = () ->
   # Respond to adjust event
   context.adjust = (d1, i1, d2, i2) =>
     event.adjust.call context, d1, i1, d2, i2
+    context.runCallbacks 'adjust'
     
   # Responds to toggle event
   context.toggle = () =>
@@ -207,11 +214,14 @@ quandlism.context = () ->
   # Responds to refresh event.
   context.refresh =() =>
     event.refresh.call context
+    return
     
   context.on = (type, listener) =>
     if not listener? then return event.on type
     event.on type, listener
     context
+    
+
     
 
 

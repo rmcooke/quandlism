@@ -190,7 +190,6 @@ QuandlismContext_.brush = () ->
           dateStart = d
         
       # Before dispatching to stage, reset the y min and max 
-      context.resetState()
       context.adjust dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd)
       return
       
@@ -297,6 +296,7 @@ QuandlismContext_.brush = () ->
       checkDragState()
       setBrushValues() if dragEnabled
       drawAxis()
+      dispatchAdjust()
       return
       
       
@@ -329,6 +329,7 @@ QuandlismContext_.brush = () ->
         
     # On mouseup save the new state of the control
     canvas.on 'mouseup', (e) ->
+      context.resetState() # reset the state on explicit user event
       dispatchAdjust(true)
       saveState()
       return

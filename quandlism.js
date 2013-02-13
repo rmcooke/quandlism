@@ -26,31 +26,25 @@
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
     processes = ["BUILD", "MERGE"];
-    callbacks = {
-      'update': [],
-      'build': [],
-      'adjust': []
-    };
-    context.addCallback = function(callback_type, fn) {
-      if (__indexOf.call(keys(callbacks), callback_type) >= 0 && _.isFunction(fn)) {
-        callbacks["" + callback_type].push(fn);
+    callbacks = {};
+    context.addCallback = function(event, fn) {
+      if (!((event != null) && _.isFunction(fn))) {
+        return;
       }
-      return context;
-    };
-    context.clearCallbacks = function(callback_type) {
-      if (__indexOf.call(keys(callbacks), callback_type) >= 0) {
-        callbacks["" + callback_type] = [];
+      if (callbacks["" + event] == null) {
+        callbacks["" + event] = [];
       }
-      return context;
+      callbacks["" + event].push(fn);
     };
-    context.runCallbacks = function(callback_type, args) {
+    context.runCallbacks = function(event) {
       var callback, _i, _len, _ref;
-      if (__indexOf.call(keys(callbacks), callback_type) >= 0) {
-        _ref = callbacks["" + callback_type](args);
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          callback = _ref[_i];
-          callback();
-        }
+      if (!((callbacks["" + event] != null) && callbacks["" + event].length)) {
+        return;
+      }
+      _ref = callbacks["" + event];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        callback = _ref[_i];
+        callback();
       }
     };
     context.attachData = function(attributes, process) {
@@ -91,6 +85,11 @@
             context.yAxisMax(value);
         }
       }
+    };
+    context.resetArguments = function() {
+      yAxisMin = null;
+      yAxisMax = null;
+      return context;
     };
     context.render = function() {
       context.build();
@@ -249,17 +248,25 @@
       padding = _;
       return context;
     };
+    context.callbacks = function(_) {
+      if (!(_ != null)) {
+        return callbacks;
+      }
+      callbacks = _;
+      return context;
+    };
     context.respond = _.throttle(function() {
       return event.respond.call(context, 500);
     });
     context.adjust = function(d1, i1, d2, i2) {
-      return event.adjust.call(context, d1, i1, d2, i2);
+      event.adjust.call(context, d1, i1, d2, i2);
+      return context.runCallbacks('adjust');
     };
     context.toggle = function() {
       return event.toggle.call(context);
     };
     context.refresh = function() {
-      return event.refresh.call(context);
+      event.refresh.call(context);
     };
     context.on = function(type, listener) {
       if (!(listener != null)) {
@@ -610,7 +617,7 @@
       canvas = selection.append('canvas');
       canvas.attr('width', width);
       canvas.attr('height', height);
-      canvas.attr('class', 'stage');
+      canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
       canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px;");
       canvas.attr('data-y_min', null);
@@ -622,24 +629,40 @@
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
-      updateDataAttributes = function(min, max) {
+      updateDataAttributes = function(attrs) {
+        var key, value;
+        if (attrs == null) {
+          return;
+        }
         if (canvasNode == null) {
           canvasNode = document.getElementById("" + canvasId);
         }
-        canvasNode.setAttribute('data-y_min', min);
-        canvasNode.setAttribute('data-y_max', max);
+        for (key in attrs) {
+          value = attrs[key];
+          canvasNode.setAttribute("data-" + key, value);
+        }
       };
       setScales = function() {
-        var unitsObj, _ref, _ref1, _yMax, _yMin;
+        var unitsObj, _yMax, _yMin;
         if (!((context.yAxisMax() != null) && (context.yAxisMin() != null))) {
           extent = context.utility().getExtent(lines, indexStart, indexEnd);
           if (extent[0] === extent[1]) {
             extent = context.utility().getExtent(lines, 0, line.length());
           }
         }
-        _yMax = (_ref = context.yAxisMax()) != null ? _ref : extent[1];
-        _yMin = (_ref1 = context.yAxisMin()) != null ? _ref1 : extent[0];
-        updateDataAttributes(_yMin, _yMax);
+        _yMin = _yMax = null;
+        if (!(!(context.yAxisMin() != null) || _.isEmpty(context.yAxisMin()))) {
+          _yMin = context.yAxisMin();
+        }
+        if (!(!(context.yAxisMin() != null) || _.isEmpty(context.yAxisMax()))) {
+          _yMax = context.yAxisMax();
+        }
+        console.log("A: " + _yMin + " " + _yMax);
+        _yMin = _yMin != null ? _yMin : extent[0];
+        _yMax = _yMax != null ? _yMax : extent[1];
+        console.log("B: " + _yMin + " " + _yMax);
+        context.yAxisMin(_yMin);
+        context.yAxisMax(_yMax);
         yScale.domain([_yMin, _yMax]);
         yScale.range([height - context.padding(), context.padding()]);
         yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
@@ -800,8 +823,9 @@
       context.on('refresh.stage', function() {
         lines = selection.datum();
         line = _.first(lines);
-        setScales();
-        draw();
+        if (!context.dombrush()) {
+          draw();
+        }
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var dataIndex, hit, loc;
@@ -987,7 +1011,6 @@
             dateStart = d;
           }
         }
-        context.resetState();
         context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
       };
       saveState = function() {
@@ -1059,6 +1082,7 @@
           setBrushValues();
         }
         drawAxis();
+        dispatchAdjust();
       });
       context.on("toggle.brush", function() {
         removeCache();
@@ -1080,6 +1104,7 @@
         }
       });
       canvas.on('mouseup', function(e) {
+        context.resetState();
         dispatchAdjust(true);
         saveState();
       });
