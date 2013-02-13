@@ -8,24 +8,36 @@ quandlism.context = () ->
   dombrush      = null
   domlegend     = null
   domtooltip    = null
+  yAxisMin      = null
+  yAxisMax      = null
   padding       = 0 
   startPoint    = 0.70
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
-  
+  processes     = ["BUILD", "MERGE"]  
+  callbacks     = {}
+
+
+  context.addCallback = (event, fn) ->
+    return unless event? and _.isFunction(fn)
+    callbacks["#{event}"] = []  unless callbacks["#{event}"]?
+    callbacks["#{event}"].push fn
+    return
+    
+  context.runCallbacks = (event) ->
+    return unless callbacks["#{event}"]? and callbacks["#{event}"].length
+    callback() for callback in callbacks["#{event}"]
+    return
+    
+    
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
-  context.attachData = (attributes) =>    
-    # Set colors whenever data is attached, to support cases when a new line is added
-    lines = context.utility().buildLines(attributes)
-    lines = context.utility().processLines(lines, attributes)                
-    context.bindToElements()
-    context
-
-  context.updateData = (attributes) =>
-    lines  = context.utility().mergeLines(lines, attributes)
-    lines  = context.utility().processLines(lines, attributes)
+  context.attachData = (attributes, process = "build") =>    
+    throw "Unknown process #{process}" unless process? and process.toUpperCase() in processes
+    context.extractArguments attributes
+    lines = context.utility()["#{process.toLowerCase()}Lines"](attributes, lines ? null)
+    lines = context.utility().processLines(attributes, lines)     
     context.bindToElements()
     context
     
@@ -34,6 +46,20 @@ quandlism.context = () ->
     d3.select(dombrush).datum lines if dombrush
     d3.select(domlegend).datum lines if domlegend
     context
+    
+  # Extract optional quandlism parameters and execute assignment and calculation
+  context.extractArguments = (attributes) =>
+    for attr, value of attributes
+      switch attr
+        when "y_axis_min" then context.yAxisMin(value)
+        when "y_axis_max" then context.yAxisMax(value)
+    return
+    
+  context.resetArguments = () =>
+    yAxisMin = null
+    yAxisMax = null
+    context
+    
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -75,12 +101,7 @@ quandlism.context = () ->
       container.append "<div class='brush' id='#{brushId}'></div>"
       dombrush = "##{brushId}"
     context  
-    
-  
-  # Alias for chart
-  context.setupWithContainer = (container, brush_) =>
-    return context.chart container, brush_
-    
+
   # Builds the legend elements with the given container
   context.withLegend = (container) =>
     throw 'Invalid container' if not container.length
@@ -88,9 +109,6 @@ quandlism.context = () ->
     domlegend = "##{container.attr('id')}"
     context
 
-  # Alias for withLegen
-  context.legendWithSelector = (container) =>
-    return context.withLegend container
       
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
   # by applying functions to the existing codes until there are lines.length number of unique codes
@@ -104,7 +122,12 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
-
+    
+  # Reset any transformations on the data
+  context.resetState = ->
+    yAxisMin = yAxisMax = null
+    return
+    
   # Expose attributes via getters and settesr
   context.lines = (_) =>
     if not _ then return lines
@@ -120,6 +143,8 @@ quandlism.context = () ->
     if not _? then return startPoint
     startPoint = _
     context
+    
+    
   
   context.w = (_) =>
     if not _? then return w
@@ -129,6 +154,16 @@ quandlism.context = () ->
   context.h = (_) =>
     if not _? then return h
     h = _
+    context
+    
+  context.yAxisMin = (_) =>
+    if not _? then return yAxisMin
+    yAxisMin = _
+    context
+    
+  context.yAxisMax = (_) =>
+    if not _? then return yAxisMax
+    yAxisMax = _
     context
     
   context.dom = (_) =>
@@ -156,6 +191,11 @@ quandlism.context = () ->
     padding = _
     context
     
+  context.callbacks = (_) =>
+    if not _? then return callbacks
+    callbacks = _
+    context
+    
   # Event listner and dispatchers
   
  
@@ -165,6 +205,7 @@ quandlism.context = () ->
   # Respond to adjust event
   context.adjust = (d1, i1, d2, i2) =>
     event.adjust.call context, d1, i1, d2, i2
+    context.runCallbacks 'adjust'
     
   # Responds to toggle event
   context.toggle = () =>
@@ -173,11 +214,16 @@ quandlism.context = () ->
   # Responds to refresh event.
   context.refresh =() =>
     event.refresh.call context
+    return
     
   context.on = (type, listener) =>
     if not listener? then return event.on type
     event.on type, listener
     context
+    
+
+    
+
 
  
   # Listen for page resize

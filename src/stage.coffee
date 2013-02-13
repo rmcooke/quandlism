@@ -1,6 +1,7 @@
 QuandlismContext_.stage = () ->
   context     = @
   canvasId    = null
+  canvasNode  = null
   lines       = []
   line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
@@ -20,6 +21,7 @@ QuandlismContext_.stage = () ->
   threshold   = 10
   canvas      = null
   ctx         = null
+  
   
   
   stage = (selection) =>
@@ -43,9 +45,11 @@ QuandlismContext_.stage = () ->
     canvas = selection.append 'canvas'
     canvas.attr 'width', width
     canvas.attr 'height', height
-    canvas.attr 'class', 'stage'
+    canvas.attr 'class', 'canvas-stage'
     canvas.attr 'id', canvasId
     canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px;"
+    canvas.attr 'data-y_min', null
+    canvas.attr 'data-y_max', null
   
     ctx = canvas.node().getContext '2d'
    
@@ -57,15 +61,30 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
 
+
     # Calculate the range and domain of the x and y scales
     setScales = () =>
-      
-      # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line
-      # on x-axis if all poitns are the same
-      extent = context.utility().getExtent lines, indexStart, indexEnd
-      extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
+      # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line on x-axis if all poitns are the same
+      # Only calculate extend if the y max and min weren't already set by the user
+      unless context.yAxisMax() and context.yAxisMin()
+        extent = context.utility().getExtent lines, indexStart, indexEnd
+        extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
-      yScale.domain [extent[0], extent[1]]
+                 
+      _yMin = context.yAxisMin()
+      _yMax = context.yAxisMax()
+      
+      _yMin = null if _.isString(_yMin) and _.isEmpty(_yMin)
+      _yMax = null if _.isString(_yMax) and _.isEmpty(_yMax)
+
+      _yMin = _yMin ? extent[0] 
+      _yMax = _yMax ? extent[1]
+     
+      # Set yvalues in context in the case of  calculated extent being used
+      context.yAxisMin _yMin
+      context.yAxisMax _yMax
+      
+      yScale.domain [_yMin, _yMax]
       yScale.range  [(height - context.padding()), context.padding()]
 
       yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
@@ -264,7 +283,7 @@ QuandlismContext_.stage = () ->
       lines = selection.datum()
       line  = _.first lines
       # Only draw if there is no brush to dispatch the adjust event
-      draw() if not context.dombrush()
+      draw() if not context.dombrush()      
       return
       
     d3.select("##{canvasId}").on 'mousemove', (e) ->
