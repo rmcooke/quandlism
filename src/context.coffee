@@ -103,6 +103,12 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
+    
+  # Reset any transformations on the data
+  context.resetState = ->
+    yAxisMin = yAxisMax = null
+    return
+    
 
   # Expose attributes via getters and settesr
   context.lines = (_) =>

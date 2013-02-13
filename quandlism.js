@@ -135,6 +135,9 @@
         i++;
       }
     };
+    context.resetState = function() {
+      yAxisMin = yAxisMax = null;
+    };
     context.lines = function(_) {
       if (!_) {
         return lines;
@@ -947,6 +950,7 @@
             dateStart = d;
           }
         }
+        context.resetState();
         context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
       };
       saveState = function() {
