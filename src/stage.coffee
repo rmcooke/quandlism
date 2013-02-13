@@ -61,32 +61,25 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
 
-    updateDataAttributes = (attrs) =>
-      return unless attrs?
-      canvasNode = document.getElementById("#{canvasId}") unless canvasNode?
-      canvasNode.setAttribute("data-#{key}", value) for key, value of attrs
-      return
-      
+
     # Calculate the range and domain of the x and y scales
     setScales = () =>
       # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line on x-axis if all poitns are the same
       # Only calculate extend if the y max and min weren't already set by the user
-      unless context.yAxisMax()? and context.yAxisMin()?
+      unless context.yAxisMax() and context.yAxisMin()
         extent = context.utility().getExtent lines, indexStart, indexEnd
         extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
-           
-      _yMin = _yMax = null 
-      _yMin = context.yAxisMin() unless not context.yAxisMin()? or _.isEmpty(context.yAxisMin())
-      _yMax = context.yAxisMax() unless not context.yAxisMin()? or _.isEmpty(context.yAxisMax())
-
-      console.log "A: #{_yMin} #{_yMax}"
+                 
+      _yMin = context.yAxisMin()
+      _yMax = context.yAxisMax()
+      
+      _yMin = null if _.isString(_yMin) and _.isEmpty(_yMin)
+      _yMax = null if _.isString(_yMax) and _.isEmpty(_yMax)
 
       _yMin = _yMin ? extent[0] 
       _yMax = _yMax ? extent[1]
-      
-      console.log "B: #{_yMin} #{_yMax}"
-      
+     
       # Set yvalues in context in the case of  calculated extent being used
       context.yAxisMin _yMin
       context.yAxisMax _yMax

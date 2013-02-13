@@ -601,7 +601,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, updateDataAttributes, xAxisDOM, yAxisDOM;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, xAxisDOM, yAxisDOM;
       if (!(canvasId != null)) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
@@ -629,38 +629,24 @@
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
-      updateDataAttributes = function(attrs) {
-        var key, value;
-        if (attrs == null) {
-          return;
-        }
-        if (canvasNode == null) {
-          canvasNode = document.getElementById("" + canvasId);
-        }
-        for (key in attrs) {
-          value = attrs[key];
-          canvasNode.setAttribute("data-" + key, value);
-        }
-      };
       setScales = function() {
         var unitsObj, _yMax, _yMin;
-        if (!((context.yAxisMax() != null) && (context.yAxisMin() != null))) {
+        if (!(context.yAxisMax() && context.yAxisMin())) {
           extent = context.utility().getExtent(lines, indexStart, indexEnd);
           if (extent[0] === extent[1]) {
             extent = context.utility().getExtent(lines, 0, line.length());
           }
         }
-        _yMin = _yMax = null;
-        if (!(!(context.yAxisMin() != null) || _.isEmpty(context.yAxisMin()))) {
-          _yMin = context.yAxisMin();
+        _yMin = context.yAxisMin();
+        _yMax = context.yAxisMax();
+        if (_.isString(_yMin) && _.isEmpty(_yMin)) {
+          _yMin = null;
         }
-        if (!(!(context.yAxisMin() != null) || _.isEmpty(context.yAxisMax()))) {
-          _yMax = context.yAxisMax();
+        if (_.isString(_yMax) && _.isEmpty(_yMax)) {
+          _yMax = null;
         }
-        console.log("A: " + _yMin + " " + _yMax);
         _yMin = _yMin != null ? _yMin : extent[0];
         _yMax = _yMax != null ? _yMax : extent[1];
-        console.log("B: " + _yMin + " " + _yMax);
         context.yAxisMin(_yMin);
         context.yAxisMax(_yMax);
         yScale.domain([_yMin, _yMax]);
