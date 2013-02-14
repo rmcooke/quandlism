@@ -79,7 +79,7 @@ QuandlismContext_.stage = () ->
 
       _yMin = _yMin ? extent[0] 
       _yMax = _yMax ? extent[1]
-     
+           
       # Set yvalues in context in the case of  calculated extent being used
       context.yAxisMin _yMin
       context.yAxisMax _yMax

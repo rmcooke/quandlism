@@ -17,20 +17,16 @@ quandlism.context = () ->
   lines         = []
   processes     = ["BUILD", "MERGE"]  
   callbacks     = {}
+  options       = {}
 
-  # Options for rendering
-  context.options = (options = {}) ->
-    return context if _.isEmpty options
-    context.executeOptions options
-    context
-    
+
   context.addCallback = (event, fn) ->
     return unless event? and _.isFunction(fn)
     callbacks["#{event}"] = []  unless callbacks["#{event}"]?
     callbacks["#{event}"].push fn
     return
     
-  context.runCallbacks = (event) ->
+  context.runCallbacks = (event) ->    
     return unless callbacks["#{event}"]? and callbacks["#{event}"].length
     callback() for callback in callbacks["#{event}"]
     return
@@ -38,12 +34,14 @@ quandlism.context = () ->
     
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
-  context.attachData = (attributes, process = "build") =>    
+  context.data = (attributes, process = "build") =>    
     throw "Unknown process #{process}" unless process? and process.toUpperCase() in processes
     context.extractArguments attributes
+    context.executeOptions options
     lines = context.utility()["#{process.toLowerCase()}Lines"](attributes, lines ? null)
     lines = context.utility().processLines(attributes, lines)     
     context.bindToElements()
+    context.runCallbacks process
     context
     
   context.bindToElements = () =>
@@ -76,6 +74,7 @@ quandlism.context = () ->
     context.build()
     context.respond()
     context.refresh()
+    context.runCallbacks 'update'
     context
   
   # use jQuery to get height and width of context container  
@@ -121,11 +120,13 @@ quandlism.context = () ->
       i++
     return   
     
-  # Execute options send to quandlism
+  # Execute executable options!
   context.executeOptions = (options) ->
     for opt, value of options
-      switch opt
-        when "reset" then context.resetState()
+      switch opt 
+        when "reset" 
+          if value is true
+            context.resetState()
     context
   
     
@@ -151,7 +152,11 @@ quandlism.context = () ->
     context
     
     
-  
+  context.options = (_) =>
+    if not _? then return options
+    options = _
+    context
+    
   context.w = (_) =>
     if not _? then return w
     w = _
@@ -216,10 +221,12 @@ quandlism.context = () ->
   # Responds to toggle event
   context.toggle = () =>
     event.toggle.call context
+    context.runCallbacks 'toggle'
     
   # Responds to refresh event.
-  context.refresh =() =>
-    event.refresh.call context
+  context.refresh = () =>
+    event.refresh.call context, options
+    context.runCallbacks 'refresh'
     return
     
   context.on = (type, listener) =>
@@ -227,10 +234,6 @@ quandlism.context = () ->
     event.on type, listener
     context
     
-
-    
-
-
  
   # Listen for page resize
   d3.select(window).on 'resize', () =>
