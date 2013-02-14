@@ -289,6 +289,8 @@ QuandlismContext_.brush = () ->
       
     # Respond to refresh event
     context.on 'refresh.brush', () ->
+      # Check for stage only
+      return if _.has(context.options(), 'stage_only') and context.options().stage_only is true
       lines = selection.datum()
       line  = _.first lines
       removeCache()

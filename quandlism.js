@@ -4,11 +4,11 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.8.0'
+    version: '0.8.1'
   };
 
   quandlism.context = function() {
-    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, padding, processes, startPoint, w, yAxisMax, yAxisMin,
+    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -27,6 +27,7 @@
     lines = [];
     processes = ["BUILD", "MERGE"];
     callbacks = {};
+    options = {};
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
         return;
@@ -47,7 +48,7 @@
         callback();
       }
     };
-    context.attachData = function(attributes, process) {
+    context.data = function(attributes, process) {
       var _ref;
       if (process == null) {
         process = "build";
@@ -56,9 +57,11 @@
         throw "Unknown process " + process;
       }
       context.extractArguments(attributes);
+      context.executeOptions(options);
       lines = context.utility()["" + (process.toLowerCase()) + "Lines"](attributes, lines != null ? lines : null);
       lines = context.utility().processLines(attributes, lines);
       context.bindToElements();
+      context.runCallbacks(process);
       return context;
     };
     context.bindToElements = function() {
@@ -86,11 +89,6 @@
         }
       }
     };
-    context.resetArguments = function() {
-      yAxisMin = null;
-      yAxisMax = null;
-      return context;
-    };
     context.render = function() {
       context.build();
       if (domstage) {
@@ -105,10 +103,14 @@
       context.respond();
       return context;
     };
-    context.update = function() {
+    context.update = function(options) {
+      if (options == null) {
+        options = {};
+      }
       context.build();
       context.respond();
       context.refresh();
+      context.runCallbacks('update');
       return context;
     };
     context.build = function() {
@@ -161,6 +163,19 @@
         i++;
       }
     };
+    context.executeOptions = function(options) {
+      var opt, value;
+      for (opt in options) {
+        value = options[opt];
+        switch (opt) {
+          case "reset":
+            if (value === true) {
+              context.resetState();
+            }
+        }
+      }
+      return context;
+    };
     context.resetState = function() {
       yAxisMin = yAxisMax = null;
     };
@@ -183,6 +198,13 @@
         return startPoint;
       }
       startPoint = _;
+      return context;
+    };
+    context.options = function(_) {
+      if (!(_ != null)) {
+        return options;
+      }
+      options = _;
       return context;
     };
     context.w = function(_) {
@@ -263,10 +285,12 @@
       return context.runCallbacks('adjust');
     };
     context.toggle = function() {
-      return event.toggle.call(context);
+      event.toggle.call(context);
+      return context.runCallbacks('toggle');
     };
     context.refresh = function() {
-      event.refresh.call(context);
+      event.refresh.call(context, options);
+      context.runCallbacks('refresh');
     };
     context.on = function(type, listener) {
       if (!(listener != null)) {
@@ -1059,6 +1083,9 @@
         drawAxis();
       });
       context.on('refresh.brush', function() {
+        if (_.has(context.options(), 'stage_only') && context.options().stage_only === true) {
+          return;
+        }
         lines = selection.datum();
         line = _.first(lines);
         removeCache();

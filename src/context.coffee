@@ -17,6 +17,7 @@ quandlism.context = () ->
   lines         = []
   processes     = ["BUILD", "MERGE"]  
   callbacks     = {}
+  options       = {}
 
 
   context.addCallback = (event, fn) ->
@@ -25,7 +26,7 @@ quandlism.context = () ->
     callbacks["#{event}"].push fn
     return
     
-  context.runCallbacks = (event) ->
+  context.runCallbacks = (event) ->    
     return unless callbacks["#{event}"]? and callbacks["#{event}"].length
     callback() for callback in callbacks["#{event}"]
     return
@@ -33,12 +34,14 @@ quandlism.context = () ->
     
   # Attach Data
   # Conveneince method for attaching lines datum for each declared DOM element
-  context.attachData = (attributes, process = "build") =>    
+  context.data = (attributes, process = "build") =>    
     throw "Unknown process #{process}" unless process? and process.toUpperCase() in processes
     context.extractArguments attributes
+    context.executeOptions options
     lines = context.utility()["#{process.toLowerCase()}Lines"](attributes, lines ? null)
     lines = context.utility().processLines(attributes, lines)     
     context.bindToElements()
+    context.runCallbacks process
     context
     
   context.bindToElements = () =>
@@ -54,12 +57,6 @@ quandlism.context = () ->
         when "y_axis_min" then context.yAxisMin(value)
         when "y_axis_max" then context.yAxisMax(value)
     return
-    
-  context.resetArguments = () =>
-    yAxisMin = null
-    yAxisMax = null
-    context
-    
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -73,10 +70,11 @@ quandlism.context = () ->
   
   
   # Convenience method for calling functions needed to update and redraw quandlism
-  context.update = () =>
+  context.update = (options = {}) =>
     context.build()
     context.respond()
     context.refresh()
+    context.runCallbacks 'update'
     context
   
   # use jQuery to get height and width of context container  
@@ -109,7 +107,6 @@ quandlism.context = () ->
     domlegend = "##{container.attr('id')}"
     context
 
-      
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
   # by applying functions to the existing codes until there are lines.length number of unique codes
   context.addColorsIfNecessary = (lines_) =>
@@ -122,6 +119,16 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
+    
+  # Execute executable options!
+  context.executeOptions = (options) ->
+    for opt, value of options
+      switch opt 
+        when "reset" 
+          if value is true
+            context.resetState()
+    context
+  
     
   # Reset any transformations on the data
   context.resetState = ->
@@ -145,7 +152,11 @@ quandlism.context = () ->
     context
     
     
-  
+  context.options = (_) =>
+    if not _? then return options
+    options = _
+    context
+    
   context.w = (_) =>
     if not _? then return w
     w = _
@@ -210,10 +221,12 @@ quandlism.context = () ->
   # Responds to toggle event
   context.toggle = () =>
     event.toggle.call context
+    context.runCallbacks 'toggle'
     
   # Responds to refresh event.
-  context.refresh =() =>
-    event.refresh.call context
+  context.refresh = () =>
+    event.refresh.call context, options
+    context.runCallbacks 'refresh'
     return
     
   context.on = (type, listener) =>
@@ -221,10 +234,6 @@ quandlism.context = () ->
     event.on type, listener
     context
     
-
-    
-
-
  
   # Listen for page resize
   d3.select(window).on 'resize', () =>
