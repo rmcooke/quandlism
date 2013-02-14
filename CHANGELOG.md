@@ -1,3 +1,10 @@
+## 0.8.1
+
+* attachData renamed to data
+* Add support for options.
+* Process options that are processable.
+* Add callbacks to data and more events.
+
 ## 0.8.0
 
 * Basic callback support for adjust action.
