@@ -27,6 +27,16 @@
     lines = [];
     processes = ["BUILD", "MERGE"];
     callbacks = {};
+    context.options = function(options) {
+      if (options == null) {
+        options = {};
+      }
+      if (_.isEmpty(options)) {
+        return context;
+      }
+      context.executeOptions(options);
+      return context;
+    };
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
         return;
@@ -86,11 +96,6 @@
         }
       }
     };
-    context.resetArguments = function() {
-      yAxisMin = null;
-      yAxisMax = null;
-      return context;
-    };
     context.render = function() {
       context.build();
       if (domstage) {
@@ -105,7 +110,10 @@
       context.respond();
       return context;
     };
-    context.update = function() {
+    context.update = function(options) {
+      if (options == null) {
+        options = {};
+      }
       context.build();
       context.respond();
       context.refresh();
@@ -160,6 +168,17 @@
         colorList.push(rgb.toString());
         i++;
       }
+    };
+    context.executeOptions = function(options) {
+      var opt, value;
+      for (opt in options) {
+        value = options[opt];
+        switch (opt) {
+          case "reset":
+            context.resetState();
+        }
+      }
+      return context;
     };
     context.resetState = function() {
       yAxisMin = yAxisMax = null;

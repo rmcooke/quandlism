@@ -18,7 +18,12 @@ quandlism.context = () ->
   processes     = ["BUILD", "MERGE"]  
   callbacks     = {}
 
-
+  # Options for rendering
+  context.options = (options = {}) ->
+    return context if _.isEmpty options
+    context.executeOptions options
+    context
+    
   context.addCallback = (event, fn) ->
     return unless event? and _.isFunction(fn)
     callbacks["#{event}"] = []  unless callbacks["#{event}"]?
@@ -54,12 +59,6 @@ quandlism.context = () ->
         when "y_axis_min" then context.yAxisMin(value)
         when "y_axis_max" then context.yAxisMax(value)
     return
-    
-  context.resetArguments = () =>
-    yAxisMin = null
-    yAxisMax = null
-    context
-    
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -73,7 +72,7 @@ quandlism.context = () ->
   
   
   # Convenience method for calling functions needed to update and redraw quandlism
-  context.update = () =>
+  context.update = (options = {}) =>
     context.build()
     context.respond()
     context.refresh()
@@ -109,7 +108,6 @@ quandlism.context = () ->
     domlegend = "##{container.attr('id')}"
     context
 
-      
   # If the number of lines exceeds the size of colorList, increase the number of stored hex codes
   # by applying functions to the existing codes until there are lines.length number of unique codes
   context.addColorsIfNecessary = (lines_) =>
@@ -122,6 +120,14 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
+    
+  # Execute options send to quandlism
+  context.executeOptions = (options) ->
+    for opt, value of options
+      switch opt
+        when "reset" then context.resetState()
+    context
+  
     
   # Reset any transformations on the data
   context.resetState = ->
