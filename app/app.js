@@ -1,2 +1,2 @@
 var coffeeScript = require('coffee-script')
-app = require('./server')
+app = require('./server.coffee')

@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  h1 Quandlism Test App
+  
+  #container
+    
+    h2 About
+    
+    p This application uses production Quandl API to test the Quandlism chart library.
+    
+    h2 Usage
+    
+    p There is one URL, /data/:source_code/:code which will load the current build of the graph with production data.
+      For example, /data/NSE/OIL.
+      
+      
+    h2 GO!
+    
+    form(action="/data/chart", method="get")
+      input(type="text", name="source_code")
+      input(type="test", name="code")
+      input(type="submit")
+    
+  
