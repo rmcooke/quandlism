@@ -36,7 +36,8 @@
     "grunt-wrap": ">= 0.1.0",
     "d3": "*",
     "underscore": "*",
-    "express": "3.x"
+    "express": "3.x",
+    "coffee-script": "1.x"
   },
   "keywords": []
 }
