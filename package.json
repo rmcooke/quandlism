@@ -36,9 +36,7 @@
     "grunt-wrap": ">= 0.1.0",
     "d3": "*",
     "underscore": "*",
-    "mocha": "*",
-    "chai": "*",
-    "sinon": "*"
+    "express": "3.x"
   },
   "keywords": []
 }
