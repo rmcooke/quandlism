@@ -307,6 +307,7 @@ QuandlismContext_.brush = () ->
     context.on "toggle.brush", () ->
       removeCache()
       setScales()
+      context.resetState()
       return
       
     # Listen for mousedown event to track mouse clicks before dragging or stretching control

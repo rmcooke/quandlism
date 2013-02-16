@@ -1100,6 +1100,7 @@
       context.on("toggle.brush", function() {
         removeCache();
         setScales();
+        context.resetState();
       });
       canvas.on('mousedown', function(e) {
         var m;
