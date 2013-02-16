@@ -1,9 +1,9 @@
 express   = require 'express'
 http      = require 'http'
-routes    = require './routes/'
+routes    = require './routes'
 data      = require './routes/data'
 settings  = require './settings' 
-
+path      = require 'path'
 app = express()
 
 app.configure ->
@@ -11,12 +11,11 @@ app.configure ->
   app.set "views", "#{__dirname}/views"
   app.set "view engine", 'jade'
   app.use express.logger('dev')
-
+  app.use express.static(path.join("#{__dirname}/public"))
 
 app.configure 'development', ->
   app.use express.errorHandler()
   
-console.log data
 # Routes
 app.get "/", routes.index
 app.get "/data/chart", data.chart
