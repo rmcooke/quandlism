@@ -305,9 +305,10 @@ QuandlismContext_.brush = () ->
     # Respond to toggle by re-setting extents to account for newly hidden or visible columns
     # And redrawing the brush backgorund
     context.on "toggle.brush", () ->
+      context.resetState()
       removeCache()
       setScales()
-      context.resetState()
+      dispatchAdjust()
       return
       
     # Listen for mousedown event to track mouse clicks before dragging or stretching control

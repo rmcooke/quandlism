@@ -1,3 +1,7 @@
+## 0.8.3
+
+* Call resetState before drawing and setting scales on toggle.
+
 ## 0.8.2
 
 * Add second fallback for recalculating extents to prevent flat lines.
