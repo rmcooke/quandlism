@@ -32,9 +32,9 @@
     "underscore": "*",
     "express": "3.x",
     "coffee-script": "1.x",
-    "stylus": "*",
     "connect-assets": "2.x",
-    "jade": "0.28.x"
+    "jade": "0.28.x",
+    "jquery": "*"
   },
   "keywords": []
 }
