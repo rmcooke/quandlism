@@ -277,6 +277,7 @@ QuandlismContext_.stage = () ->
       
     # Respond to toggle event by re-drawing
     context.on 'toggle.stage', () ->
+      context.resetState() unless context.dombrush()
       setScales()
       draw()
       return

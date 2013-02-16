@@ -830,6 +830,9 @@
         draw();
       });
       context.on('toggle.stage', function() {
+        if (!context.dombrush()) {
+          context.resetState();
+        }
         setScales();
         draw();
       });
@@ -1101,9 +1104,10 @@
         dispatchAdjust();
       });
       context.on("toggle.brush", function() {
+        context.resetState();
         removeCache();
         setScales();
-        context.resetState();
+        dispatchAdjust();
       });
       canvas.on('mousedown', function(e) {
         var m;
