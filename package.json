@@ -14,12 +14,6 @@
   "bugs": {
     "url": "https://github.com/quandl/quandlism/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://github.com/Quandl/quandlism/blob/master/LICENSE-MIT"
-    }
-  ],
   "main": "quandlism",
   "engines": {
     "node": ">= 0.8.0"
@@ -37,7 +31,10 @@
     "d3": "*",
     "underscore": "*",
     "express": "3.x",
-    "coffee-script": "1.x"
+    "coffee-script": "1.x",
+    "stylus": "0.2.x",
+    "connect-assets": "2.x",
+    "jade": "0.28.x"
   },
   "keywords": []
 }

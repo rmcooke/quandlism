@@ -45,7 +45,7 @@
   $.getJSON('/data/stat_china.json').done(renderChart);
 
   function renderChart(apiData) {
-    chart.data({data: apiData.data, columns: apiData.column_names, show: [0]}).render();
+    chart.data({data: apiData.data, columns: apiData.column_names, show: [0d]}).render();
   }
 
   </script>
