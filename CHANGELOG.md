@@ -1,3 +1,8 @@
+## 0.8.2
+
+* Add second fallback for recalculating extents to prevent flat lines.
+* Reset y axis values when toggle event is triggered (legend click).
+
 ## 0.8.1
 
 * attachData renamed to data

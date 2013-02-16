@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.8.1'
+    version: '0.8.2'
   };
 
   quandlism.context = function() {
@@ -660,6 +660,9 @@
           if (extent[0] === extent[1]) {
             extent = context.utility().getExtent(lines, 0, line.length());
           }
+          if (extent[0] === extent[1]) {
+            extent = [Math.floor(extent[0] / 2), Math.floor(extent[0] * 2)];
+          }
         }
         _yMin = context.yAxisMin();
         _yMax = context.yAxisMax();
@@ -1100,6 +1103,7 @@
       context.on("toggle.brush", function() {
         removeCache();
         setScales();
+        context.resetState();
       });
       canvas.on('mousedown', function(e) {
         var m;

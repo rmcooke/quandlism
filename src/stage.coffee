@@ -64,11 +64,14 @@ QuandlismContext_.stage = () ->
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>
-      # If end points if extent are equal, then recalculate using the entire datasets. Fixes rendering issue of flat-line on x-axis if all poitns are the same
-      # Only calculate extend if the y max and min weren't already set by the user
+      
+      # Don't check user generated extents
+      # If visible area of plot has equal extents, then try the entire plot
+      # If those values are equal then put the line in the middle!
       unless context.yAxisMax() and context.yAxisMin()
         extent = context.utility().getExtent lines, indexStart, indexEnd
         extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
+        extent = [Math.floor(extent[0]/2), Math.floor(extent[0]*2)] unless extent[0] isnt extent[1]
       # Update the linear x and y scales with calculated extent
                  
       _yMin = context.yAxisMin()
