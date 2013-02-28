@@ -18,7 +18,6 @@ quandlism.context = () ->
   processes     = ["BUILD", "MERGE"]  
   callbacks     = {}
   options       = {}
-  jason         = 'test'
 
 
   context.addCallback = (event, fn) ->

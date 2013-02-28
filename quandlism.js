@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, jason, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
+    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -28,7 +28,6 @@
     processes = ["BUILD", "MERGE"];
     callbacks = {};
     options = {};
-    jason = 'test';
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
         return;
