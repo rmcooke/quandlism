@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
+    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, jason, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -28,6 +28,7 @@
     processes = ["BUILD", "MERGE"];
     callbacks = {};
     options = {};
+    jason = 'test';
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
         return;
@@ -125,7 +126,7 @@
       }
       brush = brush_ != null ? brush_ : true;
       container.children().remove();
-      if (!(container.attr('id') != null)) {
+      if (container.attr('id') == null) {
         container.attr('id', "quandlism-" + (++quandlism_id_ref));
       }
       dom = "#" + (container.attr('id'));
@@ -187,91 +188,91 @@
       return context;
     };
     context.colorList = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return colorList;
       }
       colorList = _;
       return context;
     };
     context.startPoint = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return startPoint;
       }
       startPoint = _;
       return context;
     };
     context.options = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return options;
       }
       options = _;
       return context;
     };
     context.w = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return w;
       }
       w = _;
       return context;
     };
     context.h = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return h;
       }
       h = _;
       return context;
     };
     context.yAxisMin = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yAxisMin;
       }
       yAxisMin = _;
       return context;
     };
     context.yAxisMax = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yAxisMax;
       }
       yAxisMax = _;
       return context;
     };
     context.dom = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return dom;
       }
       dom = _;
       return context;
     };
     context.domstage = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return domstage;
       }
       domstage = _;
       return context;
     };
     context.dombrush = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return dombrush;
       }
       dombrush = _;
       return context;
     };
     context.domlegend = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return domlegend;
       }
       domlegend = _;
       return context;
     };
     context.padding = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return padding;
       }
       padding = _;
       return context;
     };
     context.callbacks = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return callbacks;
       }
       callbacks = _;
@@ -293,7 +294,7 @@
       context.runCallbacks('refresh');
     };
     context.on = function(type, listener) {
-      if (!(listener != null)) {
+      if (listener == null) {
         return event.on(type);
       }
       event.on(type, listener);
@@ -394,7 +395,7 @@
       }
       while (i <= n) {
         val = this.valueAt(i);
-        if (!(val != null)) {
+        if (val == null) {
           i++;
           continue;
         }
@@ -422,7 +423,7 @@
           continue;
         }
         val = this.valueAt(i);
-        if (!(val != null)) {
+        if (val == null) {
           continue;
         }
         if (val < min) {
@@ -549,42 +550,42 @@
       return v;
     };
     line.dates = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return dates;
       }
       dates = _;
       return line;
     };
     line.id = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return id;
       }
       id = _;
       return line;
     };
     line.name = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return name;
       }
       name = _;
       return line;
     };
     line.values = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return values;
       }
       values = _;
       return line;
     };
     line.visible = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return visible;
       }
       visible = _;
       return line;
     };
     line.color = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return color;
       }
       color = _;
@@ -626,7 +627,7 @@
     ctx = null;
     stage = function(selection) {
       var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, xAxisDOM, yAxisDOM;
-      if (!(canvasId != null)) {
+      if (canvasId == null) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
       lines = selection.datum();
@@ -858,28 +859,28 @@
       });
     };
     stage.canvasId = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return canvasId;
       }
       canvasId = _;
       return stage;
     };
     stage.xScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return xScale;
       }
       xScale = _;
       return stage;
     };
     stage.yScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yScale;
       }
       yScale = _;
       return stage;
     };
     stage.threshold = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return threshold;
       }
       threshold = _;
@@ -911,7 +912,7 @@
     previous = {};
     brush = function(selection) {
       var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPrevious, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushClass, setBrushValues, setPrevious, setScales, update, xAxisDOM;
-      if (!(canvasId != null)) {
+      if (canvasId == null) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
       }
       lines = selection.datum();
@@ -1167,42 +1168,42 @@
       });
     };
     brush.canvasId = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return canvasId;
       }
       canvasId = _;
       return brush;
     };
     brush.xScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return xScale;
       }
       xScale = _;
       return brush;
     };
     brush.yScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yScale;
       }
       yScale = _;
       return brush;
     };
     brush.threshold = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return threshold;
       }
       threshold = _;
       return brush;
     };
     brush.stretchLimit = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return stretchLimit;
       }
       stretchLimit = _;
       return brush;
     };
     brush.handleWidth = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return handleWidth;
       }
       handleWidth = _;

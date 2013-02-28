@@ -28,8 +28,8 @@ module.exports = function(grunt) {
       files: ['grunt.js', 'src/**/*.js', 'test/**/*.js']
     },
     watch: {
-      files: '<config:concat:dist:src>',
-      tasks: ['<config:tasks:all>']
+      files: ['src/*.coffee'],
+      tasks: ['all']
     },
     coffee: {
       compile: {
@@ -74,12 +74,14 @@ module.exports = function(grunt) {
 
   // Load plugins
   grunt.loadNpmTasks('grunt-contrib-coffee');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-wrap');
   
   // Default task.
   grunt.registerTask('default', 'concat coffee wrap');
   grunt.registerTask('production', 'concat wrap min');
-  grunt.registerTask('all', 'concat coffee wrap min');
+  grunt.registerTask('all', ['concat', 'coffee', 'wrap']);
   
 
 };
