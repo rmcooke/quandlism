@@ -593,12 +593,6 @@
     return line;
   };
 
-  QuandlismContext_.timeScale = function() {
-    var context, scale;
-    context = this;
-    return scale = d3.time.scale();
-  };
-
   QuandlismContext_.stage = function() {
     var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
       _this = this;

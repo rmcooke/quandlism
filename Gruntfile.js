@@ -13,7 +13,6 @@ module.exports = function(grunt) {
           'src/context.coffee', 
           'src/id.coffee', 
           'src/line.coffee', 
-          'src/time_scale.coffee',
           'src/stage.coffee', 
           'src/brush.coffee', 
           'src/xaxis.coffee', 
