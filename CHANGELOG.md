@@ -1,3 +1,8 @@
+## 0.8.4
+
+* Revise y-axis labels. Use k instead of K. Remove space between value and label. Don't alter value unless value >= 10000.
+* Padding fixes. Use only ticks and labels from D3 axis. Use CSS borders to fake axis.
+
 ## 0.8.3
 
 * Call resetState before drawing and setting scales on toggle.
