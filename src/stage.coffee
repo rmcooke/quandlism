@@ -100,7 +100,7 @@ QuandlismContext_.stage = () ->
         n = (d/unitsObj['divisor']).toFixed 2
         n = n.replace(/0+$/, '')
         n = n.replace(/\.$/, '')
-        "#{n} #{unitsObj['label']}"
+        "#{n}#{unitsObj['label']}"
         
         
       xScale.domain [dateStart, dateEnd]

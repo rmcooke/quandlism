@@ -680,7 +680,7 @@
           n = (d / unitsObj['divisor']).toFixed(2);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
-          return "" + n + " " + unitsObj['label'];
+          return "" + n + unitsObj['label'];
         });
         xScale.domain([dateStart, dateEnd]);
         xScale.range([0, width]);
@@ -1542,14 +1542,14 @@
     utility.getUnitAndDivisor = function(extent) {
       var len;
       len = extent.toString().length;
-      if (len <= 3) {
+      if (len <= 4) {
         return {
           label: '',
           divisor: 1
         };
-      } else if (len <= 6) {
+      } else if (len < 7) {
         return {
-          label: 'K',
+          label: 'k',
           divisor: 1000
         };
       } else if (len <= 9) {
