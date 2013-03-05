@@ -34,7 +34,7 @@ This will watch the src/*.coffee files for changes and rebuild the .js file when
 
 > grunt all
 
-Which tells quandlism to concatentate the coffee files, process them and put the output in quandlism.js
+This tells quandlism to concatentate the coffee files, process them and put the output in quandlism.js
 
 ### Test App
 

@@ -34,7 +34,8 @@ QuandlismContext_.brush = () ->
     # append canvas and get reference to element and drawing context
     canvas = selection.append('canvas')
     canvas.attr 'id', canvasId
-    canvas.attr "style", "position: absolute; left: 0px; top: 0px"
+    canvas.attr 'class', 'canvas-brush'
+    canvas.attr "style", "position: absolute; left: 0px; top: 0px; border-bottom: 1px solid black;"
     ctx = canvas.node().getContext '2d'
     
     # xAxis
@@ -44,6 +45,8 @@ QuandlismContext_.brush = () ->
     xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
     xAxisDOM.attr 'width', Math.floor context.w()-quandlism_yaxis_width
     xAxisDOM.attr "style", "position: absolute; top: #{context.h()*quandlism_brush.h}px; left: 0px"
+    
+  
     
 
     # Determines if the there are enough points that in the dataset
@@ -118,6 +121,8 @@ QuandlismContext_.brush = () ->
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
+      # Remove the drawn axis path. We only want the numbers
+      xg.select('path').remove()
       return
        
     # Draws the path of each line of the dataset, and the points, if the dataset has few rows

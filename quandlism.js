@@ -20,7 +20,7 @@
     domtooltip = null;
     yAxisMin = null;
     yAxisMax = null;
-    padding = 0;
+    padding = 10;
     startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
@@ -637,7 +637,7 @@
       canvas.attr('height', height);
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
-      canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px;");
+      canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
       canvas.attr('data-y_min', null);
       canvas.attr('data-y_max', null);
       ctx = canvas.node().getContext('2d');
@@ -683,17 +683,19 @@
           return "" + n + " " + unitsObj['label'];
         });
         xScale.domain([dateStart, dateEnd]);
-        xScale.range([context.padding(), width - context.padding()]);
+        xScale.range([0, width]);
       };
       drawAxis = function() {
         var xg, yg;
         yAxisDOM.selectAll('*').remove();
         yg = yAxisDOM.append('g');
-        yg.attr('transform', "translate(" + (quandlism_yaxis_width - 1) + ", 0)");
+        yg.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
         yg.call(yAxis);
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
+        xg.select('path').remove();
+        yg.select('path').remove();
       };
       drawGridLines = function() {
         var x, y, _i, _j, _len, _len1, _ref, _ref1, _results;
@@ -915,7 +917,8 @@
       selection.attr("style", "position: absolute; top: " + (context.h() * (quandlism_stage.h + quandlism_xaxis.h)) + "px; left: " + quandlism_yaxis_width + "px");
       canvas = selection.append('canvas');
       canvas.attr('id', canvasId);
-      canvas.attr("style", "position: absolute; left: 0px; top: 0px");
+      canvas.attr('class', 'canvas-brush');
+      canvas.attr("style", "position: absolute; left: 0px; top: 0px; border-bottom: 1px solid black;");
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
@@ -968,6 +971,7 @@
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
+        xg.select('path').remove();
       };
       draw = function() {
         var j, _i, _len;
