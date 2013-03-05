@@ -26,6 +26,21 @@ From site [npm](https://npmjs.org/)
 
 This installs dependencies into node_modules folder in project root, which is ignored in source control.
 
-### Generate quandlism.js and quandlism.minjs From Source .coffee Files
+### Watch files
+
+> grunt watch
+
+This will watch the src/*.coffee files for changes and rebuild the .js file when needed. To manually rebuild the project, use the 'all' task:
 
 > grunt all
+
+Which tells quandlism to concatentate the coffee files, process them and put the output in quandlism.js
+
+### Test App
+
+There is a (very) basic ExpressJS test app in the /app directory that will use your development version of Quandlism with production data (via the API) . To run it:
+
+> node app/app.js
+
+Go to: http://localhost:3003
+
