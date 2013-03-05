@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.8.3'
+    version: '0.8.4'
   };
 
   quandlism.context = function() {
@@ -20,7 +20,7 @@
     domtooltip = null;
     yAxisMin = null;
     yAxisMax = null;
-    padding = 0;
+    padding = 10;
     startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
@@ -125,7 +125,7 @@
       }
       brush = brush_ != null ? brush_ : true;
       container.children().remove();
-      if (!(container.attr('id') != null)) {
+      if (container.attr('id') == null) {
         container.attr('id', "quandlism-" + (++quandlism_id_ref));
       }
       dom = "#" + (container.attr('id'));
@@ -187,91 +187,91 @@
       return context;
     };
     context.colorList = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return colorList;
       }
       colorList = _;
       return context;
     };
     context.startPoint = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return startPoint;
       }
       startPoint = _;
       return context;
     };
     context.options = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return options;
       }
       options = _;
       return context;
     };
     context.w = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return w;
       }
       w = _;
       return context;
     };
     context.h = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return h;
       }
       h = _;
       return context;
     };
     context.yAxisMin = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yAxisMin;
       }
       yAxisMin = _;
       return context;
     };
     context.yAxisMax = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yAxisMax;
       }
       yAxisMax = _;
       return context;
     };
     context.dom = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return dom;
       }
       dom = _;
       return context;
     };
     context.domstage = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return domstage;
       }
       domstage = _;
       return context;
     };
     context.dombrush = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return dombrush;
       }
       dombrush = _;
       return context;
     };
     context.domlegend = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return domlegend;
       }
       domlegend = _;
       return context;
     };
     context.padding = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return padding;
       }
       padding = _;
       return context;
     };
     context.callbacks = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return callbacks;
       }
       callbacks = _;
@@ -293,7 +293,7 @@
       context.runCallbacks('refresh');
     };
     context.on = function(type, listener) {
-      if (!(listener != null)) {
+      if (listener == null) {
         return event.on(type);
       }
       event.on(type, listener);
@@ -394,7 +394,7 @@
       }
       while (i <= n) {
         val = this.valueAt(i);
-        if (!(val != null)) {
+        if (val == null) {
           i++;
           continue;
         }
@@ -422,7 +422,7 @@
           continue;
         }
         val = this.valueAt(i);
-        if (!(val != null)) {
+        if (val == null) {
           continue;
         }
         if (val < min) {
@@ -549,54 +549,48 @@
       return v;
     };
     line.dates = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return dates;
       }
       dates = _;
       return line;
     };
     line.id = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return id;
       }
       id = _;
       return line;
     };
     line.name = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return name;
       }
       name = _;
       return line;
     };
     line.values = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return values;
       }
       values = _;
       return line;
     };
     line.visible = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return visible;
       }
       visible = _;
       return line;
     };
     line.color = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return color;
       }
       color = _;
       return line;
     };
     return line;
-  };
-
-  QuandlismContext_.timeScale = function() {
-    var context, scale;
-    context = this;
-    return scale = d3.time.scale();
   };
 
   QuandlismContext_.stage = function() {
@@ -626,7 +620,7 @@
     ctx = null;
     stage = function(selection) {
       var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, xAxisDOM, yAxisDOM;
-      if (!(canvasId != null)) {
+      if (canvasId == null) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
       lines = selection.datum();
@@ -643,7 +637,7 @@
       canvas.attr('height', height);
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
-      canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px;");
+      canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
       canvas.attr('data-y_min', null);
       canvas.attr('data-y_max', null);
       ctx = canvas.node().getContext('2d');
@@ -686,20 +680,22 @@
           n = (d / unitsObj['divisor']).toFixed(2);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
-          return "" + n + " " + unitsObj['label'];
+          return "" + n + unitsObj['label'];
         });
         xScale.domain([dateStart, dateEnd]);
-        xScale.range([context.padding(), width - context.padding()]);
+        xScale.range([0, width]);
       };
       drawAxis = function() {
         var xg, yg;
         yAxisDOM.selectAll('*').remove();
         yg = yAxisDOM.append('g');
-        yg.attr('transform', "translate(" + (quandlism_yaxis_width - 1) + ", 0)");
+        yg.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
         yg.call(yAxis);
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
+        xg.select('path').remove();
+        yg.select('path').remove();
       };
       drawGridLines = function() {
         var x, y, _i, _j, _len, _len1, _ref, _ref1, _results;
@@ -858,28 +854,28 @@
       });
     };
     stage.canvasId = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return canvasId;
       }
       canvasId = _;
       return stage;
     };
     stage.xScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return xScale;
       }
       xScale = _;
       return stage;
     };
     stage.yScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yScale;
       }
       yScale = _;
       return stage;
     };
     stage.threshold = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return threshold;
       }
       threshold = _;
@@ -911,7 +907,7 @@
     previous = {};
     brush = function(selection) {
       var checkDragState, clearCanvas, dispatchAdjust, draw, drawAxis, drawBrush, drawFromCache, getPrevious, isDraggingLocation, isLeftHandle, isRightHandle, removeCache, saveCanvasData, saveState, setBrushClass, setBrushValues, setPrevious, setScales, update, xAxisDOM;
-      if (!(canvasId != null)) {
+      if (canvasId == null) {
         canvasId = "canvas-brush-" + (++quandlism_id_ref);
       }
       lines = selection.datum();
@@ -921,7 +917,8 @@
       selection.attr("style", "position: absolute; top: " + (context.h() * (quandlism_stage.h + quandlism_xaxis.h)) + "px; left: " + quandlism_yaxis_width + "px");
       canvas = selection.append('canvas');
       canvas.attr('id', canvasId);
-      canvas.attr("style", "position: absolute; left: 0px; top: 0px");
+      canvas.attr('class', 'canvas-brush');
+      canvas.attr("style", "position: absolute; left: 0px; top: 0px; border-bottom: 1px solid black;");
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
@@ -974,6 +971,7 @@
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
+        xg.select('path').remove();
       };
       draw = function() {
         var j, _i, _len;
@@ -1167,42 +1165,42 @@
       });
     };
     brush.canvasId = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return canvasId;
       }
       canvasId = _;
       return brush;
     };
     brush.xScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return xScale;
       }
       xScale = _;
       return brush;
     };
     brush.yScale = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return yScale;
       }
       yScale = _;
       return brush;
     };
     brush.threshold = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return threshold;
       }
       threshold = _;
       return brush;
     };
     brush.stretchLimit = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return stretchLimit;
       }
       stretchLimit = _;
       return brush;
     };
     brush.handleWidth = function(_) {
-      if (!(_ != null)) {
+      if (_ == null) {
         return handleWidth;
       }
       handleWidth = _;
@@ -1544,14 +1542,14 @@
     utility.getUnitAndDivisor = function(extent) {
       var len;
       len = extent.toString().length;
-      if (len <= 3) {
+      if (len <= 4) {
         return {
           label: '',
           divisor: 1
         };
-      } else if (len <= 6) {
+      } else if (len < 7) {
         return {
-          label: 'K',
+          label: 'k',
           divisor: 1000
         };
       } else if (len <= 9) {

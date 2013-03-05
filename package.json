@@ -1,7 +1,7 @@
 {
   "name": "quandlism",
   "description": "Canvas wrapper for time series charts on D3",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "homepage": "https://github.com/quandl/quandlism",
   "author": {
     "name": "Jason Byck",
@@ -25,9 +25,11 @@
     
   },
   "devDependencies": {
-    "grunt": "~0.3.16",
-    "grunt-contrib-coffee": ">= 0.3.1",
-    "grunt-wrap": ">= 0.1.0",
+    "grunt": ">= 0.4.0",
+    "grunt-contrib-coffee": ">= 0.4",
+    "grunt-contrib-watch": "*",
+    "grunt-contrib-concat": "*",
+    "grunt-wrap": "*",
     "d3": "*",
     "underscore": "*",
     "express": "3.x",

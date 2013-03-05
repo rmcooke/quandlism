@@ -135,10 +135,10 @@ QuandlismContext_.utility = () ->
   # Returns an object with label and divisor
   utility.getUnitAndDivisor = (extent) =>
     len = extent.toString().length
-    if len <= 3
+    if len <= 4
       {label: '', divisor: 1}
-    else if len <= 6
-      {label: 'K', divisor: 1000}
+    else if len < 7
+      {label: 'k', divisor: 1000}
     else if len <= 9
       {label: 'M', divisor: 1000000}
     else 

@@ -47,7 +47,7 @@ QuandlismContext_.stage = () ->
     canvas.attr 'height', height
     canvas.attr 'class', 'canvas-stage'
     canvas.attr 'id', canvasId
-    canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px;"
+    canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
     canvas.attr 'data-y_min', null
     canvas.attr 'data-y_max', null
   
@@ -100,11 +100,11 @@ QuandlismContext_.stage = () ->
         n = (d/unitsObj['divisor']).toFixed 2
         n = n.replace(/0+$/, '')
         n = n.replace(/\.$/, '')
-        "#{n} #{unitsObj['label']}"
+        "#{n}#{unitsObj['label']}"
         
         
       xScale.domain [dateStart, dateEnd]
-      xScale.range  [context.padding(), (width-context.padding())]
+      xScale.range  [0, width]
       return
     
     # Draw axis
@@ -112,12 +112,17 @@ QuandlismContext_.stage = () ->
       # Remove old yAxis and redraw
       yAxisDOM.selectAll('*').remove()
       yg = yAxisDOM.append 'g'
-      yg.attr 'transform', "translate(#{quandlism_yaxis_width-1}, 0)"
+      yg.attr 'transform', "translate(#{quandlism_yaxis_width}, 0)"
       yg.call yAxis
-      
+            
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
+      
+      # Remove axis path. We only want the numbers.
+      xg.select('path').remove()
+      yg.select('path').remove()
+      
       return
 
     # Draw y and x grid lines
