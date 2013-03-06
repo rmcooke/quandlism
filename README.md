@@ -41,7 +41,7 @@ This tells quandlism to concatentate the coffee files, process them and put the 
 There is a (very) basic ExpressJS test app in the /app directory that will use your development version of Quandlism with production data (via the API). 
 Before you can use the app:
 
-#### Symnlink Assets
+#### Symlink Assets
 
 Create symlinks in app/public/javascripts for d3.v2.js and quandlism.js
 
