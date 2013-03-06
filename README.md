@@ -49,7 +49,7 @@ Create symlinks in app/public/javascripts for d3.v2.js and quandlism.js
 
 Get an API key from Quandl.com. 
 
-If you don't have an account, sign up at [http:www.quandl.com](Quandl), then go [http://www.quandl.com/users/edit](here) to get your authentication token.
+If you don't have an account, sign up at [Quandl](http:www.quandl.com), then go [here](http://www.quandl.com/users/edit) to get your authentication token.
 Open app/settings.coffee and replace 'YOUR_API_KEY_HERE' with your key.
 
 -
