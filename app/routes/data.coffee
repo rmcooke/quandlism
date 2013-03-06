@@ -1,4 +1,5 @@
 http = require 'http'
+settings = require '../settings'
 
 exports.chart = (req, res) ->
   unless req.query.source_code? and req.query.code?
@@ -11,7 +12,8 @@ exports.chart = (req, res) ->
 exports.api = (req, res) ->
   code = req.query.code
   source_code = req.query.source_code
-  path = "api/v1/datasets/#{source_code}/#{code}?&auth_token=eovXx1JtgbTkiPry11da&format=json"
+  path = "api/v1/datasets/#{source_code}/#{code}?auth_token=#{settings.api_key}&format=json"
+  console.log path
   options = 
     host: 'www.quandl.com'
     path: "/#{path}"
