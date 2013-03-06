@@ -38,7 +38,23 @@ This tells quandlism to concatentate the coffee files, process them and put the 
 
 ### Test App
 
-There is a (very) basic ExpressJS test app in the /app directory that will use your development version of Quandlism with production data (via the API) . To run it:
+There is a (very) basic ExpressJS test app in the /app directory that will use your development version of Quandlism with production data (via the API). 
+Before you can use the app:
+
+#### Symnlink Assets
+
+Create symlinks in app/public/javascripts for d3.v2.js and quandlism.js
+
+#### API Key
+
+Get an API key from Quandl.com. 
+
+If you don't have an account, sign up at [http:www.quandl.com](Quandl), then go [http://www.quandl.com/users/edit](here) to get your authentication token.
+Open app/settings.coffee and replace 'YOUR_API_KEY_HERE' with your key.
+
+-
+
+Run the app:
 
 > node app/app.js
 
