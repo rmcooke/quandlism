@@ -5,7 +5,7 @@ QuandlismContext_.stage = () ->
   lines       = []
   line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
-  height      = Math.floor context.h() * quandlism_stage.h
+  height      = context.utility().stageHeight()
   xScale      = d3.time.scale()
   yScale      = d3.scale.linear()
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
@@ -23,9 +23,8 @@ QuandlismContext_.stage = () ->
   ctx         = null
   
   
-  
   stage = (selection) =>
-    
+        
     canvasId = "canvas-stage-#{++quandlism_id_ref}" if not canvasId?
     
     # Get lines and generate unique ID for the stage
@@ -34,11 +33,12 @@ QuandlismContext_.stage = () ->
     selection.attr "style", "position: absolute; left: 0px; top: 0px;"
     
     # Build the yAxis
+    # If no brush, dont calcualte stage height as percentage, use entire space
     yAxisDOM = selection.insert 'svg'
     yAxisDOM.attr 'class', 'y axis'
     yAxisDOM.attr 'id', "y-axis-#{canvasId}"
     yAxisDOM.attr 'width', quandlism_yaxis_width
-    yAxisDOM.attr 'height', Math.floor context.h()*quandlism_stage.h
+    yAxisDOM.attr 'height', height
     yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
 
     # Create canvas element and get reference to drawing context
@@ -58,8 +58,8 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'class', 'x axis'
     xAxisDOM.attr 'id', "x-axis-#{canvasId}"
     xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
-    xAxisDOM.attr 'height', Math.floor context.h()*quandlism_xaxis.h
-    xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{context.h()*quandlism_stage.h}px"
+    xAxisDOM.attr 'height', context.utility().xAxisHeight()
+    xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{height}px"
 
 
     # Calculate the range and domain of the x and y scales
@@ -236,7 +236,7 @@ QuandlismContext_.stage = () ->
       draw()
       return
       
-    # 
+
     # Intial draw. If there is a brush in the context, it will dispatch the adjust event and force the 
     # stage to draw. If there isn't, force the stage to draw
     #
@@ -255,8 +255,8 @@ QuandlismContext_.stage = () ->
     # Resize, clear and re-draw
     context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
-      width = Math.floor context.w()-quandlism_yaxis_width-1
-      height = Math.floor context.h() * quandlism_stage.h
+      width = Math.floor (context.w()-quandlism_yaxis_width-2)
+      height = context.utility().stageHeight()
       canvas.attr 'width', width
       canvas.attr 'height', height
       
@@ -264,8 +264,8 @@ QuandlismContext_.stage = () ->
       yAxisDOM.attr 'width', quandlism_yaxis_width
       
       # Adjust x axis with and marign
-      xAxisDOM.attr 'width', Math.floor context.w() - quandlism_yaxis_width
-      
+      xAxisDOM.attr 'width',  Math.floor context.w() - quandlism_yaxis_width
+      xAxisDOM.attr 'height', Math.floor context.utility().xAxisHeight()
       setScales()
       draw()
       return

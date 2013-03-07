@@ -1,3 +1,8 @@
+## 0.8.5
+
+* If brush is not present, dont calculate height of canvas (and x axis) using the ratios defined in id.coffee. Use full context height.
+* Add utility functions for calculating heights.
+
 ## 0.8.4
 
 * Revise y-axis labels. Use k instead of K. Remove space between value and label. Don't alter value unless value >= 10000.
