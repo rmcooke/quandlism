@@ -602,7 +602,7 @@
     lines = [];
     line = null;
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
-    height = Math.floor(context.h() * quandlism_stage.h);
+    height = context.utility().stageHeight();
     xScale = d3.time.scale();
     yScale = d3.scale.linear();
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
@@ -630,7 +630,7 @@
       yAxisDOM.attr('class', 'y axis');
       yAxisDOM.attr('id', "y-axis-" + canvasId);
       yAxisDOM.attr('width', quandlism_yaxis_width);
-      yAxisDOM.attr('height', Math.floor(context.h() * quandlism_stage.h));
+      yAxisDOM.attr('height', height);
       yAxisDOM.attr("style", "position: absolute; left: 0px; top: 0px;");
       canvas = selection.append('canvas');
       canvas.attr('width', width);
@@ -645,8 +645,8 @@
       xAxisDOM.attr('class', 'x axis');
       xAxisDOM.attr('id', "x-axis-" + canvasId);
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
-      xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
-      xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + (context.h() * quandlism_stage.h) + "px");
+      xAxisDOM.attr('height', context.utility().xAxisHeight());
+      xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + height + "px");
       setScales = function() {
         var unitsObj, _yMax, _yMin;
         if (!(context.yAxisMax() && context.yAxisMin())) {
@@ -808,12 +808,13 @@
       }
       context.on('respond.stage', function() {
         ctx.clearRect(0, 0, width, height);
-        width = Math.floor(context.w() - quandlism_yaxis_width - 1);
-        height = Math.floor(context.h() * quandlism_stage.h);
+        width = Math.floor(context.w() - quandlism_yaxis_width - 2);
+        height = context.utility().stageHeight();
         canvas.attr('width', width);
         canvas.attr('height', height);
         yAxisDOM.attr('width', quandlism_yaxis_width);
         xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
+        xAxisDOM.attr('height', Math.floor(context.utility().xAxisHeight()));
         setScales();
         draw();
       });
@@ -1569,6 +1570,20 @@
         return null;
       }
       return date.valueOf();
+    };
+    utility.stageHeight = function() {
+      if (context.dombrush() != null) {
+        return quandlism_stage.h * context.h();
+      } else {
+        return context.h() * 0.90;
+      }
+    };
+    utility.xAxisHeight = function() {
+      if (context.dombrush() != null) {
+        return quandlism_xaxis.h * context.h();
+      } else {
+        return context.h() * 0.10;
+      }
     };
     return utility;
   };

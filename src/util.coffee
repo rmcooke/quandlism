@@ -149,4 +149,10 @@ QuandlismContext_.utility = () ->
     return null unless date?
     date.valueOf()
     
+  utility.stageHeight = =>
+    if context.dombrush()? then quandlism_stage.h*context.h() else context.h()*0.90
+    
+  utility.xAxisHeight = =>
+    if context.dombrush()? then quandlism_xaxis.h*context.h() else context.h()*0.10
+    
   utility
