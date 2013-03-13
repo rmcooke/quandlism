@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.8.5'
+    version: '0.8.6'
   };
 
   quandlism.context = function() {
@@ -1015,7 +1015,7 @@
         useCache = false;
       };
       dispatchAdjust = function(calculateDates) {
-        var d;
+        var d, endVal, startVal;
         calculateDates = calculateDates != null ? calculateDates : false;
         if (calculateDates) {
           dateStart = xScale.invert(drawStart);
@@ -1026,7 +1026,9 @@
             dateStart = d;
           }
         }
-        context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
+        startVal = line.getClosestIndex(dateStart);
+        endVal = line.getClosestIndex(dateEnd);
+        context.adjust(line.dateAt(startVal), startVal, line.dateAt(endVal), endVal);
       };
       saveState = function() {
         var d;
