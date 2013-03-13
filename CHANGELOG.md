@@ -1,3 +1,7 @@
+## 0.8.6
+
+* Bug fix: white space on end points of stage is removed. Send the exact date corresponding the calculated closestIndex, so x-axis domain does not include empty space.
+
 ## 0.8.5
 
 * If brush is not present, dont calculate height of canvas (and x axis) using the ratios defined in id.coffee. Use full context height.
