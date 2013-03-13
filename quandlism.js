@@ -1015,7 +1015,7 @@
         useCache = false;
       };
       dispatchAdjust = function(calculateDates) {
-        var d;
+        var d, endVal, startVal;
         calculateDates = calculateDates != null ? calculateDates : false;
         if (calculateDates) {
           dateStart = xScale.invert(drawStart);
@@ -1026,7 +1026,9 @@
             dateStart = d;
           }
         }
-        context.adjust(dateStart, line.getClosestIndex(dateStart), dateEnd, line.getClosestIndex(dateEnd));
+        startVal = line.getClosestIndex(dateStart);
+        endVal = line.getClosestIndex(dateEnd);
+        context.adjust(line.dateAt(startVal), startVal, line.dateAt(endVal), endVal);
       };
       saveState = function() {
         var d;
