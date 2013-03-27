@@ -10,17 +10,17 @@ quandlism.context = () ->
   domtooltip    = null
   yAxisMin      = null
   yAxisMax      = null
-  startDate     = null
-  endDate       = null
   padding       = 10 
   startPoint    = 0.70
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
   processes     = ["BUILD", "MERGE"]  
+  types         = ['STAGE', 'BRUSH']
   callbacks     = {}
   options       = {}
-
+  attributes    = {}
+  
 
   context.addCallback = (event, fn) ->
     return unless event? and _.isFunction(fn)
@@ -130,8 +130,24 @@ quandlism.context = () ->
           if value is true
             context.resetState()
     context
-  
+
+  # Set an arbitray attribute under the type.key 
+  # Creates type if not already created
+  context.setAttribute = (type, key, val) ->
+    type = type.toUpperCase()
+    return unless type in types
+    attributes["#{type}"] ?= {}
+    attributes["#{type}"]["#{key}"] = val
+    context
     
+  # Retrieve an arbitray attribute key under the type namespace. Return null if type or type.key not set
+  context.getAttribute = (type, key) ->
+    type = type.toUpperCase()
+    return null unless type in types
+    return null unless attributes["#{type}"]? 
+    attributes["#{type}"]["#{key}"] ? null
+    
+
   # Reset any transformations on the data
   context.resetState = ->
     yAxisMin = yAxisMax = null
@@ -179,16 +195,6 @@ quandlism.context = () ->
     yAxisMax = _
     context
     
-  context.endDate = (_) =>
-    if not _? then return endDate
-    endDate = _
-    context
-  
-  context.startDate = (_) =>
-    if not _? then return startDate
-    startDate = _
-    context
-    
   context.dom = (_) =>
     if not _? then return dom
     dom = _
@@ -218,6 +224,7 @@ quandlism.context = () ->
     if not _? then return callbacks
     callbacks = _
     context
+    
     
   # Event listner and dispatchers
   

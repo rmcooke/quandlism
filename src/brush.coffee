@@ -196,8 +196,9 @@ QuandlismContext_.brush = () ->
           dateStart = d
           
         # Update context value for global end and start pionts
-        context.startDate dateStart
-        context.endDate   dateEnd
+        context.setAttribute 'brush', 'start_date', dateStart
+        context.setAttribute 'brush', 'end_date',   dateEnd
+        
         
       # Before dispatching to stage, reset the y min and max 
       startVal = line.getClosestIndex(dateStart)
