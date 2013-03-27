@@ -187,18 +187,24 @@ QuandlismContext_.brush = () ->
       if calculateDates
         dateStart = xScale.invert drawStart
         dateEnd   = xScale.invert drawEnd
+        
         # If dateStart > dateEnd, handles were inverted, so 
         # reverse order of dispatch
         if dateStart > dateEnd
           d = dateEnd
           dateEnd = dateStart
           dateStart = d
+          
+        # Update context value for global end and start pionts
+        context.setAttribute 'brush', 'start_date', dateStart
+        context.setAttribute 'brush', 'end_date',   dateEnd
+        
         
       # Before dispatching to stage, reset the y min and max 
       startVal = line.getClosestIndex(dateStart)
       endVal = line.getClosestIndex(dateEnd)
       context.adjust line.dateAt(startVal), startVal, line.dateAt(endVal), endVal
-      return
+      return      
       
     # Resets the state of the brush control
     # Sets dragging and stretching to to false and saves the xStart and brushWidth values

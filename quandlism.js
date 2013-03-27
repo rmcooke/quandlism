@@ -4,11 +4,11 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.8.6'
+    version: '0.8.7'
   };
 
   quandlism.context = function() {
-    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
+    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, types, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -26,8 +26,10 @@
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
     processes = ["BUILD", "MERGE"];
+    types = ['STAGE', 'BRUSH'];
     callbacks = {};
     options = {};
+    attributes = {};
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
         return;
@@ -175,6 +177,28 @@
         }
       }
       return context;
+    };
+    context.setAttribute = function(type, key, val) {
+      var _name, _ref;
+      type = type.toUpperCase();
+      if (__indexOf.call(types, type) >= 0) {
+        if ((_ref = attributes[_name = "" + type]) == null) {
+          attributes[_name] = {};
+        }
+        attributes["" + type]["" + key] = val;
+      }
+      return context;
+    };
+    context.getAttribute = function(type, key) {
+      var _ref;
+      type = type.toUpperCase();
+      if (__indexOf.call(types, type) < 0) {
+        return null;
+      }
+      if (attributes["" + type] == null) {
+        return null;
+      }
+      return (_ref = attributes["" + type]["" + key]) != null ? _ref : null;
     };
     context.resetState = function() {
       yAxisMin = yAxisMax = null;
@@ -1025,6 +1049,8 @@
             dateEnd = dateStart;
             dateStart = d;
           }
+          context.setAttribute('brush', 'start_date', dateStart);
+          context.setAttribute('brush', 'end_date', dateEnd);
         }
         startVal = line.getClosestIndex(dateStart);
         endVal = line.getClosestIndex(dateEnd);
