@@ -1,3 +1,9 @@
+## 0.8.7
+
+* Context exposes attributes objects.  Attributes have type and key.  Type constrained to 'stage' and 'brush'
+* Brush exposes visible end points through context.attributes.
+* Brush updates end points attributes when adjusted. 
+
 ## 0.8.6
 
 * Bug fix: white space on end points of stage is removed. Send the exact date corresponding the calculated closestIndex, so x-axis domain does not include empty space.
