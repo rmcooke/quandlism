@@ -135,9 +135,9 @@ quandlism.context = () ->
   # Creates type if not already created
   context.setAttribute = (type, key, val) ->
     type = type.toUpperCase()
-    return unless type in types
-    attributes["#{type}"] ?= {}
-    attributes["#{type}"]["#{key}"] = val
+    if type in types
+      attributes["#{type}"] ?= {}
+      attributes["#{type}"]["#{key}"] = val
     context
     
   # Retrieve an arbitray attribute key under the type namespace. Return null if type or type.key not set

@@ -181,13 +181,12 @@
     context.setAttribute = function(type, key, val) {
       var _name, _ref;
       type = type.toUpperCase();
-      if (__indexOf.call(types, type) < 0) {
-        return;
+      if (__indexOf.call(types, type) >= 0) {
+        if ((_ref = attributes[_name = "" + type]) == null) {
+          attributes[_name] = {};
+        }
+        attributes["" + type]["" + key] = val;
       }
-      if ((_ref = attributes[_name = "" + type]) == null) {
-        attributes[_name] = {};
-      }
-      attributes["" + type]["" + key] = val;
       return context;
     };
     context.getAttribute = function(type, key) {
