@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, w, yAxisMax, yAxisMin,
+    var callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, endDate, event, h, lines, options, padding, processes, startDate, startPoint, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -20,6 +20,8 @@
     domtooltip = null;
     yAxisMin = null;
     yAxisMax = null;
+    startDate = null;
+    endDate = null;
     padding = 10;
     startPoint = 0.70;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
@@ -233,6 +235,20 @@
         return yAxisMax;
       }
       yAxisMax = _;
+      return context;
+    };
+    context.endDate = function(_) {
+      if (_ == null) {
+        return endDate;
+      }
+      endDate = _;
+      return context;
+    };
+    context.startDate = function(_) {
+      if (_ == null) {
+        return startDate;
+      }
+      startDate = _;
       return context;
     };
     context.dom = function(_) {
@@ -1025,6 +1041,8 @@
             dateEnd = dateStart;
             dateStart = d;
           }
+          context.startDate(dateStart);
+          context.endDate(dateEnd);
         }
         startVal = line.getClosestIndex(dateStart);
         endVal = line.getClosestIndex(dateEnd);

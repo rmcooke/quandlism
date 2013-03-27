@@ -10,6 +10,8 @@ quandlism.context = () ->
   domtooltip    = null
   yAxisMin      = null
   yAxisMax      = null
+  startDate     = null
+  endDate       = null
   padding       = 10 
   startPoint    = 0.70
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
@@ -175,6 +177,16 @@ quandlism.context = () ->
   context.yAxisMax = (_) =>
     if not _? then return yAxisMax
     yAxisMax = _
+    context
+    
+  context.endDate = (_) =>
+    if not _? then return endDate
+    endDate = _
+    context
+  
+  context.startDate = (_) =>
+    if not _? then return startDate
+    startDate = _
     context
     
   context.dom = (_) =>
