@@ -81,7 +81,7 @@ quandlism.context = () ->
   
   # use jQuery to get height and width of context container  
   context.build = () =>
-    w = $(dom).width()
+    w = $(dom).width() - 50
     h = $(dom).height()
     context
   
@@ -261,7 +261,7 @@ quandlism.context = () ->
       w0 = $(dom).width()
       h0 = $(dom).height()
       if w isnt w0 or h isnt h0
-        w = w0
+        w = w0 - 50
         h = h0
         context.respond()
     return

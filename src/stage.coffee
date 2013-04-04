@@ -5,11 +5,13 @@ QuandlismContext_.stage = () ->
   lines       = []
   line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
-  height      = context.utility().stageHeight()
+  height      = Math.floor (context.h() * quandlism_stage.h)
   xScale      = d3.time.scale()
   yScale      = d3.scale.linear()
+  ySecondScale = d3.scale.linear()
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yAxis       = d3.svg.axis().orient('left').scale yScale
+  ySecondAxis = d3.svg.axis().orient("right").scale ySecondScale
   extent      = []
   threshold   = 10
   dateStart   = null
@@ -22,7 +24,16 @@ QuandlismContext_.stage = () ->
   canvas      = null
   ctx         = null
   
-  
+  #init Y Axis DOM
+  initAxisDOM = (selection, left) ->	
+    selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr "style", "position: absolute; left: " + left + "px; top: 0px;"
+
+  #Set One Y Axis DOM
+  setOneYAxisDOM = (cv, lines, axisDOM, indexStart, indexEnd) ->
+     if context.utility().getExtent(lines, indexStart, indexEnd)[1][1] / context.utility().getExtent(lines, indexStart, indexEnd)[0][1] < 2
+        axisDOM.selectAll("*").remove()
+        cv.attr "style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
+	
   stage = (selection) =>
         
     canvasId = "canvas-stage-#{++quandlism_id_ref}" if not canvasId?
@@ -34,13 +45,9 @@ QuandlismContext_.stage = () ->
     
     # Build the yAxis
     # If no brush, dont calcualte stage height as percentage, use entire space
-    yAxisDOM = selection.insert 'svg'
-    yAxisDOM.attr 'class', 'y axis'
-    yAxisDOM.attr 'id', "y-axis-#{canvasId}"
-    yAxisDOM.attr 'width', quandlism_yaxis_width
-    yAxisDOM.attr 'height', height
-    yAxisDOM.attr "style", "position: absolute; left: 0px; top: 0px;"
-
+    yAxisDOM = initAxisDOM(selection, 0)
+    ySecondAxisDOM = initAxisDOM(selection, Math.floor(context.w()))
+    
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
     canvas.attr 'width', width
@@ -58,9 +65,8 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'class', 'x axis'
     xAxisDOM.attr 'id', "x-axis-#{canvasId}"
     xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
-    xAxisDOM.attr 'height', context.utility().xAxisHeight()
+    xAxisDOM.attr 'height', Math.floor context.h() * quandlism_xaxis.h
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{height}px"
-
 
     # Calculate the range and domain of the x and y scales
     setScales = () =>
@@ -70,8 +76,8 @@ QuandlismContext_.stage = () ->
       # If those values are equal then put the line in the middle!
       unless context.yAxisMax() and context.yAxisMin()
         extent = context.utility().getExtent lines, indexStart, indexEnd
-        extent = context.utility().getExtent lines, 0, line.length() unless extent[0] isnt extent[1]
-        extent = [Math.floor(extent[0]/2), Math.floor(extent[0]*2)] unless extent[0] isnt extent[1]
+        extent = context.utility().getExtent lines, 0, line.length() unless extent[0][0] isnt extent[0][1]
+        extent = [Math.floor(extent[0][0]/2), Math.floor(extent[0][0]*2)] unless extent[0][0] isnt extent[0][1]
       # Update the linear x and y scales with calculated extent
                  
       _yMin = context.yAxisMin()
@@ -80,41 +86,52 @@ QuandlismContext_.stage = () ->
       _yMin = null if _.isString(_yMin) and _.isEmpty(_yMin)
       _yMax = null if _.isString(_yMax) and _.isEmpty(_yMax)
 
-      _yMin = _yMin ? extent[0] 
-      _yMax = _yMax ? extent[1]
+      _yMin = _yMin ? extent[0][0] 
+      _yMax = _yMax ? extent[0][1]
            
       # Set yvalues in context in the case of  calculated extent being used
       context.yAxisMin _yMin
       context.yAxisMax _yMax
       
-      yScale.domain [_yMin, _yMax]
-      yScale.range  [(height - context.padding()), context.padding()]
-
-      yAxis.ticks Math.floor context.h()*quandlism_stage.h / 30
-      yAxis.tickSize 5, 3, 0
-
       # Build the yAxis tick formatting function
-      unitsObj = context.utility().getUnitAndDivisor Math.round(extent[1])
+      unitsObj = context.utility().getUnitAndDivisor Math.round(extent[0][1])
+      unitsSecondObj = context.utility().getUnitAndDivisor(Math.round(extent[1][1]))
+
+      setTicks _yMin, _yMax, yScale, yAxis, unitsObj
+      setTicks extent[1][0], extent[1][1], ySecondScale, ySecondAxis, unitsSecondObj
   
-      yAxis.tickFormat (d) =>
-        n = (d/unitsObj['divisor']).toFixed 2
-        n = n.replace(/0+$/, '')
-        n = n.replace(/\.$/, '')
-        "#{n}#{unitsObj['label']}"
-        
-        
       xScale.domain [dateStart, dateEnd]
       xScale.range  [0, width]
       return
     
+    # Set the Y Axes tick
+    setTicks = (min, max, yAxesScale, yAxes, unitObject) ->
+      yAxesScale.domain [min, max]
+      yAxesScale.range  [(height - context.padding()), context.padding()]
+
+      yAxes.ticks Math.floor context.h()*quandlism_stage.h / 30
+      yAxes.tickSize 5, 3, 0
+      
+      yAxes.tickFormat (d) =>
+        n = (d/unitObject['divisor']).toFixed 2
+        n = n.replace(/0+$/, '')
+        n = n.replace(/\.$/, '')
+        "#{n}#{unitObject['label']}"
+
+    # Remove old yAxis and redraw    
+    appendAxis = (axisDOM, axis, val) ->
+       axisDOM.selectAll("*").remove()
+       axisDOM.append("g").attr("transform", "translate(" + val + ", 0)").call axis
+
     # Draw axis
     drawAxis = () =>
       # Remove old yAxis and redraw
-      yAxisDOM.selectAll('*').remove()
-      yg = yAxisDOM.append 'g'
-      yg.attr 'transform', "translate(#{quandlism_yaxis_width}, 0)"
-      yg.call yAxis
-            
+      canvas.attr "style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;border-right: 1px solid black;"
+      yg = appendAxis(yAxisDOM, yAxis, quandlism_yaxis_width)
+      ygSecond = appendAxis(ySecondAxisDOM, ySecondAxis, 1)
+      
+      setOneYAxisDOM canvas, lines, ySecondAxisDOM, indexStart, indexEnd
+
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
       xg.call xAxis
@@ -159,13 +176,27 @@ QuandlismContext_.stage = () ->
       for line, j in lines   
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
-        line.drawPathFromIndicies ctx, xScale, yScale, indexStart, indexEnd, lineWidth
+        if extent[1][1] / extent[0][1] > 2 and Math.abs(line.extent(indexStart, indexEnd)[1] - extent[1][1]) < Math.abs(line.extent(indexStart, indexEnd)[1] - extent[0][1])
+          line.drawPathFromIndicies ctx, xScale, ySecondScale, indexStart, indexEnd, lineWidth
+          changeLegendLabel true
+        else
+          line.drawPathFromIndicies ctx, xScale, yScale, indexStart, indexEnd, lineWidth
+          changeLegendLabel false
         if ((indexEnd-indexStart) < threshold)
           line.drawPointAtIndex ctx, xScale, yScale, i, 2 for i in [indexStart..indexEnd]
           
         #line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
       return
-      
+    
+    #change legend label when display second Y Axis
+    changeLegendLabel = (isChange) ->
+      for item, j in d3.select(context.domlegend()).selectAll('a')[0]
+        origin_text = item.text
+        if isChange
+          item.text = (origin_text + "(right)")  if line.name() is origin_text
+        else
+          item.text = line.name()  unless origin_text.indexOf(line.name()) is -1
+
     # Detects line hit
     # Analyzed color under the mouse cursor and try to match to a line
     #
@@ -206,8 +237,10 @@ QuandlismContext_.stage = () ->
       date  = line_.dateAt(dataIndex)
       value = line_.valueAt(dataIndex)
       draw line_.id()
-      line_.drawPointAtIndex ctx, xScale, yScale, dataIndex, 3
-  
+      if extent[1][1] / extent[0][1] > 2 and Math.abs(line_.extent(indexStart, indexEnd)[1] - extent[1][1]) < Math.abs(line_.extent(indexStart, indexEnd)[1] - extent[0][1])
+        line_.drawPointAtIndex ctx, xScale, ySecondScale, dataIndex, 3
+      else
+        line_.drawPointAtIndex ctx, xScale, yScale, dataIndex, 3  
 
       # In toolip container?
       inTooltip = loc[1] <= 20 and loc[0] >= (width-250)
@@ -255,8 +288,8 @@ QuandlismContext_.stage = () ->
     # Resize, clear and re-draw
     context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
-      width = Math.floor (context.w()-quandlism_yaxis_width-2)
-      height = context.utility().stageHeight()
+      width = Math.floor (context.w()-quandlism_yaxis_width-1)
+      height = Math.floor (context.h() * quandlism_stage.h)
       canvas.attr 'width', width
       canvas.attr 'height', height
       
@@ -266,6 +299,7 @@ QuandlismContext_.stage = () ->
       # Adjust x axis with and marign
       xAxisDOM.attr 'width',  Math.floor context.w() - quandlism_yaxis_width
       xAxisDOM.attr 'height', Math.floor context.utility().xAxisHeight()
+      ySecondAxisDOM.attr "style", "position: absolute; left: " + Math.floor(context.w()) + "px; top: 0px;"
       setScales()
       draw()
       return
