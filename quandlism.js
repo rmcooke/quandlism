@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, types, w, yAxisMax, yAxisMin,
+    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -18,11 +18,13 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
-    yAxisMin = null;
+    yAxisMin = 100;
     yAxisMax = null;
+    yAxisDualMin = null;
+    yAxisDualMax = null;
     padding = 10;
     startPoint = 0.70;
-    dualLimit = 2;
+    dualLimit = 10;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -202,7 +204,7 @@
       return (_ref = attributes["" + type]["" + key]) != null ? _ref : null;
     };
     context.resetState = function() {
-      yAxisMin = yAxisMax = null;
+      yAxisMin = yAxisMax = yAxisDualMin = yAxisDualMax = null;
     };
     context.lines = function(_) {
       if (!_) {
@@ -258,6 +260,20 @@
         return yAxisMax;
       }
       yAxisMax = _;
+      return context;
+    };
+    context.yAxisDualMin = function(_) {
+      if (_ == null) {
+        return yAxisDualMin;
+      }
+      yAxisDualMin = _;
+      return context;
+    };
+    context.yAxisDualMax = function(_) {
+      if (_ == null) {
+        return yAxisDualMax;
+      }
+      yAxisDualMax = _;
       return context;
     };
     context.dom = function(_) {
@@ -386,7 +402,7 @@
   })();
 
   QuandlismContext_.line = function(data) {
-    var color, context, dates, datesMap, id, line, name, values, visible,
+    var allowedAxes, color, context, dates, datesMap, id, inAxis, line, name, values, visible,
       _this = this;
     line = new QuandlismLine();
     context = this;
@@ -397,6 +413,8 @@
     id = quandlism_line_id++;
     visible = false;
     color = '#000000';
+    allowedAxes = ["LEFT", "RIGHT"];
+    inAxis = "LEFT";
     line.setup = function() {
       var v;
       dates = (function() {
@@ -626,7 +644,7 @@
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, initAxisDOM, line, lines, setOneYAxisDOM, stage, threshold, width, xAxis, xScale, yAxis, yScale, ySecondAxis, ySecondScale,
+    var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extents, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxes, yAxesDOMs, yScales,
       _this = this;
     context = this;
     canvasId = null;
@@ -636,12 +654,11 @@
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
     height = Math.floor(context.h() * quandlism_stage.h);
     xScale = d3.time.scale();
-    yScale = d3.scale.linear();
-    ySecondScale = d3.scale.linear();
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
-    yAxis = d3.svg.axis().orient('left').scale(yScale);
-    ySecondAxis = d3.svg.axis().orient("right").scale(ySecondScale);
-    extent = [];
+    yScales = [d3.scale.linear(), d3.scale.linear()];
+    yAxes = [d3.svg.axis().orient('left').scale(yScales[0]), d3.svg.axis().orient('right').scale(yScales[1])];
+    yAxesDOMs = [];
+    extents = [[], []];
     threshold = 10;
     dateStart = null;
     dateEnd = null;
@@ -652,23 +669,23 @@
     threshold = 10;
     canvas = null;
     ctx = null;
-    initAxisDOM = function(selection, left) {
-      return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + left + "px; top: 0px;");
-    };
-    setOneYAxisDOM = function(cv, lines, axisDOM) {
-      axisDOM.selectAll("*").remove();
-      return cv.attr("style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
-    };
     stage = function(selection) {
-      var appendAxis, changeLegendLabel, clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, setTicks, xAxisDOM, yAxisDOM, ySecondAxisDOM;
+      var clearTooltip, configureAxes, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, xAxisDOM, _i;
+      shouldShowDualAxes = function() {
+        return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
+      };
+      insertAxisDOM = function(axisIndex) {
+        return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
+      };
       if (canvasId == null) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
       lines = selection.datum();
       line = _.first(lines);
       selection.attr("style", "position: absolute; left: 0px; top: 0px;");
-      yAxisDOM = initAxisDOM(selection, 0);
-      ySecondAxisDOM = initAxisDOM(selection, Math.floor(context.w()));
+      for (i = _i = 0; _i <= 1; i = ++_i) {
+        yAxesDOMs.push(insertAxisDOM(i));
+      }
       canvas = selection.append('canvas');
       canvas.attr('width', width);
       canvas.attr('height', height);
@@ -684,73 +701,103 @@
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
       xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + height + "px");
+      respondAxisDOM = function(axisInd) {
+        return yAxesDOMs[axisInd].attr('style', "position: absolute; left: " + (Math.floor(context.w()) * axisInd) + "px; top: 0px;");
+      };
+      resetExtents = function() {
+        extents = [[], []];
+      };
+      setExtents = function() {
+        var exe;
+        resetExtents();
+        setExtentsFromUser();
+        if (!_.isEmpty(extents[0])) {
+          return;
+        }
+        exe = context.utility().getExtent(lines, indexStart, indexEnd);
+        if (!shouldShowDualAxes()) {
+          extents = [exe, []];
+        } else {
+          extents = context.utility().getMultiExtent(lines, indexStart, indexEnd);
+          context.yAxisDualMin(extents[1][0]);
+          context.yAxisDualMax(extents[1][1]);
+        }
+        context.yAxisMin(extents[0][0]);
+        return context.yAxisMax(extents[0][1]);
+      };
+      setExtentsFromUser = function() {
+        if (context.yAxisMin() && context.yAxisMax()) {
+          extents[0] = [context.yAxisMin(), context.yAxisMax()];
+        }
+        if (context.yAxisDualMin() && context.yAxisDualMax()) {
+          return extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()];
+        }
+      };
       setScales = function() {
-        var unitsObj, unitsSecondObj, _yMax, _yMin;
-        if (!(context.yAxisMax() && context.yAxisMin())) {
-          extent = context.utility().getExtent(lines, indexStart, indexEnd);
-          if (extent[0][0] === extent[0][1]) {
-            extent = context.utility().getExtent(lines, 0, line.length());
-          }
-          if (extent[0][0] === extent[0][1]) {
-            extent = [Math.floor(extent[0][0] / 2), Math.floor(extent[0][0] * 2)];
-          }
-        }
-        _yMin = context.yAxisMin();
-        _yMax = context.yAxisMax();
-        if (_.isString(_yMin) && _.isEmpty(_yMin)) {
-          _yMin = null;
-        }
-        if (_.isString(_yMax) && _.isEmpty(_yMax)) {
-          _yMax = null;
-        }
-        _yMin = _yMin != null ? _yMin : extent[0][0];
-        _yMax = _yMax != null ? _yMax : extent[0][1];
-        context.yAxisMin(_yMin);
-        context.yAxisMax(_yMax);
-        unitsObj = context.utility().getUnitAndDivisor(Math.round(extent[0][1]));
-        unitsSecondObj = context.utility().getUnitAndDivisor(Math.round(extent[1][1]));
-        setTicks(_yMin, _yMax, yScale, yAxis, unitsObj);
-        setTicks(extent[1][0], extent[1][1], ySecondScale, ySecondAxis, unitsSecondObj);
+        var scale, _j, _len;
         xScale.domain([dateStart, dateEnd]);
         xScale.range([0, width]);
+        yScales[0].domain(extents[0]);
+        yScales[1].domain(extents[1]);
+        for (_j = 0, _len = yScales.length; _j < _len; _j++) {
+          scale = yScales[_j];
+          scale.range([height - context.padding(), context.padding()]);
+        }
       };
-      setTicks = function(min, max, yAxesScale, yAxes, unitObject) {
-        var _this = this;
-        yAxesScale.domain([min, max]);
-        yAxesScale.range([height - context.padding(), context.padding()]);
-        yAxes.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
-        yAxes.tickSize(5, 3, 0);
-        return yAxes.tickFormat(function(d) {
+      setTicks = function(unitsObj, axisIndex) {
+        yAxes[axisIndex].ticks(Math.floor(5));
+        yAxes[axisIndex].tickSize(5, 3, 0);
+        yAxes[axisIndex].tickFormat(function(d) {
           var n;
-          n = (d / unitObject['divisor']).toFixed(2);
+          n = (d / unitsObj['divisor']).toFixed(2);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
-          return "" + n + unitObject['label'];
+          return "" + n + unitsObj['label'];
         });
       };
-      appendAxis = function(axisDOM, axis, val) {
-        axisDOM.selectAll("*").remove();
-        return axisDOM.append("g").attr("transform", "translate(" + val + ", 0)").call(axis);
+      configureAxes = function() {
+        var units, _j;
+        for (i = _j = 0; _j <= 1; i = ++_j) {
+          if (i === 1 && !shouldShowDualAxes()) {
+            continue;
+          }
+          console.log("SETTING TICKS FOR " + i);
+          console.log(extents[i][1]);
+          units = context.utility().getUnitAndDivisor(Math.round(extents[i][1]));
+          setTicks(units, i);
+        }
+      };
+      prepareToDraw = function() {
+        setExtents();
+        setScales();
+        configureAxes();
       };
       drawAxis = function() {
-        var xg, yg, ygSecond;
-        canvas.attr("style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;border-right: 1px solid black;");
-        yg = appendAxis(yAxisDOM, yAxis, quandlism_yaxis_width);
-        ygSecond = appendAxis(ySecondAxisDOM, ySecondAxis, 1);
-        if (context.utility().shouldShowDualAxis(lines, indexStart, indexEnd)) {
-          setOneYAxisDOM(canvas, lines, ySecondAxisDOM);
-        }
+        var xg, yAxis, _j, _len, _ref;
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
         xg.select('path').remove();
-        yg.select('path').remove();
+        _ref = [0, 1];
+        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+          i = _ref[_j];
+          yAxis = yAxesDOMs[i];
+          yAxis.selectAll('*').remove();
+          if (i === 1 && !shouldShowDualAxes()) {
+            continue;
+          }
+          yAxis.append('g');
+          yAxis.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
+          yAxis.call(yAxes[i]);
+          yAxis.select('path').remove();
+        }
       };
       drawGridLines = function() {
-        var x, y, _i, _j, _len, _len1, _ref, _ref1, _results;
+        var x, y, yScale, _j, _k, _len, _len1, _ref, _ref1, _results;
+        yScale = _.first(yScales);
         _ref = yScale.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          y = _ref[_i];
+        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+          y = _ref[_j];
           ctx.beginPath();
           ctx.strokeStyle = '#EDEDED';
           ctx.lineWidth = 1;
@@ -761,8 +808,8 @@
         }
         _ref1 = xScale.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
         _results = [];
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          x = _ref1[_j];
+        for (_k = 0, _len1 = _ref1.length; _k < _len1; _k++) {
+          x = _ref1[_k];
           ctx.beginPath();
           ctx.strokeStyle = '#EDEDED';
           ctx.lineWith = 1;
@@ -774,53 +821,28 @@
         return _results;
       };
       draw = function(lineId) {
-        var i, j, lineWidth, _i, _j, _len;
+        var j, lineWidth, _j, _k, _len;
         lineId = lineId != null ? lineId : -1;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
         drawGridLines();
-        for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
+        for (j = _j = 0, _len = lines.length; _j < _len; j = ++_j) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          if (extent[1][1] / extent[0][1] > 2 && Math.abs(line.extent(indexStart, indexEnd)[1] - extent[1][1]) < Math.abs(line.extent(indexStart, indexEnd)[1] - extent[0][1])) {
-            line.drawPathFromIndicies(ctx, xScale, ySecondScale, indexStart, indexEnd, lineWidth);
-            changeLegendLabel(true);
+          if (shouldShowDualAxes()) {
+            console.log("THIS IS NOT DONE");
           } else {
-            line.drawPathFromIndicies(ctx, xScale, yScale, indexStart, indexEnd, lineWidth);
-            changeLegendLabel(false);
-          }
-          if ((indexEnd - indexStart) < threshold) {
-            for (i = _j = indexStart; indexStart <= indexEnd ? _j <= indexEnd : _j >= indexEnd; i = indexStart <= indexEnd ? ++_j : --_j) {
-              line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
+            line.drawPathFromIndicies(ctx, xScale, yScales[0], indexStart, indexEnd, lineWidth);
+            if ((indexEnd - indexStart) < threshold) {
+              for (i = _k = indexStart; indexStart <= indexEnd ? _k <= indexEnd : _k >= indexEnd; i = indexStart <= indexEnd ? ++_k : --_k) {
+                line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
+              }
             }
           }
         }
-      };
-      changeLegendLabel = function(isChange) {
-        var item, j, origin_text, _i, _len, _ref, _results;
-        _ref = d3.select(context.domlegend()).selectAll('a')[0];
-        _results = [];
-        for (j = _i = 0, _len = _ref.length; _i < _len; j = ++_i) {
-          item = _ref[j];
-          origin_text = item.text;
-          if (isChange) {
-            if (line.name() === origin_text) {
-              _results.push(item.text = origin_text + "(right)");
-            } else {
-              _results.push(void 0);
-            }
-          } else {
-            if (origin_text.indexOf(line.name()) !== -1) {
-              _results.push(item.text = line.name());
-            } else {
-              _results.push(void 0);
-            }
-          }
-        }
-        return _results;
       };
       lineHit = function(m) {
-        var hex, hitMatrix, i, j, k, n, _i, _j, _k, _ref, _ref1, _ref2, _ref3, _ref4;
+        var hex, hitMatrix, j, k, n, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _ref4;
         hex = context.utility().getPixelRGB(m, ctx);
         i = _.indexOf(context.colorList(), hex);
         if (i !== -1) {
@@ -831,14 +853,14 @@
           };
         }
         hitMatrix = [];
-        for (j = _i = _ref = m[0] - 3, _ref1 = m[0] + 3; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; j = _ref <= _ref1 ? ++_i : --_i) {
-          for (k = _j = _ref2 = m[1] - 3, _ref3 = m[1] + 3; _ref2 <= _ref3 ? _j <= _ref3 : _j >= _ref3; k = _ref2 <= _ref3 ? ++_j : --_j) {
+        for (j = _j = _ref = m[0] - 3, _ref1 = m[0] + 3; _ref <= _ref1 ? _j <= _ref1 : _j >= _ref1; j = _ref <= _ref1 ? ++_j : --_j) {
+          for (k = _k = _ref2 = m[1] - 3, _ref3 = m[1] + 3; _ref2 <= _ref3 ? _k <= _ref3 : _k >= _ref3; k = _ref2 <= _ref3 ? ++_k : --_k) {
             if (j !== m[0] || k !== m[1]) {
               hitMatrix.push([j, k]);
             }
           }
         }
-        for (n = _k = 0, _ref4 = hitMatrix.length - 1; 0 <= _ref4 ? _k <= _ref4 : _k >= _ref4; n = 0 <= _ref4 ? ++_k : --_k) {
+        for (n = _l = 0, _ref4 = hitMatrix.length - 1; 0 <= _ref4 ? _l <= _ref4 : _l >= _ref4; n = 0 <= _ref4 ? ++_l : --_l) {
           hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
           i = _.indexOf(context.colorList(), hex);
           if (i !== -1) {
@@ -857,10 +879,10 @@
         date = line_.dateAt(dataIndex);
         value = line_.valueAt(dataIndex);
         draw(line_.id());
-        if (extent[1][1] / extent[0][1] > 2 && Math.abs(line_.extent(indexStart, indexEnd)[1] - extent[1][1]) < Math.abs(line_.extent(indexStart, indexEnd)[1] - extent[0][1])) {
-          line_.drawPointAtIndex(ctx, xScale, ySecondScale, dataIndex, 3);
+        if (extents[1][1] / extents[0][1] > 2 && Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[1][1]) < Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[0][1])) {
+          line_.drawPointAtIndex(ctx, xScale, yScales[1], dataIndex, 3);
         } else {
-          line_.drawPointAtIndex(ctx, xScale, yScale, dataIndex, 3);
+          line_.drawPointAtIndex(ctx, xScale, yScales[0], dataIndex, 3);
         }
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
@@ -885,20 +907,22 @@
         dateEnd = _.last(lines[0].dates());
         indexStart = 0;
         indexEnd = line.length();
-        setScales();
+        prepareToDraw();
         draw();
       }
       context.on('respond.stage', function() {
+        var _j;
         ctx.clearRect(0, 0, width, height);
         width = Math.floor(context.w() - quandlism_yaxis_width - 1);
         height = Math.floor(context.h() * quandlism_stage.h);
         canvas.attr('width', width);
         canvas.attr('height', height);
-        yAxisDOM.attr('width', quandlism_yaxis_width);
+        for (i = _j = 0; _j <= 1; i = ++_j) {
+          respondAxisDOM(i);
+        }
         xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
         xAxisDOM.attr('height', Math.floor(context.utility().xAxisHeight()));
-        ySecondAxisDOM.attr("style", "position: absolute; left: " + Math.floor(context.w()) + "px; top: 0px;");
-        setScales();
+        prepareToDraw();
         draw();
       });
       context.on('adjust.stage', function(_dateStart, _indexStart, _dateEnd, _indexEnd) {
@@ -906,14 +930,14 @@
         indexEnd = _indexEnd;
         dateStart = _dateStart;
         dateEnd = _dateEnd;
-        setScales();
+        prepareToDraw();
         draw();
       });
       context.on('toggle.stage', function() {
         if (!context.dombrush()) {
           context.resetState();
         }
-        setScales();
+        prepareToDraw();
         draw();
       });
       context.on('refresh.stage', function() {
@@ -952,6 +976,7 @@
       return stage;
     };
     stage.yScale = function(_) {
+      var yScale;
       if (_ == null) {
         return yScale;
       }
@@ -1022,7 +1047,7 @@
         }
       };
       setScales = function() {
-        yScale.domain(context.utility().getBrushExtent(lines, null, null));
+        yScale.domain(context.utility().getExtent(lines, null, null));
         yScale.range([height - context.padding(), context.padding()]);
         xScale.range([context.padding(), width - context.padding()]);
         xScale.domain([_.first(line.dates()), _.last(line.dates())]);
@@ -1572,7 +1597,50 @@
         return _ref = line.name(), __indexOf.call(columns, _ref) < 0;
       });
     };
+    utility.getMultiExtent = function(lines, start, end) {
+      var exesMax, exesMin, groupedExtents;
+      if (!utility.shouldShowDualAxis(lines, start, end)) {
+        return [utility.getExtent(lines, start, end)];
+      }
+      groupedExtents = utility.getGroupMinMaxList(lines, min, max, start, end);
+      exesMin = _.first(groupedExtents);
+      exesMax = _.last(groupedExtents);
+      return [
+        [
+          d3.min(exesMin, function(m) {
+            return m[0];
+          }), d3.max(exesMin, function(m) {
+            return m[1];
+          })
+        ], [
+          d3.min(exesMax, function(m) {
+            return m[0];
+          }), d3.max(exesMax, function(m) {
+            return m[1];
+          })
+        ]
+      ];
+    };
     utility.getExtent = function(lines, start, end) {
+      var exes, line;
+      exes = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = lines.length; _i < _len; _i++) {
+          line = lines[_i];
+          _results.push(line.extent(start, end));
+        }
+        return _results;
+      })();
+      return [
+        d3.min(exes, function(m) {
+          return m[0];
+        }), d3.max(exes, function(m) {
+          return m[1];
+        })
+      ];
+    };
+    utility.getMultiExtent = function(lines, start, end) {
       var exes_max, exes_min, line, max, min, val, _i, _len;
       min = Infinity;
       max = -Infinity;
@@ -1608,43 +1676,21 @@
       ];
     };
     utility.getGroupMinMaxList = function(lines, min, max, start, end) {
-      var line, max_dis, min_dis, _i, _len, _results, _results_max, _results_min;
-      _results = [];
-      _results_min = [];
-      _results_max = [];
+      var line, max_dis, min_dis, _i, _len, _resultsMax, _resultsMin;
+      _resultsMin = [];
+      _resultsMax = [];
       for (_i = 0, _len = lines.length; _i < _len; _i++) {
         line = lines[_i];
-        min_dis = Math.abs(min - line.extent(start, end)[1]);
-        max_dis = Math.abs(max - line.extent(start, end)[1]);
-        if (min_dis < max_dis || min_dis === 0 || max / min < 2) {
-          _results_min.push(line.extent(start, end));
+        min_dis = Math.abs(min - _.last(line.extent(start, end)));
+        max_dis = Math.abs(max - _.last(line.extent(start, end)));
+        if (min_dis < max_dis || min_dis === 0) {
+          _resultsMin.push(line.extent(start, end));
         }
         if (min_dis > max_dis || max_dis === 0) {
-          _results_max.push(line.extent(start, end));
+          _resultsMax.push(line.extent(start, end));
         }
       }
-      _results.push(_results_min);
-      _results.push(_results_max);
-      return _results;
-    };
-    utility.getBrushExtent = function(lines, start, end) {
-      var exes, line;
-      exes = (function() {
-        var _i, _len, _results;
-        _results = [];
-        for (_i = 0, _len = lines.length; _i < _len; _i++) {
-          line = lines[_i];
-          _results.push(line.extent(start, end));
-        }
-        return _results;
-      })();
-      return [
-        d3.min(exes, function(m) {
-          return m[0];
-        }), d3.max(exes, function(m) {
-          return m[1];
-        })
-      ];
+      return [_resultsMin, _resultsMax];
     };
     utility.getExtentFromDates = function(lines, startDate, endDate) {
       var exes, line;
@@ -1727,8 +1773,29 @@
         return context.h() * 0.10;
       }
     };
-    utility.shouldShowDualAxis = function(lines, start, end) {
-      return utility.getExtent(lines, start, end)[1][1] / utility.getExtent(lines, start, end)[0][1] < context.dualLimit();
+    utility.visibleLines = function(lines) {
+      var line, vis, _i, _len;
+      vis = 0;
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        if (line.visible()) {
+          vis += 1;
+        }
+      }
+      return vis;
+    };
+    utility.shouldShowDualAxes = function(lines, start, end) {
+      if (!((lines != null) && lines instanceof Array)) {
+        return false;
+      }
+      if (lines.length === 1 || utility.visibleLines(lines) < 2) {
+        return false;
+      }
+      return utility.shouldShowDualAxesFromExtent(utility.getExtent(lines, start, end));
+    };
+    utility.shouldShowDualAxesFromExtent = function(exe) {
+      console.log(exe);
+      return (_.last(exe) / _.first(exe)) > context.dualLimit();
     };
     return utility;
   };

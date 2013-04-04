@@ -2,14 +2,16 @@ class QuandlismLine
 
 QuandlismContext_.line = (data) ->
   line          = new QuandlismLine()
-  context      = @
-  name         = data.name
-  values       = data.values.reverse()
-  dates        = []
-  datesMap     = []
-  id           = quandlism_line_id++
-  visible      = false
-  color        = '#000000'
+  context       = @
+  name          = data.name
+  values        = data.values.reverse()
+  dates         = []
+  datesMap      = []
+  id            = quandlism_line_id++
+  visible       = false
+  color         = '#000000'
+  allowedAxes   = [ "LEFT", "RIGHT" ]
+  inAxis        = "LEFT"
   
   # Instance methods
   # setup!

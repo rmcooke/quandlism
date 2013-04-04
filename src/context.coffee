@@ -8,11 +8,13 @@ quandlism.context = () ->
   dombrush      = null
   domlegend     = null
   domtooltip    = null
-  yAxisMin      = null
+  yAxisMin      = 100
   yAxisMax      = null
+  yAxisDualMin  = null
+  yAxisDualMax  = null
   padding       = 10 
   startPoint    = 0.70
-  dualLimit     = 2
+  dualLimit     = 10
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
@@ -151,7 +153,7 @@ quandlism.context = () ->
 
   # Reset any transformations on the data
   context.resetState = ->
-    yAxisMin = yAxisMax = null
+    yAxisMin = yAxisMax = yAxisDualMin = yAxisDualMax = null
     return
     
   # Expose attributes via getters and settesr
@@ -194,6 +196,16 @@ quandlism.context = () ->
   context.yAxisMax = (_) =>
     if not _? then return yAxisMax
     yAxisMax = _
+    context
+    
+  context.yAxisDualMin = (_) =>
+    if not _? then return yAxisDualMin
+    yAxisDualMin = _
+    context
+    
+  context.yAxisDualMax = (_) =>
+    if not _? then return yAxisDualMax
+    yAxisDualMax = _
     context
     
   context.dom = (_) =>
