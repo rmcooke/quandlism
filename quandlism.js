@@ -1014,7 +1014,7 @@
         }
       };
       setScales = function() {
-        yScale.domain(context.utility().getExtent(lines, null, null));
+        yScale.domain(context.utility().getBrushExtent(lines, null, null));
         yScale.range([height - context.padding(), context.padding()]);
         xScale.range([context.padding(), width - context.padding()]);
         xScale.domain([_.first(line.dates()), _.last(line.dates())]);
