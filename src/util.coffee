@@ -178,4 +178,10 @@ QuandlismContext_.utility = () ->
   utility.xAxisHeight = =>
     if context.dombrush()? then quandlism_xaxis.h*context.h() else context.h()*0.10
     
+  # Determine if the lines with the indicies start and end should reveal two axes
+  utility.shouldShowDualAxis = (lines, start, end) =>
+    utility.getExtent(lines, start, end)[1][1] / utility.getExtent(lines, start, end)[0][1] < context.dualLimit()
+    
+    
+    
   utility

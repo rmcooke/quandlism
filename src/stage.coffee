@@ -29,10 +29,9 @@ QuandlismContext_.stage = () ->
     selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr "style", "position: absolute; left: " + left + "px; top: 0px;"
 
   #Set One Y Axis DOM
-  setOneYAxisDOM = (cv, lines, axisDOM, indexStart, indexEnd) ->
-     if context.utility().getExtent(lines, indexStart, indexEnd)[1][1] / context.utility().getExtent(lines, indexStart, indexEnd)[0][1] < 2
-        axisDOM.selectAll("*").remove()
-        cv.attr "style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
+  setOneYAxisDOM = (cv, lines, axisDOM) ->
+    axisDOM.selectAll("*").remove()
+    cv.attr "style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
 	
   stage = (selection) =>
         
@@ -77,7 +76,7 @@ QuandlismContext_.stage = () ->
       unless context.yAxisMax() and context.yAxisMin()
         extent = context.utility().getExtent lines, indexStart, indexEnd
         extent = context.utility().getExtent lines, 0, line.length() unless extent[0][0] isnt extent[0][1]
-        extent = [Math.floor(extent[0][0]/2), Math.floor(extent[0][0]*2)] unless extent[0][0] isnt extent[0][1]
+        extent = [Math.floor(extent[0][0] / 2), Math.floor(extent[0][0]*2)] unless extent[0][0] isnt extent[0][1]
       # Update the linear x and y scales with calculated extent
                  
       _yMin = context.yAxisMin()
@@ -113,7 +112,7 @@ QuandlismContext_.stage = () ->
       yAxes.tickSize 5, 3, 0
       
       yAxes.tickFormat (d) =>
-        n = (d/unitObject['divisor']).toFixed 2
+        n = (d / unitObject['divisor']).toFixed 2
         n = n.replace(/0+$/, '')
         n = n.replace(/\.$/, '')
         "#{n}#{unitObject['label']}"
@@ -130,7 +129,7 @@ QuandlismContext_.stage = () ->
       yg = appendAxis(yAxisDOM, yAxis, quandlism_yaxis_width)
       ygSecond = appendAxis(ySecondAxisDOM, ySecondAxis, 1)
       
-      setOneYAxisDOM canvas, lines, ySecondAxisDOM, indexStart, indexEnd
+      setOneYAxisDOM canvas, lines, ySecondAxisDOM if context.utility().shouldShowDualAxis(lines, indexStart, indexEnd)
 
       xAxisDOM.selectAll('*').remove()
       xg = xAxisDOM.append 'g'
@@ -153,7 +152,7 @@ QuandlismContext_.stage = () ->
         ctx.stroke()
         ctx.closePath()
         
-      for x in xScale.ticks Math.floor (context.w()-quandlism_yaxis_width)/100
+      for x in xScale.ticks Math.floor (context.w()-quandlism_yaxis_width) / 100
         ctx.beginPath()
         ctx.strokeStyle = '#EDEDED'
         ctx.lineWith = 1

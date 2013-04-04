@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, types, w, yAxisMax, yAxisMin,
+    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, types, w, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -22,6 +22,7 @@
     yAxisMax = null;
     padding = 10;
     startPoint = 0.70;
+    dualLimit = 2;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -299,6 +300,13 @@
         return callbacks;
       }
       callbacks = _;
+      return context;
+    };
+    context.dualLimit = function(_) {
+      if (_ == null) {
+        return dualLimit;
+      }
+      dualLimit = _;
       return context;
     };
     context.respond = _.throttle(function() {
@@ -647,11 +655,9 @@
     initAxisDOM = function(selection, left) {
       return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + left + "px; top: 0px;");
     };
-    setOneYAxisDOM = function(cv, lines, axisDOM, indexStart, indexEnd) {
-      if (context.utility().getExtent(lines, indexStart, indexEnd)[1][1] / context.utility().getExtent(lines, indexStart, indexEnd)[0][1] < 2) {
-        axisDOM.selectAll("*").remove();
-        return cv.attr("style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
-      }
+    setOneYAxisDOM = function(cv, lines, axisDOM) {
+      axisDOM.selectAll("*").remove();
+      return cv.attr("style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
     };
     stage = function(selection) {
       var appendAxis, changeLegendLabel, clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, setTicks, xAxisDOM, yAxisDOM, ySecondAxisDOM;
@@ -731,7 +737,9 @@
         canvas.attr("style", "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;border-right: 1px solid black;");
         yg = appendAxis(yAxisDOM, yAxis, quandlism_yaxis_width);
         ygSecond = appendAxis(ySecondAxisDOM, ySecondAxis, 1);
-        setOneYAxisDOM(canvas, lines, ySecondAxisDOM, indexStart, indexEnd);
+        if (context.utility().shouldShowDualAxis(lines, indexStart, indexEnd)) {
+          setOneYAxisDOM(canvas, lines, ySecondAxisDOM);
+        }
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
@@ -1718,6 +1726,9 @@
       } else {
         return context.h() * 0.10;
       }
+    };
+    utility.shouldShowDualAxis = function(lines, start, end) {
+      return utility.getExtent(lines, start, end)[1][1] / utility.getExtent(lines, start, end)[0][1] < context.dualLimit();
     };
     return utility;
   };

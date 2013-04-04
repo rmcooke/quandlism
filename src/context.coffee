@@ -12,6 +12,7 @@ quandlism.context = () ->
   yAxisMax      = null
   padding       = 10 
   startPoint    = 0.70
+  dualLimit     = 2
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
@@ -225,6 +226,10 @@ quandlism.context = () ->
     callbacks = _
     context
     
+  context.dualLimit = (_) =>
+    if not _? then return dualLimit
+    dualLimit = _
+    context
     
   # Event listner and dispatchers
   
