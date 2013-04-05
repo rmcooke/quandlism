@@ -85,25 +85,16 @@ QuandlismContext_.stage = () ->
       # Check for user overrides and set extent from those values
       resetExtents()
       setExtentsFromUser()
+      
       return unless _.isEmpty extents[0]
-      # If user overrides not set, calculate the global extent. Use for first exent value unless threshold indicates multi
-      # axes is necessary
-      # XXX ADD CHECKS
-      #     #   extent = context.utility().getExtent lines, indexStart, indexEnd
-      #   extent = context.utility().getExtent lines, 0, line.length()        unless _.first(extent) isnt _.last(extent)
-      #   extent = [Math.floor(extent[0][0] / 2), Math.floor(extent[0][0]*2)] unless _.first(extent) isnt _.last(extent)
-      #            
-      # _yMin = context.yAxisMin()
-      # _yMax = context.yAxisMax()
-      # 
-      # _yMin = null if _.isString(_yMin) and _.isEmpty(_yMin)
-      # _yMax = null if _.isString(_yMax) and _.isEmpty(_yMax)
-      # 
-      # _yMin = _yMin ? extent[0][0] 
-      # _yMax = _yMax ? extent[0][1]
-      #
+
+      # Calculate extents for all lines
+      # Recalculate and check for flat lines
       exe = context.utility().getExtent lines, indexStart, indexEnd
-      if !shouldShowDualAxes()
+      exe = context.utility().getExtent lines, 0, lines.length()  unless _.first(exe) isnt _.last exe
+      exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
+
+      if !context.utility().shouldShowDualAxesFromExtent exe
         extents = [exe, []]
       else
         extents = context.utility().getMultiExtent(lines, indexStart, indexEnd)

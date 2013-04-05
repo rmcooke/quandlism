@@ -754,7 +754,13 @@
           return;
         }
         exe = context.utility().getExtent(lines, indexStart, indexEnd);
-        if (!shouldShowDualAxes()) {
+        if (_.first(exe) === _.last(exe)) {
+          exe = context.utility().getExtent(lines, 0, lines.length());
+        }
+        if (_.first(exe) === _.last(exe)) {
+          exe = [Math.floor(exe[0] / 2), Math.floor(exe[0] * 2)];
+        }
+        if (!context.utility().shouldShowDualAxesFromExtent(exe)) {
           extents = [exe, []];
         } else {
           extents = context.utility().getMultiExtent(lines, indexStart, indexEnd);
