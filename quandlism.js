@@ -893,7 +893,7 @@
             line.drawPathFromIndicies(ctx, xScale, yScales[0], indexStart, indexEnd, lineWidth);
             if ((indexEnd - indexStart) < threshold) {
               for (i = _l = indexStart; indexStart <= indexEnd ? _l <= indexEnd : _l >= indexEnd; i = indexStart <= indexEnd ? ++_l : --_l) {
-                line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
+                line.drawPointAtIndex(ctx, xScale, yScales[0], i, 2);
               }
             }
           }

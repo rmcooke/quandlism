@@ -242,7 +242,7 @@ QuandlismContext_.stage = () ->
         else
           line.drawPathFromIndicies ctx, xScale, yScales[0], indexStart, indexEnd, lineWidth
           if ((indexEnd-indexStart) < threshold)
-            line.drawPointAtIndex ctx, xScale, yScale, i, 2 for i in [indexStart..indexEnd]
+            line.drawPointAtIndex ctx, xScale, yScales[0], i, 2 for i in [indexStart..indexEnd]
       return
 
     # Detects line hit
