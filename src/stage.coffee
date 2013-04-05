@@ -227,20 +227,17 @@ QuandlismContext_.stage = () ->
         
         # If there are two axes, determine which axes the line belongs to.
         if shouldShowDualAxes()
-          console.log "THIS IS NOT DONE"
+          ex = line.extent()
+          # Determine which scale to use for each line
+          axisIndex = if (Math.abs(extents[0][1]-ex[1]) <= Math.abs(extents[1][1]-ex[1])) then 0 else 1
+          line.axisIndex axisIndex
+          line.drawPathFromIndicies ctx, xScale, yScales[axisIndex], indexStart, indexEnd, lineWidth
+          if ((indexEnd-indexStart) < threshold)
+            line.drawPointAtIndex ctx, xScale, yScales[axisIndex], i, 2 for i in [indexStart..indexEnd]
         else
           line.drawPathFromIndicies ctx, xScale, yScales[0], indexStart, indexEnd, lineWidth
           if ((indexEnd-indexStart) < threshold)
             line.drawPointAtIndex ctx, xScale, yScale, i, 2 for i in [indexStart..indexEnd]
-        # if extent[1][1] / extent[0][1] > 2 and Math.abs(line.extent(indexStart, indexEnd)[1] - extent[1][1]) < Math.abs(line.extent(indexStart, indexEnd)[1] - extent[0][1])
-       #    line.drawPathFromIndicies ctx, xScale, ySecondScale, indexStart, indexEnd, lineWidth
-       #    changeLegendLabel true
-       #  else
-       #    line.drawPathFromIndicies ctx, xScale, yScale, indexStart, indexEnd, lineWidth
-       #    changeLegendLabel false
-
-          
-        #line.drawPath ctx, xScale, yScale, dateStart, dateEnd, lineWidth
       return
 
     # Detects line hit

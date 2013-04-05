@@ -836,7 +836,7 @@
         return _results;
       };
       draw = function(lineId) {
-        var j, lineWidth, _j, _k, _len;
+        var axisIndex, ex, j, lineWidth, _j, _k, _l, _len;
         lineId = lineId != null ? lineId : -1;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
@@ -845,11 +845,19 @@
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           if (shouldShowDualAxes()) {
-            console.log("THIS IS NOT DONE");
+            ex = line.extent();
+            axisIndex = Math.abs(extents[0][1] - ex[1]) <= Math.abs(extents[1][1] - ex[1]) ? 0 : 1;
+            line.axisIndex(axisIndex);
+            line.drawPathFromIndicies(ctx, xScale, yScales[axisIndex], indexStart, indexEnd, lineWidth);
+            if ((indexEnd - indexStart) < threshold) {
+              for (i = _k = indexStart; indexStart <= indexEnd ? _k <= indexEnd : _k >= indexEnd; i = indexStart <= indexEnd ? ++_k : --_k) {
+                line.drawPointAtIndex(ctx, xScale, yScales[axisIndex], i, 2);
+              }
+            }
           } else {
             line.drawPathFromIndicies(ctx, xScale, yScales[0], indexStart, indexEnd, lineWidth);
             if ((indexEnd - indexStart) < threshold) {
-              for (i = _k = indexStart; indexStart <= indexEnd ? _k <= indexEnd : _k >= indexEnd; i = indexStart <= indexEnd ? ++_k : --_k) {
+              for (i = _l = indexStart; indexStart <= indexEnd ? _l <= indexEnd : _l >= indexEnd; i = indexStart <= indexEnd ? ++_l : --_l) {
                 line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
               }
             }
