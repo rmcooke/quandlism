@@ -23,6 +23,7 @@ quandlism.context = () ->
   types         = ['STAGE', 'BRUSH']
   callbacks     = {}
   options       = {}
+  args           = {}
   attributes    = {}
   
 
@@ -42,8 +43,8 @@ quandlism.context = () ->
   # Conveneince method for attaching lines datum for each declared DOM element
   context.data = (attributes, process = "build") =>    
     throw "Unknown process #{process}" unless process? and process.toUpperCase() in processes
-    context.extractArguments attributes
-    context.executeOptions options
+    context.extractArguments()
+    context.executeOptions()
     lines = context.utility()["#{process.toLowerCase()}Lines"](attributes, lines ? null)
     lines = context.utility().processLines(attributes, lines)     
     context.bindToElements()
@@ -56,16 +57,28 @@ quandlism.context = () ->
     d3.select(domlegend).datum lines if domlegend
     context
     
-  # Extract optional quandlism parameters and execute assignment and calculation
-  context.extractArguments = (attributes) =>
-    for attr, value of attributes
-      switch attr
-        when "y_axis_min"       then context.yAxisMin(value)
-        when "y_axis_max"       then context.yAxisMax(value)
-        when "y_axis_dual_min"  then context.yAxisDualMin(value)
-        when "y_axis_dual_max"  then context.yAxisDualMax(value)
-        when "title"            then context.title(value)
-    return
+  # Execute options
+  # Users can execute function before/after processing data. 
+  # Currently supports resetState
+
+  context.executeOptions = =>
+    for opt, value of context.options()
+      switch opt 
+        when "reset" 
+          if value is true
+            context.resetState()
+    context
+    
+      
+  # Extract user defined arguments to override Quandlism defaults
+  # y_axis_min/max, y_axis_dual_min/max, title 
+  context.extractArguments =  =>
+    for attr, value of context.args()
+      continue unless value?      # Only execute arguments with a value. Use options with no value.
+      try
+        context["#{context.utility().camelize(attr)}"](value)
+
+    context
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -88,7 +101,7 @@ quandlism.context = () ->
   
   # use jQuery to get height and width of context container  
   context.build = () =>
-    w = $(dom).width() - 50
+    w = $(dom).width() - quandlism_yaxis_width
     h = $(dom).height()
     context
   
@@ -128,15 +141,6 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
-    
-  # Execute executable options!
-  context.executeOptions = (options) ->
-    for opt, value of options
-      switch opt 
-        when "reset" 
-          if value is true
-            context.resetState()
-    context
 
   # Set an arbitray attribute under the type.key 
   # Creates type if not already created
@@ -182,6 +186,11 @@ quandlism.context = () ->
     options = _
     context
     
+  context.args = (_) =>
+    if not _? then return args
+    args = _
+    context
+      
   context.w = (_) =>
     if not _? then return w
     w = _

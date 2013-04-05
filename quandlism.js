@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
+    var args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -33,6 +33,7 @@
     types = ['STAGE', 'BRUSH'];
     callbacks = {};
     options = {};
+    args = {};
     attributes = {};
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
@@ -62,8 +63,8 @@
       if (!((process != null) && (_ref = process.toUpperCase(), __indexOf.call(processes, _ref) >= 0))) {
         throw "Unknown process " + process;
       }
-      context.extractArguments(attributes);
-      context.executeOptions(options);
+      context.extractArguments();
+      context.executeOptions();
       lines = context.utility()["" + (process.toLowerCase()) + "Lines"](attributes, lines != null ? lines : null);
       lines = context.utility().processLines(attributes, lines);
       context.bindToElements();
@@ -82,27 +83,33 @@
       }
       return context;
     };
-    context.extractArguments = function(attributes) {
-      var attr, value;
-      for (attr in attributes) {
-        value = attributes[attr];
-        switch (attr) {
-          case "y_axis_min":
-            context.yAxisMin(value);
-            break;
-          case "y_axis_max":
-            context.yAxisMax(value);
-            break;
-          case "y_axis_dual_min":
-            context.yAxisDualMin(value);
-            break;
-          case "y_axis_dual_max":
-            context.yAxisDualMax(value);
-            break;
-          case "title":
-            context.title(value);
+    context.executeOptions = function() {
+      var opt, value, _ref;
+      _ref = context.options();
+      for (opt in _ref) {
+        value = _ref[opt];
+        switch (opt) {
+          case "reset":
+            if (value === true) {
+              context.resetState();
+            }
         }
       }
+      return context;
+    };
+    context.extractArguments = function() {
+      var attr, value, _ref;
+      _ref = context.args();
+      for (attr in _ref) {
+        value = _ref[attr];
+        if (value == null) {
+          continue;
+        }
+        try {
+          context["" + (context.utility().camelize(attr))](value);
+        } catch (_error) {}
+      }
+      return context;
     };
     context.render = function() {
       context.build();
@@ -129,7 +136,7 @@
       return context;
     };
     context.build = function() {
-      w = $(dom).width() - 50;
+      w = $(dom).width() - quandlism_yaxis_width;
       h = $(dom).height();
       return context;
     };
@@ -177,19 +184,6 @@
         colorList.push(rgb.toString());
         i++;
       }
-    };
-    context.executeOptions = function(options) {
-      var opt, value;
-      for (opt in options) {
-        value = options[opt];
-        switch (opt) {
-          case "reset":
-            if (value === true) {
-              context.resetState();
-            }
-        }
-      }
-      return context;
     };
     context.setAttribute = function(type, key, val) {
       var _name, _ref;
@@ -242,6 +236,13 @@
         return options;
       }
       options = _;
+      return context;
+    };
+    context.args = function(_) {
+      if (_ == null) {
+        return args;
+      }
+      args = _;
       return context;
     };
     context.w = function(_) {
@@ -1435,6 +1436,11 @@
       _this = this;
     context = this;
     utility = function() {};
+    utility.camelize = function(str) {
+      return str.replace(/(\_[a-z])/g, function(match) {
+        return match.toUpperCase().replace('_', '');
+      });
+    };
     utility.truncate = function(word, chars) {
       if (word.length > chars) {
         return "" + (word.substring(0, chars)) + "...";
@@ -1716,7 +1722,6 @@
       return utility.shouldShowDualAxesFromExtent(utility.getExtent(lines, start, end));
     };
     utility.shouldShowDualAxesFromExtent = function(exe) {
-      console.log(exe);
       return (_.last(exe) / _.first(exe)) > context.dualLimit();
     };
     return utility;

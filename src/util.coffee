@@ -4,6 +4,10 @@ QuandlismContext_.utility = () ->
   
   utility = -> return
 
+  # camelize a string
+  utility.camelize = (str) =>
+    str.replace /(\_[a-z])/g, (match) -> match.toUpperCase().replace('_','')
+
   # Truncate a word to a max 
   utility.truncate = (word, chars) =>
     if word.length > chars then "#{word.substring(0, chars)}..." else word
@@ -204,7 +208,6 @@ QuandlismContext_.utility = () ->
     utility.shouldShowDualAxesFromExtent utility.getExtent(lines, start, end)
     
   utility.shouldShowDualAxesFromExtent = (exe) =>
-    console.log exe
     (_.last(exe) / _.first(exe) ) > context.dualLimit()
     
     
