@@ -156,13 +156,22 @@ QuandlismContext_.line = (data) ->
       ctx.fillStyle = @color()
       ctx.fill()
       ctx.closePath()
-  
       
+  # Reset state when plot id draw
+  line.resetState = ->
+    @axisIndex 0
+    return
+    
   # Toggle visibility of line
-  line.toggle = () ->
+  line.toggle = ->
     v = not @visible()
     @visible(v)
     v
+  
+  # Short hand for the legend label
+  line.legendName = ->
+    return @name() if @axisIndex() is 0
+    "#{@name()} (R)"
     
   
   # Getters and setters - expose attributes of the line

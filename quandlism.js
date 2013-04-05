@@ -591,11 +591,20 @@
       }
       return _results;
     };
+    line.resetState = function() {
+      this.axisIndex(0);
+    };
     line.toggle = function() {
       var v;
       v = !this.visible();
       this.visible(v);
       return v;
+    };
+    line.legendName = function() {
+      if (this.axisIndex() === 0) {
+        return this.name();
+      }
+      return "" + (this.name()) + " (R)";
     };
     line.dates = function(_) {
       if (_ == null) {
@@ -676,7 +685,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
       shouldShowDualAxes = function() {
         return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
       };
@@ -780,11 +789,19 @@
       prepareCanvas = function() {
         canvas.attr("style", stageCanvasStyle());
       };
+      prepareLines = function() {
+        var _j, _len;
+        for (_j = 0, _len = lines.length; _j < _len; _j++) {
+          line = lines[_j];
+          line.resetState();
+        }
+      };
       prepareToDraw = function() {
         setExtents();
         setScales();
         prepareAxes();
         prepareCanvas();
+        prepareLines();
       };
       drawAxis = function() {
         var g, xg, _j, _len, _ref;
@@ -1345,144 +1362,6 @@
     return brush;
   };
 
-  QuandlismContext_.xaxis = function() {
-    var active, axis_, context, extent, height, id, lines, parseDate, scale, width, xaxis,
-      _this = this;
-    context = this;
-    width = context.w() * quandlism_xaxis.w;
-    height = context.h() * quandlism_xaxis.h;
-    scale = d3.time.scale().range([0, width]);
-    axis_ = d3.svg.axis().scale(scale);
-    extent = [];
-    active = false;
-    lines = [];
-    id = null;
-    parseDate = null;
-    xaxis = function(selection) {
-      var changeScale, update;
-      id = selection.attr('id');
-      lines = selection.datum();
-      axis_.tickSize(5, 3, 0);
-      update = function() {
-        var g;
-        xaxis.remove();
-        g = selection.append('svg');
-        g.attr('width', width);
-        g.attr('height', height);
-        g.append('g');
-        g.attr('transform', 'translate(0, 27)');
-        return g.call(axis_);
-      };
-      changeScale = function() {
-        extent = [lines[0].dateAt(0), lines[0].dateAt(lines[0].length() - 1)];
-        parseDate = context.utility().parseDate(lines[0].dateAt(0));
-        scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
-        axis_.tickFormat(d3.time.format('%b %d, %Y'));
-        axis_.ticks(Math.floor(width / 150, 0, 0));
-        return scale.range([0, width]);
-      };
-      changeScale();
-      update();
-      context.on("respond.xaxis-" + id, function() {
-        width = context.w() * quandlism_xaxis.w;
-        axis_.ticks(Math.floor(width / 150, 0, 0));
-        scale.range([0, width]);
-        return update();
-      });
-      context.on("refresh.xaxis-" + id, function() {
-        lines = selection.datum();
-        changeScale();
-        return update();
-      });
-      if (active) {
-        context.on("adjust.xaxis-" + id, function(x1, x2) {
-          x2 = x2 > lines[0].length() - 1 ? lines[0].length() - 1 : x2;
-          x1 = x1 < 0 ? 0 : x1;
-          extent = [lines[0].dateAt(x1), lines[0].dateAt(x2)];
-          scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
-          return update();
-        });
-      }
-    };
-    xaxis.remove = function() {
-      return d3.select("#" + id).selectAll("svg").remove();
-    };
-    xaxis.active = function(_) {
-      if (!_) {
-        return active;
-      }
-      active = _;
-      return xaxis;
-    };
-    return d3.rebind(xaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
-  };
-
-  QuandlismContext_.yaxis = function() {
-    var axis_, context, extent, height, id, lines, scale, width, xEnd, xStart, yaxis,
-      _this = this;
-    context = this;
-    width = context.w() * quandlism_yaxis.w;
-    height = context.h() * quandlism_yaxis.h;
-    scale = d3.scale.linear().range([height, 0]);
-    axis_ = d3.svg.axis().scale(scale);
-    lines = [];
-    extent = [];
-    xStart = null;
-    xEnd = null;
-    id = null;
-    yaxis = function(selection) {
-      var setEndPoints, update;
-      id = selection.attr('id');
-      lines = selection.datum();
-      axis_.ticks(Math.floor(height / 25, 0, 0));
-      axis_.tickSize(5, 3, 0);
-      update = function() {
-        var a, g;
-        extent = context.utility().getExtent(lines, xStart, xEnd);
-        scale.domain([extent[0], extent[1]]);
-        yaxis.remove();
-        g = selection.append('svg');
-        g.attr('width', width);
-        g.attr('height', '100%');
-        a = g.append('g');
-        a.attr('transform', "translate(" + (width - 1) + ", 0)");
-        a.attr('width', width);
-        a.attr('height', height);
-        return a.call(axis_);
-      };
-      setEndPoints = function() {
-        xEnd = lines[0].length() - 1;
-        xStart = Math.floor(lines[0].length() * context.endPercent());
-      };
-      setEndPoints();
-      update();
-      context.on("toggle.y-axis-" + id, function() {
-        update();
-      });
-      context.on("refresh.y-axis-" + id, function() {
-        lines = selection.datum();
-        setEndPoints();
-        update();
-      });
-      context.on("respond.y-axis-" + id, function() {
-        width = context.w() * quandlism_yaxis.w;
-        height = context.h() * quandlism_yaxis.h;
-        axis_.ticks(Math.floor(height / 25, 0, 0));
-        scale.range([height, 0]);
-        update();
-      });
-      context.on("adjust.y-axis-" + id + "}", function(x1, x2) {
-        xStart = x1 > 0 ? x1 : 0;
-        xEnd = x2 < lines[0].length() ? x2 : lines[0].length();
-        update();
-      });
-    };
-    yaxis.remove = function(_) {
-      d3.select("#" + id).selectAll("svg").remove();
-    };
-    return d3.rebind(yaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
-  };
-
   QuandlismContext_.legend = function() {
     var context, legend, lines;
     context = this;
@@ -1502,7 +1381,7 @@
         }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
           return line.id();
         }).text(function(line) {
-          return line.name();
+          return line.legendName();
         });
         selection.selectAll('a').on("click", function(d, i) {
           var e, el, id, line;
@@ -1525,6 +1404,9 @@
       };
       buildLegend();
       context.on('refresh.legend', function() {
+        buildLegend();
+      });
+      context.on('toggle.legend', function() {
         buildLegend();
       });
     };

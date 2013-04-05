@@ -9,14 +9,12 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         src: [
-          'src/index.coffee', 
+          'src/version.coffee', 
           'src/context.coffee', 
           'src/id.coffee', 
           'src/line.coffee', 
           'src/stage.coffee', 
           'src/brush.coffee', 
-          'src/xaxis.coffee', 
-          'src/yaxis.coffee', 
           'src/legend.coffee', 
           'src/util.coffee'
         ],

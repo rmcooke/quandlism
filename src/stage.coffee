@@ -162,6 +162,10 @@ QuandlismContext_.stage = () ->
     prepareCanvas = =>
       canvas.attr "style", stageCanvasStyle()
       return
+    
+    prepareLines = =>
+      line.resetState() for line in lines
+      return    
       
     # Execute util functions and calculate values needed to draw the stage
     prepareToDraw = =>
@@ -169,6 +173,7 @@ QuandlismContext_.stage = () ->
       setScales()
       prepareAxes()
       prepareCanvas()
+      prepareLines()
       return
       
     # Draw axis
