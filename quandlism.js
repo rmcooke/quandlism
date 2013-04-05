@@ -765,10 +765,10 @@
         return context.yAxisMax(extents[0][1]);
       };
       setExtentsFromUser = function() {
-        if (context.yAxisMin() && context.yAxisMax()) {
+        if (context.yAxisMin() && context.yAxisMax() && (context.yAxisMin() < context.yAxisMax())) {
           extents[0] = [context.yAxisMin(), context.yAxisMax()];
         }
-        if (context.yAxisDualMin() && context.yAxisDualMax()) {
+        if (context.yAxisDualMin() && context.yAxisDualMax() && (context.yAxisDualMin() < context.yAxisDualMax())) {
           return extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()];
         }
       };

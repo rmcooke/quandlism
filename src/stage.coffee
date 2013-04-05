@@ -117,8 +117,10 @@ QuandlismContext_.stage = () ->
     # If the context has extent values for either yAxis from the user, use those before trying to calculate 
     # from line objects
     setExtentsFromUser = =>
-      extents[0] = [context.yAxisMin(), context.yAxisMax()]         if context.yAxisMin() and context.yAxisMax() 
-      extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()] if context.yAxisDualMin() and context.yAxisDualMax()
+      if context.yAxisMin() and context.yAxisMax() and (context.yAxisMin() < context.yAxisMax())
+        extents[0] = [context.yAxisMin(), context.yAxisMax()] 
+      if context.yAxisDualMin() and context.yAxisDualMax() and (context.yAxisDualMin() < context.yAxisDualMax())
+        extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()]
     
       
     # Calculate the range and domain of the x and y scales
