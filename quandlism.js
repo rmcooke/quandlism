@@ -402,7 +402,7 @@
   })();
 
   QuandlismContext_.line = function(data) {
-    var allowedAxes, color, context, dates, datesMap, id, inAxis, line, name, values, visible,
+    var axisIndex, color, context, dates, datesMap, id, line, name, values, visible,
       _this = this;
     line = new QuandlismLine();
     context = this;
@@ -413,8 +413,7 @@
     id = quandlism_line_id++;
     visible = false;
     color = '#000000';
-    allowedAxes = ["LEFT", "RIGHT"];
-    inAxis = "LEFT";
+    axisIndex = 0;
     line.setup = function() {
       var v;
       dates = (function() {
@@ -640,6 +639,13 @@
       color = _;
       return line;
     };
+    line.axisIndex = function(_) {
+      if (_ == null) {
+        return axisIndex;
+      }
+      axisIndex = _;
+      return line;
+    };
     return line;
   };
 
@@ -675,7 +681,7 @@
         return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
       };
       insertAxisDOM = function(axisIndex) {
-        return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
+        return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + axisIndex + "-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
       };
       if (canvasId == null) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
@@ -692,8 +698,6 @@
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
       canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
-      canvas.attr('data-y_min', null);
-      canvas.attr('data-y_max', null);
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
@@ -745,7 +749,7 @@
         }
       };
       setTicks = function(unitsObj, axisIndex) {
-        yAxes[axisIndex].ticks(Math.floor(5));
+        yAxes[axisIndex].ticks(Math.floor(context.h() * quandlism_stage.h / 30));
         yAxes[axisIndex].tickSize(5, 3, 0);
         yAxes[axisIndex].tickFormat(function(d) {
           var n;
@@ -761,8 +765,6 @@
           if (i === 1 && !shouldShowDualAxes()) {
             continue;
           }
-          console.log("SETTING TICKS FOR " + i);
-          console.log(extents[i][1]);
           units = context.utility().getUnitAndDivisor(Math.round(extents[i][1]));
           setTicks(units, i);
         }
@@ -773,7 +775,7 @@
         configureAxes();
       };
       drawAxis = function() {
-        var xg, yAxis, _j, _len, _ref;
+        var g, xg, _j, _len, _ref;
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
@@ -781,15 +783,14 @@
         _ref = [0, 1];
         for (_j = 0, _len = _ref.length; _j < _len; _j++) {
           i = _ref[_j];
-          yAxis = yAxesDOMs[i];
-          yAxis.selectAll('*').remove();
+          yAxesDOMs[i].selectAll('*').remove();
           if (i === 1 && !shouldShowDualAxes()) {
             continue;
           }
-          yAxis.append('g');
-          yAxis.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
-          yAxis.call(yAxes[i]);
-          yAxis.select('path').remove();
+          g = yAxesDOMs[i].append('g');
+          g.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
+          g.call(yAxes[i]);
+          g.select('path').remove();
         }
       };
       drawGridLines = function() {

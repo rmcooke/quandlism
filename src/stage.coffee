@@ -33,7 +33,7 @@ QuandlismContext_.stage = () ->
     insertAxisDOM = (axisIndex) ->	
       selection.insert("svg")
         .attr("class", "y axis")
-        .attr("id", "y-axis-" + canvasId)
+        .attr("id", "y-axis-#{axisIndex}-#{canvasId}")
         .attr("width", quandlism_yaxis_width)
         .attr("height", Math.floor(context.h() * quandlism_stage.h))
         .attr("style", "position: absolute; left: " + context.w()*axisIndex + "px; top: 0px;")
@@ -56,9 +56,7 @@ QuandlismContext_.stage = () ->
     canvas.attr 'class', 'canvas-stage'
     canvas.attr 'id', canvasId
     canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
-    canvas.attr 'data-y_min', null
-    canvas.attr 'data-y_max', null
-  
+ 
     ctx = canvas.node().getContext '2d'
    
     # Build the xAxis
@@ -70,7 +68,7 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{height}px"
 
  
-
+    # Respond to browser resize by resetting style
     respondAxisDOM = (axisInd)=>
       yAxesDOMs[axisInd].attr('style', "position: absolute; left: #{Math.floor(context.w())*axisInd}px; top: 0px;")      
       
@@ -133,8 +131,14 @@ QuandlismContext_.stage = () ->
       
       return
     
+    # Set the tick number, size and tick format strategy
+    # for the axis
+    # unitsObj  - The divisor/label to be used in formatting
+    # axisIndex - The index of the y axis 
+    #
+    # Returns null
     setTicks = (unitsObj, axisIndex) =>
-      yAxes[axisIndex].ticks Math.floor(5)
+      yAxes[axisIndex].ticks Math.floor context.h()*quandlism_stage.h / 30
       yAxes[axisIndex].tickSize 5, 3, 0
       yAxes[axisIndex].tickFormat (d) =>
         n = (d / unitsObj['divisor']).toFixed 2
@@ -144,15 +148,13 @@ QuandlismContext_.stage = () ->
       return
       
     configureAxes = =>
-      # Set ticks on labelling for main axies
       for i in [0..1]
         continue if i is 1 and !shouldShowDualAxes() 
-        console.log "SETTING TICKS FOR #{i}"
-        console.log extents[i][1]
         units = context.utility().getUnitAndDivisor Math.round(extents[i][1])
         setTicks units, i
       return
       
+    # Execute util functions and calculate values needed to draw the stage
     prepareToDraw = =>
       setExtents()
       setScales()
@@ -169,14 +171,12 @@ QuandlismContext_.stage = () ->
       xg.select('path').remove()
       
       for i in [0,1] 
-        yAxis = yAxesDOMs[i]
-        yAxis.selectAll('*').remove()
+        yAxesDOMs[i].selectAll('*').remove()
         continue if i is 1 and !shouldShowDualAxes()
-        yAxis.append 'g'
-        yAxis.attr 'transform', "translate(#{quandlism_yaxis_width}, 0)"
-        yAxis.call yAxes[i]
-        # We only want the numbers
-        yAxis.select('path').remove()
+        g = yAxesDOMs[i].append 'g'
+        g.attr 'transform', "translate(#{quandlism_yaxis_width}, 0)"
+        g.call yAxes[i]
+        g.select('path').remove()
       return
 
     # Draw y and x grid lines

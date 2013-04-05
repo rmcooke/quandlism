@@ -10,8 +10,7 @@ QuandlismContext_.line = (data) ->
   id            = quandlism_line_id++
   visible       = false
   color         = '#000000'
-  allowedAxes   = [ "LEFT", "RIGHT" ]
-  inAxis        = "LEFT"
+  axisIndex     = 0
   
   # Instance methods
   # setup!
@@ -195,6 +194,11 @@ QuandlismContext_.line = (data) ->
   line.color = (_) =>
     if not _? then return color
     color = _
+    line
+    
+  line.axisIndex = (_) =>
+    if not _? then return axisIndex
+    axisIndex = _
     line
     
   line
