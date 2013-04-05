@@ -871,15 +871,16 @@
         return _results;
       };
       draw = function(lineId) {
-        var axisIndex, ex, j, lineWidth, _j, _k, _l, _len;
+        var axisIndex, dual, ex, j, lineWidth, _j, _k, _l, _len;
         lineId = lineId != null ? lineId : -1;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
         drawGridLines();
+        dual = shouldShowDualAxes();
         for (j = _j = 0, _len = lines.length; _j < _len; j = ++_j) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          if (shouldShowDualAxes()) {
+          if (dual) {
             ex = line.extent();
             axisIndex = Math.abs(extents[0][1] - ex[1]) <= Math.abs(extents[1][1] - ex[1]) ? 0 : 1;
             line.axisIndex(axisIndex);

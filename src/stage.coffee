@@ -225,13 +225,15 @@ QuandlismContext_.stage = () ->
       drawAxis()
       ctx.clearRect 0, 0, width, height      
       drawGridLines()
+      
+      dual = shouldShowDualAxes()
 
       for line, j in lines   
         # calculate the line width to use (if we are on lineId)
         lineWidth = if j is lineId then 3 else 1.5
         
         # If there are two axes, determine which axes the line belongs to.
-        if shouldShowDualAxes()
+        if dual
           ex = line.extent()
           # Determine which scale to use for each line
           axisIndex = if (Math.abs(extents[0][1]-ex[1]) <= Math.abs(extents[1][1]-ex[1])) then 0 else 1
