@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
+    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -22,6 +22,7 @@
     yAxisMax = null;
     yAxisDualMin = null;
     yAxisDualMax = null;
+    title = null;
     padding = 10;
     startPoint = 0.70;
     dualLimit = 10;
@@ -91,6 +92,15 @@
             break;
           case "y_axis_max":
             context.yAxisMax(value);
+            break;
+          case "y_axis_dual_min":
+            context.yAxisDualMin(value);
+            break;
+          case "y_axis_dual_max":
+            context.yAxisDualMax(value);
+            break;
+          case "title":
+            context.title(value);
         }
       }
     };
@@ -323,6 +333,13 @@
         return dualLimit;
       }
       dualLimit = _;
+      return context;
+    };
+    context.title = function(_) {
+      if (_ == null) {
+        return title;
+      }
+      title = _;
       return context;
     };
     context.respond = _.throttle(function() {

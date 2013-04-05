@@ -12,6 +12,7 @@ quandlism.context = () ->
   yAxisMax      = null
   yAxisDualMin  = null
   yAxisDualMax  = null
+  title         = null
   padding       = 10 
   startPoint    = 0.70
   dualLimit     = 10
@@ -59,8 +60,11 @@ quandlism.context = () ->
   context.extractArguments = (attributes) =>
     for attr, value of attributes
       switch attr
-        when "y_axis_min" then context.yAxisMin(value)
-        when "y_axis_max" then context.yAxisMax(value)
+        when "y_axis_min"       then context.yAxisMin(value)
+        when "y_axis_max"       then context.yAxisMax(value)
+        when "y_axis_dual_min"  then context.yAxisDualMin(value)
+        when "y_axis_dual_max"  then context.yAxisDualMax(value)
+        when "title"            then context.title(value)
     return
 
   # render
@@ -241,6 +245,11 @@ quandlism.context = () ->
   context.dualLimit = (_) =>
     if not _? then return dualLimit
     dualLimit = _
+    context
+    
+  context.title = (_) =>
+    if not _? then return title
+    title = _
     context
     
   # Event listner and dispatchers
