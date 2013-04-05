@@ -676,9 +676,17 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, configureAxes, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, xAxisDOM, _i;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
       shouldShowDualAxes = function() {
         return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
+      };
+      stageCanvasStyle = function() {
+        var style;
+        style = "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;";
+        if (shouldShowDualAxes()) {
+          style += "border-right: 1px solid black;";
+        }
+        return style;
       };
       insertAxisDOM = function(axisIndex) {
         return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + axisIndex + "-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
@@ -697,7 +705,7 @@
       canvas.attr('height', height);
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
-      canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
+      canvas.attr('style', stageCanvasStyle());
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
@@ -759,7 +767,7 @@
           return "" + n + unitsObj['label'];
         });
       };
-      configureAxes = function() {
+      prepareAxes = function() {
         var units, _j;
         for (i = _j = 0; _j <= 1; i = ++_j) {
           if (i === 1 && !shouldShowDualAxes()) {
@@ -769,10 +777,14 @@
           setTicks(units, i);
         }
       };
+      prepareCanvas = function() {
+        canvas.attr("style", stageCanvasStyle());
+      };
       prepareToDraw = function() {
         setExtents();
         setScales();
-        configureAxes();
+        prepareAxes();
+        prepareCanvas();
       };
       drawAxis = function() {
         var g, xg, _j, _len, _ref;
@@ -788,7 +800,9 @@
             continue;
           }
           g = yAxesDOMs[i].append('g');
-          g.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
+          if (i === 0) {
+            g.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
+          }
           g.call(yAxes[i]);
           g.select('path').remove();
         }

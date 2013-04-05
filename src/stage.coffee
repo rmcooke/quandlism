@@ -29,6 +29,11 @@ QuandlismContext_.stage = () ->
     shouldShowDualAxes = =>
       context.utility().shouldShowDualAxes(lines, indexStart, indexEnd)
       
+    stageCanvasStyle = =>
+      style = "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
+      style += "border-right: 1px solid black;" if shouldShowDualAxes()
+      style
+      
     # Insert the axis DOM elements
     insertAxisDOM = (axisIndex) ->	
       selection.insert("svg")
@@ -55,7 +60,7 @@ QuandlismContext_.stage = () ->
     canvas.attr 'height', height
     canvas.attr 'class', 'canvas-stage'
     canvas.attr 'id', canvasId
-    canvas.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
+    canvas.attr 'style', stageCanvasStyle()
  
     ctx = canvas.node().getContext '2d'
    
@@ -147,18 +152,23 @@ QuandlismContext_.stage = () ->
         "#{n}#{unitsObj['label']}"
       return
       
-    configureAxes = =>
+    prepareAxes = =>
       for i in [0..1]
         continue if i is 1 and !shouldShowDualAxes() 
         units = context.utility().getUnitAndDivisor Math.round(extents[i][1])
         setTicks units, i
       return
       
+    prepareCanvas = =>
+      canvas.attr "style", stageCanvasStyle()
+      return
+      
     # Execute util functions and calculate values needed to draw the stage
     prepareToDraw = =>
       setExtents()
       setScales()
-      configureAxes()
+      prepareAxes()
+      prepareCanvas()
       return
       
     # Draw axis
@@ -174,7 +184,7 @@ QuandlismContext_.stage = () ->
         yAxesDOMs[i].selectAll('*').remove()
         continue if i is 1 and !shouldShowDualAxes()
         g = yAxesDOMs[i].append 'g'
-        g.attr 'transform', "translate(#{quandlism_yaxis_width}, 0)"
+        g.attr 'transform', "translate(#{quandlism_yaxis_width}, 0)" if i is 0
         g.call yAxes[i]
         g.select('path').remove()
       return
