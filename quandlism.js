@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
+    var allowTooltip, args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -26,6 +26,7 @@
     padding = 10;
     startPoint = 0.70;
     dualLimit = 10;
+    allowTooltip = true;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -334,6 +335,13 @@
         return dualLimit;
       }
       dualLimit = _;
+      return context;
+    };
+    context.allowTooltip = function(_) {
+      if (_ == null) {
+        return allowTooltip;
+      }
+      allowTooltip = _;
       return context;
     };
     context.title = function(_) {
@@ -1015,6 +1023,9 @@
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var dataIndex, hit, loc;
+        if (!context.allowTooltip()) {
+          return;
+        }
         loc = d3.mouse(this);
         hit = lineHit(loc);
         if (hit) {

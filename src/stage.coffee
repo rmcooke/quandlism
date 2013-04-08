@@ -373,6 +373,7 @@ QuandlismContext_.stage = () ->
       return
       
     d3.select("##{canvasId}").on 'mousemove', (e) ->
+      return unless context.allowTooltip()
       loc = d3.mouse @
       hit = lineHit loc
       dataIndex =  hit.line.getClosestIndex(xScale.invert(hit.x)) if hit      
