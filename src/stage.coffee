@@ -74,7 +74,7 @@ QuandlismContext_.stage = () ->
 
  
     # Respond to browser resize by resetting style
-    respondAxisDOM = (axisInd)=>
+    respondAxisDOM = (axisInd) =>
       yAxesDOMs[axisInd].attr('style', "position: absolute; left: #{Math.floor(context.w())*axisInd}px; top: 0px;")      
       
     resetExtents = =>
@@ -85,32 +85,40 @@ QuandlismContext_.stage = () ->
       # Check for user overrides and set extent from those values
       resetExtents()
       setExtentsFromUser()
-      
-      return unless _.isEmpty extents[0]
+            
+      if !_.isEmpty extents[0]
+        context.setAttribute 'stage', 'y_axis_min', extents[0][0]
+        context.setAttribute 'stage', 'y_axis_max', extents[0][1]
+        return
 
       # Calculate extents for all lines
       # Recalculate and check for flat lines
       exe = context.utility().getExtent lines, indexStart, indexEnd
       exe = context.utility().getExtent lines, 0, lines.length()  unless _.first(exe) isnt _.last exe
       exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
-
+      
+      
       if !context.utility().shouldShowDualAxesFromExtent exe
         extents = [exe, []]
+        context.setAttribute 'stage', 'y_axis_dual_min', null
+        context.setAttribute 'stage', 'y_axis_dual_max', null
       else
         extents = context.utility().getMultiExtent(lines, indexStart, indexEnd)
-        context.yAxisDualMin extents[1][0]
-        context.yAxisDualMax extents[1][1]
+        context.setAttribute 'stage', 'y_axis_dual_min', extents[1][0]
+        context.setAttribute 'stage', 'y_axis_dual_max', extents[1][1]
       
       # Update exposed values
-      context.yAxisMin extents[0][0] 
-      context.yAxisMax extents[0][1]
+      
+      context.setAttribute 'stage', 'y_axis_min', extents[0][0]
+      context.setAttribute 'stage', 'y_axis_max', extents[0][1]
+
       
     # If the context has extent values for either yAxis from the user, use those before trying to calculate 
     # from line objects
     setExtentsFromUser = =>
-      if context.yAxisMin() and context.yAxisMax() and (context.yAxisMin() < context.yAxisMax())
+      if context.yAxisMin()? and context.yAxisMax()? and (context.yAxisMin() < context.yAxisMax())
         extents[0] = [context.yAxisMin(), context.yAxisMax()] 
-      if context.yAxisDualMin() and context.yAxisDualMax() and (context.yAxisDualMin() < context.yAxisDualMax())
+      if context.yAxisDualMin()? and context.yAxisDualMax()? and (context.yAxisDualMin() < context.yAxisDualMax())
         extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()]
     
       

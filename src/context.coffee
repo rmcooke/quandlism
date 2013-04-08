@@ -91,6 +91,7 @@ quandlism.context = () ->
     d3.select(dombrush).call context.brush() if dombrush
     d3.select(domlegend).call context.legend() if domlegend 
     context.respond()
+    context.runCallbacks 'render'
     context
   
   
@@ -152,6 +153,7 @@ quandlism.context = () ->
     if type in types
       attributes["#{type}"] ?= {}
       attributes["#{type}"]["#{key}"] = val
+    
     context
     
   # Retrieve an arbitray attribute key under the type namespace. Return null if type or type.key not set
@@ -206,22 +208,22 @@ quandlism.context = () ->
     
   context.yAxisMin = (_) =>
     if not _? then return yAxisMin
-    yAxisMin = _
+    yAxisMin = parseFloat(_)
     context
     
   context.yAxisMax = (_) =>
     if not _? then return yAxisMax
-    yAxisMax = _
+    yAxisMax = parseFloat(_)
     context
     
   context.yAxisDualMin = (_) =>
     if not _? then return yAxisDualMin
-    yAxisDualMin = _
+    yAxisDualMin = parseFloat(_)
     context
     
   context.yAxisDualMax = (_) =>
     if not _? then return yAxisDualMax
-    yAxisDualMax = _
+    yAxisDualMax = parseFloat(_)
     context
     
   context.dom = (_) =>

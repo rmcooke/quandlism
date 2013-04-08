@@ -126,6 +126,7 @@
         d3.select(domlegend).call(context.legend());
       }
       context.respond();
+      context.runCallbacks('render');
       return context;
     };
     context.update = function(options) {
@@ -266,28 +267,28 @@
       if (_ == null) {
         return yAxisMin;
       }
-      yAxisMin = _;
+      yAxisMin = parseFloat(_);
       return context;
     };
     context.yAxisMax = function(_) {
       if (_ == null) {
         return yAxisMax;
       }
-      yAxisMax = _;
+      yAxisMax = parseFloat(_);
       return context;
     };
     context.yAxisDualMin = function(_) {
       if (_ == null) {
         return yAxisDualMin;
       }
-      yAxisDualMin = _;
+      yAxisDualMin = parseFloat(_);
       return context;
     };
     context.yAxisDualMax = function(_) {
       if (_ == null) {
         return yAxisDualMax;
       }
-      yAxisDualMax = _;
+      yAxisDualMax = parseFloat(_);
       return context;
     };
     context.dom = function(_) {
@@ -775,6 +776,8 @@
         resetExtents();
         setExtentsFromUser();
         if (!_.isEmpty(extents[0])) {
+          context.setAttribute('stage', 'y_axis_min', extents[0][0]);
+          context.setAttribute('stage', 'y_axis_max', extents[0][1]);
           return;
         }
         exe = context.utility().getExtent(lines, indexStart, indexEnd);
@@ -786,19 +789,21 @@
         }
         if (!context.utility().shouldShowDualAxesFromExtent(exe)) {
           extents = [exe, []];
+          context.setAttribute('stage', 'y_axis_dual_min', null);
+          context.setAttribute('stage', 'y_axis_dual_max', null);
         } else {
           extents = context.utility().getMultiExtent(lines, indexStart, indexEnd);
-          context.yAxisDualMin(extents[1][0]);
-          context.yAxisDualMax(extents[1][1]);
+          context.setAttribute('stage', 'y_axis_dual_min', extents[1][0]);
+          context.setAttribute('stage', 'y_axis_dual_max', extents[1][1]);
         }
-        context.yAxisMin(extents[0][0]);
-        return context.yAxisMax(extents[0][1]);
+        context.setAttribute('stage', 'y_axis_min', extents[0][0]);
+        return context.setAttribute('stage', 'y_axis_max', extents[0][1]);
       };
       setExtentsFromUser = function() {
-        if (context.yAxisMin() && context.yAxisMax() && (context.yAxisMin() < context.yAxisMax())) {
+        if ((context.yAxisMin() != null) && (context.yAxisMax() != null) && (context.yAxisMin() < context.yAxisMax())) {
           extents[0] = [context.yAxisMin(), context.yAxisMax()];
         }
-        if (context.yAxisDualMin() && context.yAxisDualMax() && (context.yAxisDualMin() < context.yAxisDualMax())) {
+        if ((context.yAxisDualMin() != null) && (context.yAxisDualMax() != null) && (context.yAxisDualMin() < context.yAxisDualMax())) {
           return extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()];
         }
       };
