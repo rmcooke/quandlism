@@ -317,8 +317,8 @@ QuandlismContext_.stage = () ->
     # stage to draw. If there isn't, force the stage to draw
     #
     unless context.dombrush()?
-      dateStart = _.first lines[0].dates()
-      dateEnd = _.last lines[0].dates()
+      dateStart = context.startDate() ? _.first lines[0].dates()
+      dateEnd   = context.endDate() ? _.last lines[0].dates()
       indexStart = 0
       indexEnd   = line.length()
       prepareToDraw()
@@ -372,6 +372,8 @@ QuandlismContext_.stage = () ->
       draw() if not context.dombrush()      
       return
       
+    # Detect mouseover on lines
+    # Only if context.allowTooltip is true
     d3.select("##{canvasId}").on 'mousemove', (e) ->
       return unless context.allowTooltip()
       loc = d3.mouse @

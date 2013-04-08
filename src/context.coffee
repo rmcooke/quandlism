@@ -17,6 +17,8 @@ quandlism.context = () ->
   startPoint    = 0.70
   dualLimit     = 10
   allowTooltip  = true
+  startDate     = null
+  endDate       = null
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
@@ -265,6 +267,16 @@ quandlism.context = () ->
   context.title = (_) =>
     if not _? then return title
     title = _
+    context
+    
+  context.startDate = (_) =>
+    if not _? then return startDate
+    startDate = _
+    context
+    
+  context.endDate = (_) =>
+    if not _? then return endDate
+    endDate = _
     context
     
   # Event listner and dispatchers

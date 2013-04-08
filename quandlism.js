@@ -8,7 +8,7 @@
   };
 
   quandlism.context = function() {
-    var allowTooltip, args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, event, h, lines, options, padding, processes, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
+    var allowTooltip, args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, endDate, event, h, lines, options, padding, processes, startDate, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -27,6 +27,8 @@
     startPoint = 0.70;
     dualLimit = 10;
     allowTooltip = true;
+    startDate = null;
+    endDate = null;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -349,6 +351,20 @@
         return title;
       }
       title = _;
+      return context;
+    };
+    context.startDate = function(_) {
+      if (_ == null) {
+        return startDate;
+      }
+      startDate = _;
+      return context;
+    };
+    context.endDate = function(_) {
+      if (_ == null) {
+        return endDate;
+      }
+      endDate = _;
       return context;
     };
     context.respond = _.throttle(function() {
@@ -711,7 +727,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i, _ref, _ref1;
       shouldShowDualAxes = function() {
         return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
       };
@@ -976,8 +992,8 @@
         draw();
       };
       if (context.dombrush() == null) {
-        dateStart = _.first(lines[0].dates());
-        dateEnd = _.last(lines[0].dates());
+        dateStart = (_ref = context.startDate()) != null ? _ref : _.first(lines[0].dates());
+        dateEnd = (_ref1 = context.endDate()) != null ? _ref1 : _.last(lines[0].dates());
         indexStart = 0;
         indexEnd = line.length();
         prepareToDraw();
