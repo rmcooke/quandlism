@@ -709,7 +709,7 @@
     lines = [];
     line = null;
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
-    height = Math.floor(context.h() * quandlism_stage.h);
+    height = context.utility().stageHeight();
     xScale = d3.time.scale();
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
     yScales = [d3.scale.linear(), d3.scale.linear()];
@@ -740,7 +740,7 @@
         return style;
       };
       insertAxisDOM = function(axisIndex) {
-        return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + axisIndex + "-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", Math.floor(context.h() * quandlism_stage.h)).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
+        return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + axisIndex + "-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", height).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
       };
       if (canvasId == null) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
@@ -762,7 +762,7 @@
       xAxisDOM.attr('class', 'x axis');
       xAxisDOM.attr('id', "x-axis-" + canvasId);
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
-      xAxisDOM.attr('height', Math.floor(context.h() * quandlism_xaxis.h));
+      xAxisDOM.attr('height', height);
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + height + "px");
       respondAxisDOM = function(axisInd) {
         return yAxesDOMs[axisInd].attr('style', "position: absolute; left: " + (Math.floor(context.w()) * axisInd) + "px; top: 0px;");
@@ -1013,7 +1013,7 @@
         var _j;
         ctx.clearRect(0, 0, width, height);
         width = Math.floor(context.w() - quandlism_yaxis_width - 1);
-        height = Math.floor(context.h() * quandlism_stage.h);
+        height = context.utility().stageHeight();
         canvas.attr('width', width);
         canvas.attr('height', height);
         for (i = _j = 0; _j <= 1; i = ++_j) {

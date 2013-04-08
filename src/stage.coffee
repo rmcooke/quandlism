@@ -5,7 +5,7 @@ QuandlismContext_.stage = () ->
   lines       = []
   line        = null
   width       = Math.floor (context.w()-quandlism_yaxis_width-2)
-  height      = Math.floor (context.h() * quandlism_stage.h)
+  height      = context.utility().stageHeight()
   xScale      = d3.time.scale()
   xAxis       = d3.svg.axis().orient('bottom').scale xScale
   yScales     = [d3.scale.linear(), d3.scale.linear()]
@@ -40,7 +40,7 @@ QuandlismContext_.stage = () ->
         .attr("class", "y axis")
         .attr("id", "y-axis-#{axisIndex}-#{canvasId}")
         .attr("width", quandlism_yaxis_width)
-        .attr("height", Math.floor(context.h() * quandlism_stage.h))
+        .attr("height", height)
         .attr("style", "position: absolute; left: " + context.w()*axisIndex + "px; top: 0px;")
         
     # Get reference to lines, the first line and generate unique ID for the stage
@@ -57,7 +57,7 @@ QuandlismContext_.stage = () ->
     # Create canvas element and get reference to drawing context
     canvas = selection.append 'canvas'
     canvas.attr 'width', width
-    canvas.attr 'height', height
+    canvas.attr 'height',  height
     canvas.attr 'class', 'canvas-stage'
     canvas.attr 'id', canvasId
     canvas.attr 'style', stageCanvasStyle()
@@ -69,7 +69,7 @@ QuandlismContext_.stage = () ->
     xAxisDOM.attr 'class', 'x axis'
     xAxisDOM.attr 'id', "x-axis-#{canvasId}"
     xAxisDOM.attr 'width',  Math.floor context.w()-quandlism_yaxis_width
-    xAxisDOM.attr 'height', Math.floor context.h() * quandlism_xaxis.h
+    xAxisDOM.attr 'height', height
     xAxisDOM.attr 'style', "position: absolute; left: #{quandlism_yaxis_width}px; top: #{height}px"
 
  
@@ -341,7 +341,7 @@ QuandlismContext_.stage = () ->
     context.on 'respond.stage', () ->
       ctx.clearRect 0, 0, width, height
       width = Math.floor (context.w()-quandlism_yaxis_width-1)
-      height = Math.floor (context.h() * quandlism_stage.h)
+      height = context.utility().stageHeight()
       canvas.attr 'width', width
       canvas.attr 'height', height
       
