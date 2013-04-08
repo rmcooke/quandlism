@@ -207,7 +207,11 @@ QuandlismContext_.utility = () ->
     utility.shouldShowDualAxesFromExtent utility.getExtent(lines, start, end)
     
   utility.shouldShowDualAxesFromExtent = (exe) =>
-    (_.last(exe) / _.first(exe) ) > context.dualLimit()
+    min = parseFloat _.first(exe)
+    max = parseFloat _.last(exe)
+    if min is 0 or max is 0
+      return Math.abs(max - min) > context.dualLimit()*100
+    max / min > context.dualLimit()
     
     
     

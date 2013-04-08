@@ -1772,7 +1772,13 @@
       return utility.shouldShowDualAxesFromExtent(utility.getExtent(lines, start, end));
     };
     utility.shouldShowDualAxesFromExtent = function(exe) {
-      return (_.last(exe) / _.first(exe)) > context.dualLimit();
+      var max, min;
+      min = parseFloat(_.first(exe));
+      max = parseFloat(_.last(exe));
+      if (min === 0 || max === 0) {
+        return Math.abs(max - min) > context.dualLimit() * 100;
+      }
+      return max / min > context.dualLimit();
     };
     return utility;
   };
