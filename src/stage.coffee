@@ -317,10 +317,19 @@ QuandlismContext_.stage = () ->
     # stage to draw. If there isn't, force the stage to draw
     #
     unless context.dombrush()?
-      dateStart = context.startDate() ? _.first lines[0].dates()
-      dateEnd   = context.endDate() ? _.last lines[0].dates()
-      indexStart = 0
-      indexEnd   = line.length()
+      if context.startDate()
+        dateStart   = context.startDate()
+        indexStart  = line.getClosestIndex dateStart
+      else
+        dateStart   = _.first lines[0].dates()
+        indexStart  = 0
+        
+      if context.endDate()
+        dateEnd   = context.endDate()
+        indexEnd  = line.getClosestIndex dateEnd
+      else
+        dateEnd   = _.last lines[0].dates()
+        indexEnd  = line.length()
       prepareToDraw()
       draw()
 

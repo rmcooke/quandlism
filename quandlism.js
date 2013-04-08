@@ -727,7 +727,7 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i, _ref, _ref1;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
       shouldShowDualAxes = function() {
         return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
       };
@@ -992,10 +992,20 @@
         draw();
       };
       if (context.dombrush() == null) {
-        dateStart = (_ref = context.startDate()) != null ? _ref : _.first(lines[0].dates());
-        dateEnd = (_ref1 = context.endDate()) != null ? _ref1 : _.last(lines[0].dates());
-        indexStart = 0;
-        indexEnd = line.length();
+        if (context.startDate()) {
+          dateStart = context.startDate();
+          indexStart = line.getClosestIndex(dateStart);
+        } else {
+          dateStart = _.first(lines[0].dates());
+          indexStart = 0;
+        }
+        if (context.endDate()) {
+          dateEnd = context.endDate();
+          indexEnd = line.getClosestIndex(dateEnd);
+        } else {
+          dateEnd = _.last(lines[0].dates());
+          indexEnd = line.length();
+        }
         prepareToDraw();
         draw();
       }
