@@ -192,19 +192,18 @@ QuandlismContext_.utility = () ->
   utility.xAxisHeight = =>
     if context.dombrush()? then quandlism_xaxis.h*context.h() else context.h()*0.10
   
-  # Return the number of lines with visible = true in the array @lines
-  # lines - An array of Quandlism Line objects
-  utility.visibleLines = (lines) =>
-    vis = 0
-    for line in lines
-      if line.visible()
-        vis += 1
+  # Return an array of indicies reffering to visible lines
+  # Return empty array if no lines visible
+  utility.visibleColumns = (lines) =>
+    vis = []
+    for line, i in lines
+      vis.push i if line.visible() 
     vis
-      
+
   # Determine if the lines with the indicies start and end should reveal two axes
   utility.shouldShowDualAxes = (lines, start, end) =>
     return false unless lines? and lines instanceof Array 
-    return false if lines.length is 1 or utility.visibleLines(lines) < 2
+    return false if lines.length is 1 or utility.visibleColumns(lines).length < 2
     utility.shouldShowDualAxesFromExtent utility.getExtent(lines, start, end)
     
   utility.shouldShowDualAxesFromExtent = (exe) =>

@@ -359,6 +359,7 @@ QuandlismContext_.stage = () ->
     # Respond to toggle event by re-drawing
     context.on 'toggle.stage', () ->
       context.resetState() unless context.dombrush()
+      context.setAttribute 'stage', 'visible_columns', context.utility().visibleColumns(lines)
       prepareToDraw()
       draw()
       return

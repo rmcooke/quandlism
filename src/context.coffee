@@ -23,7 +23,7 @@ quandlism.context = () ->
   types         = ['STAGE', 'BRUSH']
   callbacks     = {}
   options       = {}
-  args           = {}
+  args          = {}
   attributes    = {}
   
 

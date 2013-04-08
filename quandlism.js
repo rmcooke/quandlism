@@ -1002,6 +1002,7 @@
         if (!context.dombrush()) {
           context.resetState();
         }
+        context.setAttribute('stage', 'visible_columns', context.utility().visibleColumns(lines));
         prepareToDraw();
         draw();
       });
@@ -1708,13 +1709,13 @@
         return context.h() * 0.10;
       }
     };
-    utility.visibleLines = function(lines) {
-      var line, vis, _i, _len;
-      vis = 0;
-      for (_i = 0, _len = lines.length; _i < _len; _i++) {
-        line = lines[_i];
+    utility.visibleColumns = function(lines) {
+      var i, line, vis, _i, _len;
+      vis = [];
+      for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
+        line = lines[i];
         if (line.visible()) {
-          vis += 1;
+          vis.push(i);
         }
       }
       return vis;
@@ -1723,7 +1724,7 @@
       if (!((lines != null) && lines instanceof Array)) {
         return false;
       }
-      if (lines.length === 1 || utility.visibleLines(lines) < 2) {
+      if (lines.length === 1 || utility.visibleColumns(lines).length < 2) {
         return false;
       }
       return utility.shouldShowDualAxesFromExtent(utility.getExtent(lines, start, end));
