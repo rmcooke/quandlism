@@ -86,9 +86,8 @@ QuandlismContext_.stage = () ->
       resetExtents()
       setExtentsFromUser()
             
-      if !_.isEmpty extents[0]
-        context.setAttribute 'stage', 'y_axis_min', extents[0][0]
-        context.setAttribute 'stage', 'y_axis_max', extents[0][1]
+      if extents[0].length and extents[1].length
+        setYAxisAttributesFromExtents()
         return
 
       # Calculate extents for all lines
@@ -96,21 +95,17 @@ QuandlismContext_.stage = () ->
       exe = context.utility().getExtent lines, indexStart, indexEnd
       exe = context.utility().getExtent lines, 0, lines.length()  unless _.first(exe) isnt _.last exe
       exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
-      
-      
+  
       if !context.utility().shouldShowDualAxesFromExtent exe
-        extents = [exe, []]
-        context.setAttribute 'stage', 'y_axis_dual_min', null
-        context.setAttribute 'stage', 'y_axis_dual_max', null
+        extents[0] = exe unless extents[0].length
       else
-        extents = context.utility().getMultiExtent(lines, indexStart, indexEnd)
-        context.setAttribute 'stage', 'y_axis_dual_min', extents[1][0]
-        context.setAttribute 'stage', 'y_axis_dual_max', extents[1][1]
-      
+        exe = context.utility().getMultiExtent(lines, indexStart, indexEnd)
+        extents[0] = exe[0] unless extents[0].length
+        extents[1] = exe[1] unless extents[1].length
+        
       # Update exposed values
-      
-      context.setAttribute 'stage', 'y_axis_min', extents[0][0]
-      context.setAttribute 'stage', 'y_axis_max', extents[0][1]
+      setYAxisAttributesFromExtents()
+      return
 
       
     # If the context has extent values for either yAxis from the user, use those before trying to calculate 
@@ -121,6 +116,12 @@ QuandlismContext_.stage = () ->
       if context.yAxisDualMin()? and context.yAxisDualMax()? and (context.yAxisDualMin() < context.yAxisDualMax())
         extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()]
     
+    setYAxisAttributesFromExtents = =>
+      context.setAttribute 'stage', 'y_axis_min',       extents[0][0] ? null
+      context.setAttribute 'stage', 'y_axis_max',       extents[0][1] ? null
+      context.setAttribute 'stage', 'y_axis_dual_min',  extents[1][0] ? null
+      context.setAttribute 'stage', 'y_axis_dual_max',  extents[1][1] ? null
+      return
       
     # Calculate the range and domain of the x and y scales
     setScales = =>
