@@ -277,7 +277,7 @@ QuandlismContext_.brush = () ->
     checkDragState()
     setBrushValues() if dragEnabled
     drawAxis()
-    dispatchAdjust()
+    dispatchAdjust(true)
         
     # Set drawing interval
     setInterval update, 70

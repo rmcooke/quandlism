@@ -1020,6 +1020,8 @@
           dateEnd = _.last(lines[0].dates());
           indexEnd = line.length();
         }
+        context.setAttribute('stage', 'start_date', dateStart);
+        context.setAttribute('stage', 'end_date', dateEnd);
         prepareToDraw();
         draw();
       }
@@ -1301,7 +1303,7 @@
         setBrushValues();
       }
       drawAxis();
-      dispatchAdjust();
+      dispatchAdjust(true);
       setInterval(update, 70);
       context.on("respond.brush", function() {
         setPrevious('height', height);

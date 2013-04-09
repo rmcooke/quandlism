@@ -339,6 +339,9 @@ QuandlismContext_.stage = () ->
       else
         dateEnd   = _.last lines[0].dates()
         indexEnd  = line.length()
+      # Set end dates for stage
+      context.setAttribute 'stage', 'start_date', dateStart
+      context.setAttribute 'stage', 'end_date',   dateEnd
       prepareToDraw()
       draw()
 
