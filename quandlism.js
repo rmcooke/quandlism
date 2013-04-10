@@ -25,7 +25,7 @@
     title = null;
     padding = 10;
     startPoint = 0.70;
-    dualLimit = 10;
+    dualLimit = 200;
     allowTooltip = true;
     startDate = null;
     endDate = null;
@@ -730,7 +730,7 @@
     stage = function(selection) {
       var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, setYAxisAttributesFromExtents, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
       shouldShowDualAxes = function() {
-        return context.utility().shouldShowDualAxes(lines, indexStart, indexEnd);
+        return context.utility().shouldShowDualAxes(indexStart, indexEnd);
       };
       stageCanvasStyle = function() {
         var style;
@@ -1790,7 +1790,9 @@
       }
       return vis;
     };
-    utility.shouldShowDualAxes = function(lines, start, end) {
+    utility.shouldShowDualAxes = function(start, end) {
+      var lines;
+      lines = context.lines();
       if (!((lines != null) && lines instanceof Array)) {
         return false;
       }
@@ -1801,6 +1803,9 @@
     };
     utility.shouldShowDualAxesFromExtent = function(exe) {
       var max, min;
+      if (context.lines().length === 1 || utility.visibleColumns(context.lines()).length < 2) {
+        return false;
+      }
       min = parseFloat(_.first(exe));
       max = parseFloat(_.last(exe));
       if (min === 0 || max === 0) {

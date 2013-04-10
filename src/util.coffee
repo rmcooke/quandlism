@@ -201,12 +201,14 @@ QuandlismContext_.utility = () ->
     vis
 
   # Determine if the lines with the indicies start and end should reveal two axes
-  utility.shouldShowDualAxes = (lines, start, end) =>
+  utility.shouldShowDualAxes = (start, end) =>
+    lines = context.lines()
     return false unless lines? and lines instanceof Array 
     return false if lines.length is 1 or utility.visibleColumns(lines).length < 2
     utility.shouldShowDualAxesFromExtent utility.getExtent(lines, start, end)
     
   utility.shouldShowDualAxesFromExtent = (exe) =>
+    return false if context.lines().length is 1 or utility.visibleColumns(context.lines()).length < 2
     min = parseFloat _.first(exe)
     max = parseFloat _.last(exe)
     if min is 0 or max is 0

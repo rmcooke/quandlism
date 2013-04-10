@@ -27,7 +27,7 @@ QuandlismContext_.stage = () ->
   
     # Convenience method
     shouldShowDualAxes = =>
-      context.utility().shouldShowDualAxes(lines, indexStart, indexEnd)
+      context.utility().shouldShowDualAxes(indexStart, indexEnd)
       
     stageCanvasStyle = =>
       style = "position: absolute; left: #{quandlism_yaxis_width}px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;"
@@ -95,7 +95,7 @@ QuandlismContext_.stage = () ->
       exe = context.utility().getExtent lines, indexStart, indexEnd
       exe = context.utility().getExtent lines, 0, lines.length()  unless _.first(exe) isnt _.last exe
       exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
-  
+    
       if !context.utility().shouldShowDualAxesFromExtent exe
         extents[0] = exe unless extents[0].length
       else
