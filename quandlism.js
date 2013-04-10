@@ -647,7 +647,7 @@
       if (this.axisIndex() === 0) {
         return this.name();
       }
-      return "" + (this.name()) + " (R)";
+      return "" + (this.name()) + " (RHS)";
     };
     line.dates = function(_) {
       if (_ == null) {

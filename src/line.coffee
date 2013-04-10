@@ -171,7 +171,7 @@ QuandlismContext_.line = (data) ->
   # Short hand for the legend label
   line.legendName = ->
     return @name() if @axisIndex() is 0
-    "#{@name()} (R)"
+    "#{@name()} (RHS)"
     
   
   # Getters and setters - expose attributes of the line
