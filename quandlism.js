@@ -1364,7 +1364,7 @@
         setBrushClass('');
         saveState();
       });
-      return canvas.on('mousemove', function(e) {
+      canvas.on('mousemove', function(e) {
         var dragDiff, m;
         m = d3.mouse(this);
         if (dragging || stretching) {
@@ -1393,6 +1393,23 @@
           } else {
             setBrushClass('');
           }
+        }
+      });
+      return canvas.on("dblclick", function(e) {
+        var m;
+        d3.event.preventDefault();
+        m = d3.mouse(this);
+        touchPoint = m[0];
+        if (isDraggingLocation(m[0]) || isLeftHandle(m[0]) || isRightHandle(m[0])) {
+          dateStart = _.first(line.dates());
+          dateEnd = _.last(line.dates());
+          drawStart = xScale(dateStart);
+          drawEnd = xScale(dateEnd);
+          setPrevious('dateStart', dateStart);
+          setPrevious('dateEnd', dateEnd);
+          setPrevious('drawStart', drawStart);
+          setPrevious('drawEnd', drawEnd);
+          context.toggle();
         }
       });
     };
