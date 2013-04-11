@@ -830,7 +830,6 @@
       setTicks = function(unitsObj, axisIndex) {
         var val;
         val = Math.floor(context.w() / 75);
-        console.log(val);
         xAxis.ticks(val);
         yAxes[axisIndex].ticks(Math.floor(context.h() * quandlism_stage.h / 30));
         yAxes[axisIndex].tickSize(5, 3, 0);
