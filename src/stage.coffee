@@ -102,7 +102,7 @@ QuandlismContext_.stage = () ->
         exe = context.utility().getMultiExtent(lines, indexStart, indexEnd)
         extents[0] = exe[0] unless extents[0].length
         extents[1] = exe[1] unless extents[1].length
-        
+      
       # Update exposed values
       setYAxisAttributesFromExtents()
       return
@@ -136,6 +136,7 @@ QuandlismContext_.stage = () ->
       # Set the range for the yScales
       scale.range([(height - context.padding()), context.padding()]) for scale in yScales
       
+  
       return
     
     # Set the tick number, size and tick format strategy

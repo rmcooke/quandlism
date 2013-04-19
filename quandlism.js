@@ -25,7 +25,7 @@
     title = null;
     padding = 10;
     startPoint = 0.70;
-    dualLimit = 100;
+    dualLimit = 80;
     allowTooltip = true;
     startDate = null;
     endDate = null;
