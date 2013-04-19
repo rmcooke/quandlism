@@ -8,10 +8,17 @@ quandlism.context = () ->
   dombrush      = null
   domlegend     = null
   domtooltip    = null
-  yAxisMin      = null
+  yAxisMin      = 100
   yAxisMax      = null
+  yAxisDualMin  = null
+  yAxisDualMax  = null
+  title         = null
   padding       = 10 
   startPoint    = 0.70
+  dualLimit     = 80
+  allowTooltip  = true
+  startDate     = null
+  endDate       = null
   event         = d3.dispatch('respond', 'adjust', 'toggle', 'refresh')
   colorList     = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae']
   lines         = []
@@ -19,6 +26,7 @@ quandlism.context = () ->
   types         = ['STAGE', 'BRUSH']
   callbacks     = {}
   options       = {}
+  args          = {}
   attributes    = {}
   
 
@@ -38,8 +46,8 @@ quandlism.context = () ->
   # Conveneince method for attaching lines datum for each declared DOM element
   context.data = (attributes, process = "build") =>    
     throw "Unknown process #{process}" unless process? and process.toUpperCase() in processes
-    context.extractArguments attributes
-    context.executeOptions options
+    context.extractArguments()
+    context.executeOptions()
     lines = context.utility()["#{process.toLowerCase()}Lines"](attributes, lines ? null)
     lines = context.utility().processLines(attributes, lines)     
     context.bindToElements()
@@ -52,13 +60,28 @@ quandlism.context = () ->
     d3.select(domlegend).datum lines if domlegend
     context
     
-  # Extract optional quandlism parameters and execute assignment and calculation
-  context.extractArguments = (attributes) =>
-    for attr, value of attributes
-      switch attr
-        when "y_axis_min" then context.yAxisMin(value)
-        when "y_axis_max" then context.yAxisMax(value)
-    return
+  # Execute options
+  # Users can execute function before/after processing data. 
+  # Currently supports resetState
+
+  context.executeOptions = =>
+    for opt, value of context.options()
+      switch opt 
+        when "reset" 
+          if value is true
+            context.resetState()
+    context
+    
+      
+  # Extract user defined arguments to override Quandlism defaults
+  # y_axis_min/max, y_axis_dual_min/max, title 
+  context.extractArguments =  =>
+    for attr, value of context.args()
+      continue unless value?      # Only execute arguments with a value. Use options with no value.
+      try
+        context["#{context.utility().camelize(attr)}"](value)
+
+    context
 
   # render
   # Conveneince method for calling method for each declared DOM element
@@ -68,6 +91,7 @@ quandlism.context = () ->
     d3.select(dombrush).call context.brush() if dombrush
     d3.select(domlegend).call context.legend() if domlegend 
     context.respond()
+    context.runCallbacks 'render'
     context
   
   
@@ -81,7 +105,7 @@ quandlism.context = () ->
   
   # use jQuery to get height and width of context container  
   context.build = () =>
-    w = $(dom).width()
+    w = $(dom).width() - quandlism_yaxis_width
     h = $(dom).height()
     context
   
@@ -121,15 +145,6 @@ quandlism.context = () ->
       colorList.push rgb.toString()
       i++
     return   
-    
-  # Execute executable options!
-  context.executeOptions = (options) ->
-    for opt, value of options
-      switch opt 
-        when "reset" 
-          if value is true
-            context.resetState()
-    context
 
   # Set an arbitray attribute under the type.key 
   # Creates type if not already created
@@ -138,6 +153,7 @@ quandlism.context = () ->
     if type in types
       attributes["#{type}"] ?= {}
       attributes["#{type}"]["#{key}"] = val
+    
     context
     
   # Retrieve an arbitray attribute key under the type namespace. Return null if type or type.key not set
@@ -150,7 +166,7 @@ quandlism.context = () ->
 
   # Reset any transformations on the data
   context.resetState = ->
-    yAxisMin = yAxisMax = null
+    yAxisMin = yAxisMax = yAxisDualMin = yAxisDualMax = null
     return
     
   # Expose attributes via getters and settesr
@@ -175,6 +191,11 @@ quandlism.context = () ->
     options = _
     context
     
+  context.args = (_) =>
+    if not _? then return args
+    args = _
+    context
+      
   context.w = (_) =>
     if not _? then return w
     w = _
@@ -187,12 +208,22 @@ quandlism.context = () ->
     
   context.yAxisMin = (_) =>
     if not _? then return yAxisMin
-    yAxisMin = _
+    yAxisMin = parseFloat(_)
     context
     
   context.yAxisMax = (_) =>
     if not _? then return yAxisMax
-    yAxisMax = _
+    yAxisMax = parseFloat(_)
+    context
+    
+  context.yAxisDualMin = (_) =>
+    if not _? then return yAxisDualMin
+    yAxisDualMin = parseFloat(_)
+    context
+    
+  context.yAxisDualMax = (_) =>
+    if not _? then return yAxisDualMax
+    yAxisDualMax = parseFloat(_)
     context
     
   context.dom = (_) =>
@@ -225,6 +256,30 @@ quandlism.context = () ->
     callbacks = _
     context
     
+  context.dualLimit = (_) =>
+    if not _? then return dualLimit
+    dualLimit = _
+    context
+    
+  context.allowTooltip = (_) =>
+    if not _? then return allowTooltip
+    allowTooltip = _
+    context
+    
+  context.title = (_) =>
+    if not _? then return title
+    title = _
+    context
+    
+  context.startDate = (_) =>
+    if not _? then return startDate
+    startDate = _
+    context
+    
+  context.endDate = (_) =>
+    if not _? then return endDate
+    endDate = _
+    context
     
   # Event listner and dispatchers
   
@@ -261,7 +316,7 @@ quandlism.context = () ->
       w0 = $(dom).width()
       h0 = $(dom).height()
       if w isnt w0 or h isnt h0
-        w = w0
+        w = w0 - 50
         h = h0
         context.respond()
     return

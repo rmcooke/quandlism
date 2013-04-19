@@ -19,6 +19,7 @@ app.configure 'development', ->
 # Routes
 app.get "/", routes.index
 app.get "/data/chart", data.chart
+app.get "/:source_code/:code", data.chart
 app.get "/api", data.api
 
 http.createServer(app).listen app.get('port'), ->

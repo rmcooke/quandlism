@@ -2,7 +2,11 @@ QuandlismContext_.utility = () ->
   
   context = @
   
-  utility = () -> return
+  utility = -> return
+
+  # camelize a string
+  utility.camelize = (str) =>
+    str.replace /(\_[a-z])/g, (match) -> match.toUpperCase().replace('_','')
 
   # Truncate a word to a max 
   utility.truncate = (word, chars) =>
@@ -73,19 +77,52 @@ QuandlismContext_.utility = () ->
        line.name() not in columns
        
     
-  # Calculates the minimum and maxium values for all of the lines in the lines array
-  # between the index values start, and end
-  #
-  # lines - An array of quandlism.line objects
+  # Returns a two dimensional array representing the extent values for the y-axes
+  # [ [y1min, y1max], [y2min, y2max] ]
   # start - The array index to start 
   # end   - The array index to end
   #
   # Returns an array with two values
+  utility.getMultiExtent = (lines, start, end) =>
+    # Don't calulate grouped extents unless second axes is visible  
+    return [ utility.getExtent(lines, start, end) ] unless utility.shouldShowDualAxis(lines, start, end)
+    
+    groupedExtents = utility.getGroupMinMaxList(lines, min, max, start, end)
+    exesMin = _.first groupedExtents
+    exesMax = _.last  groupedExtents
+    
+    [ [ d3.min(exesMin, (m) -> m[0]), d3.max(exesMin, (m) -> m[1]) ], [ d3.min(exesMax, (m) -> m[0]), d3.max(exesMax, (m) -> m[1]) ] ]
+  
+  
   utility.getExtent = (lines, start, end) =>
     exes = (line.extent start, end for line in lines)
     [d3.min(exes, (m) -> m[0]), d3.max(exes, (m) -> m[1])]
- 
- 
+  
+  utility.getMultiExtent = (lines, start, end) =>
+    min = Infinity
+    max = -Infinity
+    for line in lines
+      val = line.extent(start, end)[1]
+      continue  if val is Infinity or val is -Infinity
+      min = val  if val < min
+      max = val  if val > max
+    exes_min = utility.getGroupMinMaxList(lines, min, max, start, end)[0]
+    exes_max = utility.getGroupMinMaxList(lines, min, max, start, end)[1]
+    [ [ d3.min(exes_min, (m) -> m[0]), d3.max(exes_min, (m) -> m[1]) ], [ d3.min(exes_max, (m) -> m[0]), d3.max(exes_max, (m) -> m[1]) ] ]
+    
+    
+  utility.getGroupMinMaxList = (lines, min, max, start, end) =>
+    _resultsMin = []
+    _resultsMax = []
+    for line in lines
+      min_dis = Math.abs(min - _.last(line.extent(start, end)))
+      max_dis = Math.abs(max - _.last(line.extent(start, end)))
+      _resultsMin.push line.extent(start, end)  if min_dis < max_dis or min_dis is 0 
+      _resultsMax.push line.extent(start, end)  if min_dis > max_dis or max_dis is 0
+    [ _resultsMin, _resultsMax ]
+
+
+    
   # Calculates the extend of the set of lines, using a date range, rather than indicies
   #
   # lines - An array of quandlism.line objects
@@ -154,5 +191,31 @@ QuandlismContext_.utility = () ->
     
   utility.xAxisHeight = =>
     if context.dombrush()? then quandlism_xaxis.h*context.h() else context.h()*0.10
+  
+  # Return an array of indicies reffering to visible lines
+  # Return empty array if no lines visible
+  utility.visibleColumns = (lines) =>
+    vis = []
+    for line, i in lines
+      vis.push i if line.visible() 
+    vis
+
+  # Determine if the lines with the indicies start and end should reveal two axes
+  utility.shouldShowDualAxes = (start, end) =>
+    lines = context.lines()
+    return false unless lines? and lines instanceof Array 
+    return false if lines.length is 1 or utility.visibleColumns(lines).length < 2
+    utility.shouldShowDualAxesFromExtent utility.getExtent(lines, start, end)
+    
+  utility.shouldShowDualAxesFromExtent = (exe) =>
+    return false if context.lines().length is 1 or utility.visibleColumns(context.lines()).length < 2
+    min = parseFloat _.first(exe)
+    max = parseFloat _.last(exe)
+    if min is 0 or max is 0
+      return Math.abs(max - min) > context.dualLimit()*100
+    max / min > context.dualLimit()
+    
+    
+    
     
   utility

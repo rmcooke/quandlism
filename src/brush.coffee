@@ -277,7 +277,7 @@ QuandlismContext_.brush = () ->
     checkDragState()
     setBrushValues() if dragEnabled
     drawAxis()
-    dispatchAdjust()
+    dispatchAdjust(true)
         
     # Set drawing interval
     setInterval update, 70
@@ -386,6 +386,23 @@ QuandlismContext_.brush = () ->
         else
           setBrushClass ''
       return
+      
+    # On double click expand brush
+    canvas.on "dblclick", (e) ->
+      d3.event.preventDefault()
+      m = d3.mouse @
+      touchPoint = m[0]
+      if isDraggingLocation(m[0]) or isLeftHandle(m[0]) or isRightHandle(m[0])
+        dateStart = _.first(line.dates())
+        dateEnd = _.last(line.dates())
+        drawStart = xScale(dateStart)
+        drawEnd = xScale(dateEnd)
+        setPrevious 'dateStart', dateStart
+        setPrevious 'dateEnd', dateEnd
+        setPrevious 'drawStart', drawStart
+        setPrevious 'drawEnd', drawEnd
+        context.toggle()
+        return
 
   # 
   # Getters and setters

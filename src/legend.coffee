@@ -4,7 +4,6 @@ QuandlismContext_.legend = () ->
   
   legend = (selection) ->
     
-    
     buildLegend = () ->
       lines = selection.datum()
     
@@ -20,7 +19,7 @@ QuandlismContext_.legend = () ->
         .append('a', ':first-child')
           .attr('href', 'javascript:;')
           .attr('data-line-id', (line) -> line.id())
-        .text((line) -> line.name())
+        .text((line) -> line.legendName())
         
       selection.selectAll('a').on "click", (d, i) =>
         e = d3.event
@@ -39,10 +38,15 @@ QuandlismContext_.legend = () ->
     
     
     # On refersh, rebuild the legend
-    context.on 'refresh.legend', () ->
+    context.on 'refresh.legend', ->
       buildLegend()
       return 
-
+      
+    # On toggle, rebuild the legend
+    context.on 'toggle.legend', ->
+      buildLegend()
+      return
+      
     return
       
   legend

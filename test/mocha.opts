@@ -1,3 +1,0 @@
---require chai
---reporter nyan
---compilers coffee:coffee-script

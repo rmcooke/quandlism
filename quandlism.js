@@ -4,11 +4,11 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.8.7'
+    version: '0.9.0'
   };
 
   quandlism.context = function() {
-    var attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, event, h, lines, options, padding, processes, startPoint, types, w, yAxisMax, yAxisMin,
+    var allowTooltip, args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, endDate, event, h, lines, options, padding, processes, startDate, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -18,10 +18,17 @@
     dombrush = null;
     domlegend = null;
     domtooltip = null;
-    yAxisMin = null;
+    yAxisMin = 100;
     yAxisMax = null;
+    yAxisDualMin = null;
+    yAxisDualMax = null;
+    title = null;
     padding = 10;
     startPoint = 0.70;
+    dualLimit = 80;
+    allowTooltip = true;
+    startDate = null;
+    endDate = null;
     event = d3.dispatch('respond', 'adjust', 'toggle', 'refresh');
     colorList = ['#e88033', '#4eb15d', '#c45199', '#6698cb', '#6c904c', '#e9563b', '#9b506f', '#d2c761', '#4166b0', '#44b1ae'];
     lines = [];
@@ -29,6 +36,7 @@
     types = ['STAGE', 'BRUSH'];
     callbacks = {};
     options = {};
+    args = {};
     attributes = {};
     context.addCallback = function(event, fn) {
       if (!((event != null) && _.isFunction(fn))) {
@@ -58,8 +66,8 @@
       if (!((process != null) && (_ref = process.toUpperCase(), __indexOf.call(processes, _ref) >= 0))) {
         throw "Unknown process " + process;
       }
-      context.extractArguments(attributes);
-      context.executeOptions(options);
+      context.extractArguments();
+      context.executeOptions();
       lines = context.utility()["" + (process.toLowerCase()) + "Lines"](attributes, lines != null ? lines : null);
       lines = context.utility().processLines(attributes, lines);
       context.bindToElements();
@@ -78,18 +86,33 @@
       }
       return context;
     };
-    context.extractArguments = function(attributes) {
-      var attr, value;
-      for (attr in attributes) {
-        value = attributes[attr];
-        switch (attr) {
-          case "y_axis_min":
-            context.yAxisMin(value);
-            break;
-          case "y_axis_max":
-            context.yAxisMax(value);
+    context.executeOptions = function() {
+      var opt, value, _ref;
+      _ref = context.options();
+      for (opt in _ref) {
+        value = _ref[opt];
+        switch (opt) {
+          case "reset":
+            if (value === true) {
+              context.resetState();
+            }
         }
       }
+      return context;
+    };
+    context.extractArguments = function() {
+      var attr, value, _ref;
+      _ref = context.args();
+      for (attr in _ref) {
+        value = _ref[attr];
+        if (value == null) {
+          continue;
+        }
+        try {
+          context["" + (context.utility().camelize(attr))](value);
+        } catch (_error) {}
+      }
+      return context;
     };
     context.render = function() {
       context.build();
@@ -103,6 +126,7 @@
         d3.select(domlegend).call(context.legend());
       }
       context.respond();
+      context.runCallbacks('render');
       return context;
     };
     context.update = function(options) {
@@ -116,7 +140,7 @@
       return context;
     };
     context.build = function() {
-      w = $(dom).width();
+      w = $(dom).width() - quandlism_yaxis_width;
       h = $(dom).height();
       return context;
     };
@@ -165,19 +189,6 @@
         i++;
       }
     };
-    context.executeOptions = function(options) {
-      var opt, value;
-      for (opt in options) {
-        value = options[opt];
-        switch (opt) {
-          case "reset":
-            if (value === true) {
-              context.resetState();
-            }
-        }
-      }
-      return context;
-    };
     context.setAttribute = function(type, key, val) {
       var _name, _ref;
       type = type.toUpperCase();
@@ -201,7 +212,7 @@
       return (_ref = attributes["" + type]["" + key]) != null ? _ref : null;
     };
     context.resetState = function() {
-      yAxisMin = yAxisMax = null;
+      yAxisMin = yAxisMax = yAxisDualMin = yAxisDualMax = null;
     };
     context.lines = function(_) {
       if (!_) {
@@ -231,6 +242,13 @@
       options = _;
       return context;
     };
+    context.args = function(_) {
+      if (_ == null) {
+        return args;
+      }
+      args = _;
+      return context;
+    };
     context.w = function(_) {
       if (_ == null) {
         return w;
@@ -249,14 +267,28 @@
       if (_ == null) {
         return yAxisMin;
       }
-      yAxisMin = _;
+      yAxisMin = parseFloat(_);
       return context;
     };
     context.yAxisMax = function(_) {
       if (_ == null) {
         return yAxisMax;
       }
-      yAxisMax = _;
+      yAxisMax = parseFloat(_);
+      return context;
+    };
+    context.yAxisDualMin = function(_) {
+      if (_ == null) {
+        return yAxisDualMin;
+      }
+      yAxisDualMin = parseFloat(_);
+      return context;
+    };
+    context.yAxisDualMax = function(_) {
+      if (_ == null) {
+        return yAxisDualMax;
+      }
+      yAxisDualMax = parseFloat(_);
       return context;
     };
     context.dom = function(_) {
@@ -301,6 +333,41 @@
       callbacks = _;
       return context;
     };
+    context.dualLimit = function(_) {
+      if (_ == null) {
+        return dualLimit;
+      }
+      dualLimit = _;
+      return context;
+    };
+    context.allowTooltip = function(_) {
+      if (_ == null) {
+        return allowTooltip;
+      }
+      allowTooltip = _;
+      return context;
+    };
+    context.title = function(_) {
+      if (_ == null) {
+        return title;
+      }
+      title = _;
+      return context;
+    };
+    context.startDate = function(_) {
+      if (_ == null) {
+        return startDate;
+      }
+      startDate = _;
+      return context;
+    };
+    context.endDate = function(_) {
+      if (_ == null) {
+        return endDate;
+      }
+      endDate = _;
+      return context;
+    };
     context.respond = _.throttle(function() {
       return event.respond.call(context, 500);
     });
@@ -330,7 +397,7 @@
         w0 = $(dom).width();
         h0 = $(dom).height();
         if (w !== w0 || h !== h0) {
-          w = w0;
+          w = w0 - 50;
           h = h0;
           context.respond();
         }
@@ -378,7 +445,7 @@
   })();
 
   QuandlismContext_.line = function(data) {
-    var color, context, dates, datesMap, id, line, name, values, visible,
+    var axisIndex, color, context, dates, datesMap, id, line, name, values, visible,
       _this = this;
     line = new QuandlismLine();
     context = this;
@@ -389,6 +456,7 @@
     id = quandlism_line_id++;
     visible = false;
     color = '#000000';
+    axisIndex = 0;
     line.setup = function() {
       var v;
       dates = (function() {
@@ -566,11 +634,20 @@
       }
       return _results;
     };
+    line.resetState = function() {
+      this.axisIndex(0);
+    };
     line.toggle = function() {
       var v;
       v = !this.visible();
       this.visible(v);
       return v;
+    };
+    line.legendName = function() {
+      if (this.axisIndex() === 0) {
+        return this.name();
+      }
+      return "" + (this.name()) + " (RHS)";
     };
     line.dates = function(_) {
       if (_ == null) {
@@ -614,11 +691,18 @@
       color = _;
       return line;
     };
+    line.axisIndex = function(_) {
+      if (_ == null) {
+        return axisIndex;
+      }
+      axisIndex = _;
+      return line;
+    };
     return line;
   };
 
   QuandlismContext_.stage = function() {
-    var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extent, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxis, yScale,
+    var canvas, canvasId, canvasNode, context, ctx, dateEnd, dateStart, drawEnd, drawStart, extents, height, indexEnd, indexStart, line, lines, stage, threshold, width, xAxis, xScale, yAxes, yAxesDOMs, yScales,
       _this = this;
     context = this;
     canvasId = null;
@@ -628,10 +712,11 @@
     width = Math.floor(context.w() - quandlism_yaxis_width - 2);
     height = context.utility().stageHeight();
     xScale = d3.time.scale();
-    yScale = d3.scale.linear();
     xAxis = d3.svg.axis().orient('bottom').scale(xScale);
-    yAxis = d3.svg.axis().orient('left').scale(yScale);
-    extent = [];
+    yScales = [d3.scale.linear(), d3.scale.linear()];
+    yAxes = [d3.svg.axis().orient('left').scale(yScales[0]), d3.svg.axis().orient('right').scale(yScales[1])];
+    yAxesDOMs = [];
+    extents = [[], []];
     threshold = 10;
     dateStart = null;
     dateEnd = null;
@@ -643,89 +728,173 @@
     canvas = null;
     ctx = null;
     stage = function(selection) {
-      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, lineHit, setScales, xAxisDOM, yAxisDOM;
+      var clearTooltip, draw, drawAxis, drawGridLines, drawTooltip, i, insertAxisDOM, lineHit, prepareAxes, prepareCanvas, prepareLines, prepareToDraw, resetExtents, respondAxisDOM, setExtents, setExtentsFromUser, setScales, setTicks, setYAxisAttributesFromExtents, shouldShowDualAxes, stageCanvasStyle, xAxisDOM, _i;
+      shouldShowDualAxes = function() {
+        return context.utility().shouldShowDualAxes(indexStart, indexEnd);
+      };
+      stageCanvasStyle = function() {
+        var style;
+        style = "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;";
+        if (shouldShowDualAxes()) {
+          style += "border-right: 1px solid black;";
+        }
+        return style;
+      };
+      insertAxisDOM = function(axisIndex) {
+        return selection.insert("svg").attr("class", "y axis").attr("id", "y-axis-" + axisIndex + "-" + canvasId).attr("width", quandlism_yaxis_width).attr("height", height).attr("style", "position: absolute; left: " + context.w() * axisIndex + "px; top: 0px;");
+      };
       if (canvasId == null) {
         canvasId = "canvas-stage-" + (++quandlism_id_ref);
       }
       lines = selection.datum();
       line = _.first(lines);
       selection.attr("style", "position: absolute; left: 0px; top: 0px;");
-      yAxisDOM = selection.insert('svg');
-      yAxisDOM.attr('class', 'y axis');
-      yAxisDOM.attr('id', "y-axis-" + canvasId);
-      yAxisDOM.attr('width', quandlism_yaxis_width);
-      yAxisDOM.attr('height', height);
-      yAxisDOM.attr("style", "position: absolute; left: 0px; top: 0px;");
+      for (i = _i = 0; _i <= 1; i = ++_i) {
+        yAxesDOMs.push(insertAxisDOM(i));
+      }
       canvas = selection.append('canvas');
       canvas.attr('width', width);
       canvas.attr('height', height);
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
-      canvas.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: 0px; border-left: 1px solid black; border-bottom: 1px solid black;");
-      canvas.attr('data-y_min', null);
-      canvas.attr('data-y_max', null);
+      canvas.attr('style', stageCanvasStyle());
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
       xAxisDOM.attr('class', 'x axis');
       xAxisDOM.attr('id', "x-axis-" + canvasId);
       xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
-      xAxisDOM.attr('height', context.utility().xAxisHeight());
+      xAxisDOM.attr('height', height);
       xAxisDOM.attr('style', "position: absolute; left: " + quandlism_yaxis_width + "px; top: " + height + "px");
+      respondAxisDOM = function(axisInd) {
+        return yAxesDOMs[axisInd].attr('style', "position: absolute; left: " + (Math.floor(context.w()) * axisInd) + "px; top: 0px;");
+      };
+      resetExtents = function() {
+        extents = [[], []];
+      };
+      setExtents = function() {
+        var exe;
+        resetExtents();
+        setExtentsFromUser();
+        if (extents[0].length && extents[1].length) {
+          setYAxisAttributesFromExtents();
+          return;
+        }
+        exe = context.utility().getExtent(lines, indexStart, indexEnd);
+        if (_.first(exe) === _.last(exe)) {
+          exe = context.utility().getExtent(lines, 0, lines.length());
+        }
+        if (_.first(exe) === _.last(exe)) {
+          exe = [Math.floor(exe[0] / 2), Math.floor(exe[0] * 2)];
+        }
+        if (!context.utility().shouldShowDualAxesFromExtent(exe)) {
+          if (!extents[0].length) {
+            extents[0] = exe;
+          }
+        } else {
+          exe = context.utility().getMultiExtent(lines, indexStart, indexEnd);
+          if (!extents[0].length) {
+            extents[0] = exe[0];
+          }
+          if (!extents[1].length) {
+            extents[1] = exe[1];
+          }
+        }
+        setYAxisAttributesFromExtents();
+      };
+      setExtentsFromUser = function() {
+        if ((context.yAxisMin() != null) && (context.yAxisMax() != null) && (context.yAxisMin() < context.yAxisMax())) {
+          extents[0] = [context.yAxisMin(), context.yAxisMax()];
+        }
+        if ((context.yAxisDualMin() != null) && (context.yAxisDualMax() != null) && (context.yAxisDualMin() < context.yAxisDualMax())) {
+          return extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()];
+        }
+      };
+      setYAxisAttributesFromExtents = function() {
+        var _ref, _ref1, _ref2, _ref3;
+        context.setAttribute('stage', 'y_axis_min', (_ref = extents[0][0]) != null ? _ref : null);
+        context.setAttribute('stage', 'y_axis_max', (_ref1 = extents[0][1]) != null ? _ref1 : null);
+        context.setAttribute('stage', 'y_axis_dual_min', (_ref2 = extents[1][0]) != null ? _ref2 : null);
+        context.setAttribute('stage', 'y_axis_dual_max', (_ref3 = extents[1][1]) != null ? _ref3 : null);
+      };
       setScales = function() {
-        var unitsObj, _yMax, _yMin;
-        if (!(context.yAxisMax() && context.yAxisMin())) {
-          extent = context.utility().getExtent(lines, indexStart, indexEnd);
-          if (extent[0] === extent[1]) {
-            extent = context.utility().getExtent(lines, 0, line.length());
-          }
-          if (extent[0] === extent[1]) {
-            extent = [Math.floor(extent[0] / 2), Math.floor(extent[0] * 2)];
-          }
+        var scale, _j, _len;
+        xScale.domain([dateStart, dateEnd]);
+        xScale.range([0, width]);
+        yScales[0].domain(extents[0]);
+        yScales[1].domain(extents[1]);
+        for (_j = 0, _len = yScales.length; _j < _len; _j++) {
+          scale = yScales[_j];
+          scale.range([height - context.padding(), context.padding()]);
         }
-        _yMin = context.yAxisMin();
-        _yMax = context.yAxisMax();
-        if (_.isString(_yMin) && _.isEmpty(_yMin)) {
-          _yMin = null;
-        }
-        if (_.isString(_yMax) && _.isEmpty(_yMax)) {
-          _yMax = null;
-        }
-        _yMin = _yMin != null ? _yMin : extent[0];
-        _yMax = _yMax != null ? _yMax : extent[1];
-        context.yAxisMin(_yMin);
-        context.yAxisMax(_yMax);
-        yScale.domain([_yMin, _yMax]);
-        yScale.range([height - context.padding(), context.padding()]);
-        yAxis.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
-        yAxis.tickSize(5, 3, 0);
-        unitsObj = context.utility().getUnitAndDivisor(Math.round(extent[1]));
-        yAxis.tickFormat(function(d) {
+      };
+      setTicks = function(unitsObj, axisIndex) {
+        var val;
+        val = Math.floor(context.w() / 75);
+        xAxis.ticks(val);
+        yAxes[axisIndex].ticks(Math.floor(context.h() * quandlism_stage.h / 30));
+        yAxes[axisIndex].tickSize(5, 3, 0);
+        yAxes[axisIndex].tickFormat(function(d) {
           var n;
           n = (d / unitsObj['divisor']).toFixed(2);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
           return "" + n + unitsObj['label'];
         });
-        xScale.domain([dateStart, dateEnd]);
-        xScale.range([0, width]);
+      };
+      prepareAxes = function() {
+        var units, _j;
+        for (i = _j = 0; _j <= 1; i = ++_j) {
+          if (i === 1 && !shouldShowDualAxes()) {
+            continue;
+          }
+          units = context.utility().getUnitAndDivisor(Math.round(extents[i][1]));
+          setTicks(units, i);
+        }
+      };
+      prepareCanvas = function() {
+        canvas.attr("style", stageCanvasStyle());
+      };
+      prepareLines = function() {
+        var _j, _len;
+        for (_j = 0, _len = lines.length; _j < _len; _j++) {
+          line = lines[_j];
+          line.resetState();
+        }
+      };
+      prepareToDraw = function() {
+        setExtents();
+        setScales();
+        prepareAxes();
+        prepareCanvas();
+        prepareLines();
       };
       drawAxis = function() {
-        var xg, yg;
-        yAxisDOM.selectAll('*').remove();
-        yg = yAxisDOM.append('g');
-        yg.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
-        yg.call(yAxis);
+        var g, xg, _j, _len, _ref;
         xAxisDOM.selectAll('*').remove();
         xg = xAxisDOM.append('g');
         xg.call(xAxis);
         xg.select('path').remove();
-        yg.select('path').remove();
+        _ref = [0, 1];
+        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+          i = _ref[_j];
+          yAxesDOMs[i].selectAll('*').remove();
+          if (i === 1 && !shouldShowDualAxes()) {
+            continue;
+          }
+          g = yAxesDOMs[i].append('g');
+          if (i === 0) {
+            g.attr('transform', "translate(" + quandlism_yaxis_width + ", 0)");
+          }
+          g.call(yAxes[i]);
+          g.select('path').remove();
+        }
       };
       drawGridLines = function() {
-        var x, y, _i, _j, _len, _len1, _ref, _ref1, _results;
+        var x, y, yScale, _j, _k, _len, _len1, _ref, _ref1, _results;
+        yScale = _.first(yScales);
         _ref = yScale.ticks(Math.floor(context.h() * quandlism_stage.h / 30));
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          y = _ref[_i];
+        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+          y = _ref[_j];
           ctx.beginPath();
           ctx.strokeStyle = '#EDEDED';
           ctx.lineWidth = 1;
@@ -736,8 +905,8 @@
         }
         _ref1 = xScale.ticks(Math.floor((context.w() - quandlism_yaxis_width) / 100));
         _results = [];
-        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-          x = _ref1[_j];
+        for (_k = 0, _len1 = _ref1.length; _k < _len1; _k++) {
+          x = _ref1[_k];
           ctx.beginPath();
           ctx.strokeStyle = '#EDEDED';
           ctx.lineWith = 1;
@@ -749,24 +918,37 @@
         return _results;
       };
       draw = function(lineId) {
-        var i, j, lineWidth, _i, _j, _len;
+        var axisIndex, dual, ex, j, lineWidth, _j, _k, _l, _len;
         lineId = lineId != null ? lineId : -1;
         drawAxis();
         ctx.clearRect(0, 0, width, height);
         drawGridLines();
-        for (j = _i = 0, _len = lines.length; _i < _len; j = ++_i) {
+        dual = shouldShowDualAxes();
+        for (j = _j = 0, _len = lines.length; _j < _len; j = ++_j) {
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
-          line.drawPathFromIndicies(ctx, xScale, yScale, indexStart, indexEnd, lineWidth);
-          if ((indexEnd - indexStart) < threshold) {
-            for (i = _j = indexStart; indexStart <= indexEnd ? _j <= indexEnd : _j >= indexEnd; i = indexStart <= indexEnd ? ++_j : --_j) {
-              line.drawPointAtIndex(ctx, xScale, yScale, i, 2);
+          if (dual) {
+            ex = line.extent();
+            axisIndex = Math.abs(extents[0][1] - ex[1]) <= Math.abs(extents[1][1] - ex[1]) ? 0 : 1;
+            line.axisIndex(axisIndex);
+            line.drawPathFromIndicies(ctx, xScale, yScales[axisIndex], indexStart, indexEnd, lineWidth);
+            if ((indexEnd - indexStart) < threshold) {
+              for (i = _k = indexStart; indexStart <= indexEnd ? _k <= indexEnd : _k >= indexEnd; i = indexStart <= indexEnd ? ++_k : --_k) {
+                line.drawPointAtIndex(ctx, xScale, yScales[axisIndex], i, 2);
+              }
+            }
+          } else {
+            line.drawPathFromIndicies(ctx, xScale, yScales[0], indexStart, indexEnd, lineWidth);
+            if ((indexEnd - indexStart) < threshold) {
+              for (i = _l = indexStart; indexStart <= indexEnd ? _l <= indexEnd : _l >= indexEnd; i = indexStart <= indexEnd ? ++_l : --_l) {
+                line.drawPointAtIndex(ctx, xScale, yScales[0], i, 2);
+              }
             }
           }
         }
       };
       lineHit = function(m) {
-        var hex, hitMatrix, i, j, k, n, _i, _j, _k, _ref, _ref1, _ref2, _ref3, _ref4;
+        var hex, hitMatrix, j, k, n, _j, _k, _l, _ref, _ref1, _ref2, _ref3, _ref4;
         hex = context.utility().getPixelRGB(m, ctx);
         i = _.indexOf(context.colorList(), hex);
         if (i !== -1) {
@@ -777,14 +959,14 @@
           };
         }
         hitMatrix = [];
-        for (j = _i = _ref = m[0] - 3, _ref1 = m[0] + 3; _ref <= _ref1 ? _i <= _ref1 : _i >= _ref1; j = _ref <= _ref1 ? ++_i : --_i) {
-          for (k = _j = _ref2 = m[1] - 3, _ref3 = m[1] + 3; _ref2 <= _ref3 ? _j <= _ref3 : _j >= _ref3; k = _ref2 <= _ref3 ? ++_j : --_j) {
+        for (j = _j = _ref = m[0] - 3, _ref1 = m[0] + 3; _ref <= _ref1 ? _j <= _ref1 : _j >= _ref1; j = _ref <= _ref1 ? ++_j : --_j) {
+          for (k = _k = _ref2 = m[1] - 3, _ref3 = m[1] + 3; _ref2 <= _ref3 ? _k <= _ref3 : _k >= _ref3; k = _ref2 <= _ref3 ? ++_k : --_k) {
             if (j !== m[0] || k !== m[1]) {
               hitMatrix.push([j, k]);
             }
           }
         }
-        for (n = _k = 0, _ref4 = hitMatrix.length - 1; 0 <= _ref4 ? _k <= _ref4 : _k >= _ref4; n = 0 <= _ref4 ? ++_k : --_k) {
+        for (n = _l = 0, _ref4 = hitMatrix.length - 1; 0 <= _ref4 ? _l <= _ref4 : _l >= _ref4; n = 0 <= _ref4 ? ++_l : --_l) {
           hex = context.utility().getPixelRGB(hitMatrix[n], ctx);
           i = _.indexOf(context.colorList(), hex);
           if (i !== -1) {
@@ -803,7 +985,11 @@
         date = line_.dateAt(dataIndex);
         value = line_.valueAt(dataIndex);
         draw(line_.id());
-        line_.drawPointAtIndex(ctx, xScale, yScale, dataIndex, 3);
+        if (extents[1][1] / extents[0][1] > 2 && Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[1][1]) < Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[0][1])) {
+          line_.drawPointAtIndex(ctx, xScale, yScales[1], dataIndex, 3);
+        } else {
+          line_.drawPointAtIndex(ctx, xScale, yScales[0], dataIndex, 3);
+        }
         inTooltip = loc[1] <= 20 && loc[0] >= (width - 250);
         w = inTooltip ? width - 400 : width;
         ctx.beginPath();
@@ -823,23 +1009,38 @@
         draw();
       };
       if (context.dombrush() == null) {
-        dateStart = _.first(lines[0].dates());
-        dateEnd = _.last(lines[0].dates());
-        indexStart = 0;
-        indexEnd = line.length();
-        setScales();
+        if (context.startDate()) {
+          dateStart = context.startDate();
+          indexStart = line.getClosestIndex(dateStart);
+        } else {
+          dateStart = _.first(lines[0].dates());
+          indexStart = 0;
+        }
+        if (context.endDate()) {
+          dateEnd = context.endDate();
+          indexEnd = line.getClosestIndex(dateEnd);
+        } else {
+          dateEnd = _.last(lines[0].dates());
+          indexEnd = line.length();
+        }
+        context.setAttribute('stage', 'start_date', dateStart);
+        context.setAttribute('stage', 'end_date', dateEnd);
+        prepareToDraw();
         draw();
       }
       context.on('respond.stage', function() {
+        var _j;
         ctx.clearRect(0, 0, width, height);
-        width = Math.floor(context.w() - quandlism_yaxis_width - 2);
+        width = Math.floor(context.w() - quandlism_yaxis_width - 1);
         height = context.utility().stageHeight();
         canvas.attr('width', width);
         canvas.attr('height', height);
-        yAxisDOM.attr('width', quandlism_yaxis_width);
+        for (i = _j = 0; _j <= 1; i = ++_j) {
+          respondAxisDOM(i);
+        }
         xAxisDOM.attr('width', Math.floor(context.w() - quandlism_yaxis_width));
         xAxisDOM.attr('height', Math.floor(context.utility().xAxisHeight()));
-        setScales();
+        prepareToDraw();
         draw();
       });
       context.on('adjust.stage', function(_dateStart, _indexStart, _dateEnd, _indexEnd) {
@@ -847,14 +1048,15 @@
         indexEnd = _indexEnd;
         dateStart = _dateStart;
         dateEnd = _dateEnd;
-        setScales();
+        prepareToDraw();
         draw();
       });
       context.on('toggle.stage', function() {
         if (!context.dombrush()) {
           context.resetState();
         }
-        setScales();
+        context.setAttribute('stage', 'visible_columns', context.utility().visibleColumns(lines));
+        prepareToDraw();
         draw();
       });
       context.on('refresh.stage', function() {
@@ -866,6 +1068,9 @@
       });
       d3.select("#" + canvasId).on('mousemove', function(e) {
         var dataIndex, hit, loc;
+        if (!context.allowTooltip()) {
+          return;
+        }
         loc = d3.mouse(this);
         hit = lineHit(loc);
         if (hit) {
@@ -893,6 +1098,7 @@
       return stage;
     };
     stage.yScale = function(_) {
+      var yScale;
       if (_ == null) {
         return yScale;
       }
@@ -1100,7 +1306,7 @@
         setBrushValues();
       }
       drawAxis();
-      dispatchAdjust();
+      dispatchAdjust(true);
       setInterval(update, 70);
       context.on("respond.brush", function() {
         setPrevious('height', height);
@@ -1161,7 +1367,7 @@
         setBrushClass('');
         saveState();
       });
-      return canvas.on('mousemove', function(e) {
+      canvas.on('mousemove', function(e) {
         var dragDiff, m;
         m = d3.mouse(this);
         if (dragging || stretching) {
@@ -1190,6 +1396,23 @@
           } else {
             setBrushClass('');
           }
+        }
+      });
+      return canvas.on("dblclick", function(e) {
+        var m;
+        d3.event.preventDefault();
+        m = d3.mouse(this);
+        touchPoint = m[0];
+        if (isDraggingLocation(m[0]) || isLeftHandle(m[0]) || isRightHandle(m[0])) {
+          dateStart = _.first(line.dates());
+          dateEnd = _.last(line.dates());
+          drawStart = xScale(dateStart);
+          drawEnd = xScale(dateEnd);
+          setPrevious('dateStart', dateStart);
+          setPrevious('dateEnd', dateEnd);
+          setPrevious('drawStart', drawStart);
+          setPrevious('drawEnd', drawEnd);
+          context.toggle();
         }
       });
     };
@@ -1238,144 +1461,6 @@
     return brush;
   };
 
-  QuandlismContext_.xaxis = function() {
-    var active, axis_, context, extent, height, id, lines, parseDate, scale, width, xaxis,
-      _this = this;
-    context = this;
-    width = context.w() * quandlism_xaxis.w;
-    height = context.h() * quandlism_xaxis.h;
-    scale = d3.time.scale().range([0, width]);
-    axis_ = d3.svg.axis().scale(scale);
-    extent = [];
-    active = false;
-    lines = [];
-    id = null;
-    parseDate = null;
-    xaxis = function(selection) {
-      var changeScale, update;
-      id = selection.attr('id');
-      lines = selection.datum();
-      axis_.tickSize(5, 3, 0);
-      update = function() {
-        var g;
-        xaxis.remove();
-        g = selection.append('svg');
-        g.attr('width', width);
-        g.attr('height', height);
-        g.append('g');
-        g.attr('transform', 'translate(0, 27)');
-        return g.call(axis_);
-      };
-      changeScale = function() {
-        extent = [lines[0].dateAt(0), lines[0].dateAt(lines[0].length() - 1)];
-        parseDate = context.utility().parseDate(lines[0].dateAt(0));
-        scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
-        axis_.tickFormat(d3.time.format('%b %d, %Y'));
-        axis_.ticks(Math.floor(width / 150, 0, 0));
-        return scale.range([0, width]);
-      };
-      changeScale();
-      update();
-      context.on("respond.xaxis-" + id, function() {
-        width = context.w() * quandlism_xaxis.w;
-        axis_.ticks(Math.floor(width / 150, 0, 0));
-        scale.range([0, width]);
-        return update();
-      });
-      context.on("refresh.xaxis-" + id, function() {
-        lines = selection.datum();
-        changeScale();
-        return update();
-      });
-      if (active) {
-        context.on("adjust.xaxis-" + id, function(x1, x2) {
-          x2 = x2 > lines[0].length() - 1 ? lines[0].length() - 1 : x2;
-          x1 = x1 < 0 ? 0 : x1;
-          extent = [lines[0].dateAt(x1), lines[0].dateAt(x2)];
-          scale.domain([parseDate(extent[0]), parseDate(extent[1])]);
-          return update();
-        });
-      }
-    };
-    xaxis.remove = function() {
-      return d3.select("#" + id).selectAll("svg").remove();
-    };
-    xaxis.active = function(_) {
-      if (!_) {
-        return active;
-      }
-      active = _;
-      return xaxis;
-    };
-    return d3.rebind(xaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
-  };
-
-  QuandlismContext_.yaxis = function() {
-    var axis_, context, extent, height, id, lines, scale, width, xEnd, xStart, yaxis,
-      _this = this;
-    context = this;
-    width = context.w() * quandlism_yaxis.w;
-    height = context.h() * quandlism_yaxis.h;
-    scale = d3.scale.linear().range([height, 0]);
-    axis_ = d3.svg.axis().scale(scale);
-    lines = [];
-    extent = [];
-    xStart = null;
-    xEnd = null;
-    id = null;
-    yaxis = function(selection) {
-      var setEndPoints, update;
-      id = selection.attr('id');
-      lines = selection.datum();
-      axis_.ticks(Math.floor(height / 25, 0, 0));
-      axis_.tickSize(5, 3, 0);
-      update = function() {
-        var a, g;
-        extent = context.utility().getExtent(lines, xStart, xEnd);
-        scale.domain([extent[0], extent[1]]);
-        yaxis.remove();
-        g = selection.append('svg');
-        g.attr('width', width);
-        g.attr('height', '100%');
-        a = g.append('g');
-        a.attr('transform', "translate(" + (width - 1) + ", 0)");
-        a.attr('width', width);
-        a.attr('height', height);
-        return a.call(axis_);
-      };
-      setEndPoints = function() {
-        xEnd = lines[0].length() - 1;
-        xStart = Math.floor(lines[0].length() * context.endPercent());
-      };
-      setEndPoints();
-      update();
-      context.on("toggle.y-axis-" + id, function() {
-        update();
-      });
-      context.on("refresh.y-axis-" + id, function() {
-        lines = selection.datum();
-        setEndPoints();
-        update();
-      });
-      context.on("respond.y-axis-" + id, function() {
-        width = context.w() * quandlism_yaxis.w;
-        height = context.h() * quandlism_yaxis.h;
-        axis_.ticks(Math.floor(height / 25, 0, 0));
-        scale.range([height, 0]);
-        update();
-      });
-      context.on("adjust.y-axis-" + id + "}", function(x1, x2) {
-        xStart = x1 > 0 ? x1 : 0;
-        xEnd = x2 < lines[0].length() ? x2 : lines[0].length();
-        update();
-      });
-    };
-    yaxis.remove = function(_) {
-      d3.select("#" + id).selectAll("svg").remove();
-    };
-    return d3.rebind(yaxis, axis_, 'orient', 'ticks', 'ticksSubdivide', 'tickSize', 'tickPadding', 'tickFormat');
-  };
-
   QuandlismContext_.legend = function() {
     var context, legend, lines;
     context = this;
@@ -1395,7 +1480,7 @@
         }).append('a', ':first-child').attr('href', 'javascript:;').attr('data-line-id', function(line) {
           return line.id();
         }).text(function(line) {
-          return line.name();
+          return line.legendName();
         });
         selection.selectAll('a').on("click", function(d, i) {
           var e, el, id, line;
@@ -1420,6 +1505,9 @@
       context.on('refresh.legend', function() {
         buildLegend();
       });
+      context.on('toggle.legend', function() {
+        buildLegend();
+      });
     };
     return legend;
   };
@@ -1429,6 +1517,11 @@
       _this = this;
     context = this;
     utility = function() {};
+    utility.camelize = function(str) {
+      return str.replace(/(\_[a-z])/g, function(match) {
+        return match.toUpperCase().replace('_', '');
+      });
+    };
     utility.truncate = function(word, chars) {
       if (word.length > chars) {
         return "" + (word.substring(0, chars)) + "...";
@@ -1513,6 +1606,30 @@
         return _ref = line.name(), __indexOf.call(columns, _ref) < 0;
       });
     };
+    utility.getMultiExtent = function(lines, start, end) {
+      var exesMax, exesMin, groupedExtents;
+      if (!utility.shouldShowDualAxis(lines, start, end)) {
+        return [utility.getExtent(lines, start, end)];
+      }
+      groupedExtents = utility.getGroupMinMaxList(lines, min, max, start, end);
+      exesMin = _.first(groupedExtents);
+      exesMax = _.last(groupedExtents);
+      return [
+        [
+          d3.min(exesMin, function(m) {
+            return m[0];
+          }), d3.max(exesMin, function(m) {
+            return m[1];
+          })
+        ], [
+          d3.min(exesMax, function(m) {
+            return m[0];
+          }), d3.max(exesMax, function(m) {
+            return m[1];
+          })
+        ]
+      ];
+    };
     utility.getExtent = function(lines, start, end) {
       var exes, line;
       exes = (function() {
@@ -1531,6 +1648,58 @@
           return m[1];
         })
       ];
+    };
+    utility.getMultiExtent = function(lines, start, end) {
+      var exes_max, exes_min, line, max, min, val, _i, _len;
+      min = Infinity;
+      max = -Infinity;
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        val = line.extent(start, end)[1];
+        if (val === Infinity || val === -Infinity) {
+          continue;
+        }
+        if (val < min) {
+          min = val;
+        }
+        if (val > max) {
+          max = val;
+        }
+      }
+      exes_min = utility.getGroupMinMaxList(lines, min, max, start, end)[0];
+      exes_max = utility.getGroupMinMaxList(lines, min, max, start, end)[1];
+      return [
+        [
+          d3.min(exes_min, function(m) {
+            return m[0];
+          }), d3.max(exes_min, function(m) {
+            return m[1];
+          })
+        ], [
+          d3.min(exes_max, function(m) {
+            return m[0];
+          }), d3.max(exes_max, function(m) {
+            return m[1];
+          })
+        ]
+      ];
+    };
+    utility.getGroupMinMaxList = function(lines, min, max, start, end) {
+      var line, max_dis, min_dis, _i, _len, _resultsMax, _resultsMin;
+      _resultsMin = [];
+      _resultsMax = [];
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        line = lines[_i];
+        min_dis = Math.abs(min - _.last(line.extent(start, end)));
+        max_dis = Math.abs(max - _.last(line.extent(start, end)));
+        if (min_dis < max_dis || min_dis === 0) {
+          _resultsMin.push(line.extent(start, end));
+        }
+        if (min_dis > max_dis || max_dis === 0) {
+          _resultsMax.push(line.extent(start, end));
+        }
+      }
+      return [_resultsMin, _resultsMax];
     };
     utility.getExtentFromDates = function(lines, startDate, endDate) {
       var exes, line;
@@ -1612,6 +1781,40 @@
       } else {
         return context.h() * 0.10;
       }
+    };
+    utility.visibleColumns = function(lines) {
+      var i, line, vis, _i, _len;
+      vis = [];
+      for (i = _i = 0, _len = lines.length; _i < _len; i = ++_i) {
+        line = lines[i];
+        if (line.visible()) {
+          vis.push(i);
+        }
+      }
+      return vis;
+    };
+    utility.shouldShowDualAxes = function(start, end) {
+      var lines;
+      lines = context.lines();
+      if (!((lines != null) && lines instanceof Array)) {
+        return false;
+      }
+      if (lines.length === 1 || utility.visibleColumns(lines).length < 2) {
+        return false;
+      }
+      return utility.shouldShowDualAxesFromExtent(utility.getExtent(lines, start, end));
+    };
+    utility.shouldShowDualAxesFromExtent = function(exe) {
+      var max, min;
+      if (context.lines().length === 1 || utility.visibleColumns(context.lines()).length < 2) {
+        return false;
+      }
+      min = parseFloat(_.first(exe));
+      max = parseFloat(_.last(exe));
+      if (min === 0 || max === 0) {
+        return Math.abs(max - min) > context.dualLimit() * 100;
+      }
+      return max / min > context.dualLimit();
     };
     return utility;
   };
