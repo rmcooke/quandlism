@@ -1,3 +1,13 @@
+## 0.9.0
+
+* Second y-Axis. If max extent and min extent of visible lines differ from dualLimit, draw second axis. dualLimit configurable in context.
+* Refactor stage. Add prepareToDraw method to wrap all predraw functions.
+* Dual yAxis values argument in context.
+* Stage can expose values through stage attribute.
+* Double brush click to expand.
+* Add RHS on legend when line applies to send y-axis.
+* Stage respects starte and end date when brush not present.
+
 ## 0.8.7
 
 * Context exposes attributes objects.  Attributes have type and key.  Type constrained to 'stage' and 'brush'
