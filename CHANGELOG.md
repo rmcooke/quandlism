@@ -1,3 +1,7 @@
+## 0.9.1
+
+* Fix issue #60.
+
 ## 0.9.0
 
 * Second y-Axis. If max extent and min extent of visible lines differ from dualLimit, draw second axis. dualLimit configurable in context.
