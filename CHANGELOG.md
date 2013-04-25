@@ -1,3 +1,7 @@
+## 0.9.2
+
+* Better algo for deciding if second axis is needed
+
 ## 0.9.1
 
 * Fix issue #60.

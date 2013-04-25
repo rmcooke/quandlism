@@ -96,7 +96,7 @@ QuandlismContext_.stage = () ->
       exe = context.utility().getExtent lines, 0, lines.length()  unless _.first(exe) isnt _.last exe
       exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
     
-      if !context.utility().shouldShowDualAxesFromExtent exe
+      if !context.utility().shouldShowDualAxes indexStart, indexEnd
         extents[0] = exe unless extents[0].length
       else
         exe = context.utility().getMultiExtent(lines, indexStart, indexEnd)

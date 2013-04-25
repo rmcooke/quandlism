@@ -15,7 +15,6 @@ quandlism.context = () ->
   title         = null
   padding       = 10 
   startPoint    = 0.70
-  dualLimit     = 80
   allowTooltip  = true
   startDate     = null
   endDate       = null
@@ -254,11 +253,6 @@ quandlism.context = () ->
   context.callbacks = (_) =>
     if not _? then return callbacks
     callbacks = _
-    context
-    
-  context.dualLimit = (_) =>
-    if not _? then return dualLimit
-    dualLimit = _
     context
     
   context.allowTooltip = (_) =>
