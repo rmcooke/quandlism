@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.9.0'
+    version: '0.9.1'
   };
 
   quandlism.context = function() {
@@ -928,7 +928,7 @@
           line = lines[j];
           lineWidth = j === lineId ? 3 : 1.5;
           if (dual) {
-            ex = line.extent();
+            ex = line.extent(indexStart, indexEnd);
             axisIndex = Math.abs(extents[0][1] - ex[1]) <= Math.abs(extents[1][1] - ex[1]) ? 0 : 1;
             line.axisIndex(axisIndex);
             line.drawPathFromIndicies(ctx, xScale, yScales[axisIndex], indexStart, indexEnd, lineWidth);

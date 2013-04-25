@@ -239,7 +239,7 @@ QuandlismContext_.stage = () ->
         
         # If there are two axes, determine which axes the line belongs to.
         if dual
-          ex = line.extent()
+          ex = line.extent(indexStart, indexEnd)
           # Determine which scale to use for each line
           axisIndex = if (Math.abs(extents[0][1]-ex[1]) <= Math.abs(extents[1][1]-ex[1])) then 0 else 1
           line.axisIndex axisIndex
