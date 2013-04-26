@@ -773,7 +773,7 @@
         }
         exe = context.utility().getExtent(lines, indexStart, indexEnd);
         if (_.first(exe) === _.last(exe)) {
-          exe = context.utility().getExtent(lines, 0, lines.length());
+          exe = context.utility().getExtent(lines, 0, lines.length);
         }
         if (_.first(exe) === _.last(exe)) {
           exe = [Math.floor(exe[0] / 2), Math.floor(exe[0] * 2)];

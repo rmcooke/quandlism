@@ -93,7 +93,7 @@ QuandlismContext_.stage = () ->
       # Calculate extents for all lines
       # Recalculate and check for flat lines
       exe = context.utility().getExtent lines, indexStart, indexEnd
-      exe = context.utility().getExtent lines, 0, lines.length()  unless _.first(exe) isnt _.last exe
+      exe = context.utility().getExtent lines, 0, lines.length  unless _.first(exe) isnt _.last exe
       exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
     
       if !context.utility().shouldShowDualAxes indexStart, indexEnd
