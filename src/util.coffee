@@ -242,8 +242,8 @@ QuandlismContext_.utility = () ->
     min2 = parseFloat _.first(exe2)
     max2 = parseFloat _.last(exe2)
     size2 = max2 - min2
-    ratio = size1/size2
-    ratio = 1/ratio if ratio > 1
+    ratio = size1 / size2
+    ratio = 1 / ratio if ratio > 1
     return true if ratio < kSIZE_RULE
 
     # Rule 2
@@ -259,7 +259,7 @@ QuandlismContext_.utility = () ->
       distance = min1 - max2
     else
       distance = min2 - max1
-    if distance/size1 > kDISTANCE_RULE or distance/size2 > kDISTANCE_RULE
+    if distance / size1 > kDISTANCE_RULE or distance / size2 > kDISTANCE_RULE
       return true
     false
     
