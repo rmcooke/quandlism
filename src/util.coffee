@@ -200,22 +200,68 @@ QuandlismContext_.utility = () ->
       vis.push i if line.visible() 
     vis
 
-  # Determine if the lines with the indicies start and end should reveal two axes
+  # Do we need two axes?
+  # Rules
+  #   Rule 1:
+  #      (Recall that the "extent" of line in quandlism is a (min,max) vector of the lowest and highest
+  #      values that the line attains)
+  #      Define the size of the extent as ex[1] - ex[0], i.e. max - min
+  #      if the size of the extent of the last visible line and
+  #      the size of the extent of the rest of the visible lines
+  #      are not the roughly the same, then you must use dual axis.
+  #      (otherwise the variability of one will not be visible; it will look like a straight line)
+  #      if they are roughly the same size, proceed to rule 2.
+  #      kSIZE_RULE is the limit of how much their sizes can differ.  0.6 = 60%
+  #   Rule 2:
+  #      if the size of the extents are roughly the same but they are far aprt from each other, then we
+  #      also need dual axis
+  #      e.g. size_extent1 = 5, size_extent2 = 5
+  #      BUT min1=100000 and max1=100005 min2=0 max2=5
+  
   utility.shouldShowDualAxes = (start, end) =>
-    lines = context.lines()
-    return false unless lines? and lines instanceof Array 
-    return false if lines.length is 1 or utility.visibleColumns(lines).length < 2
-    utility.shouldShowDualAxesFromExtent utility.getExtent(lines, start, end)
+    kSIZE_RULE = 0.6 # for Rule 1
+    kDISTANCE_RULE = 0.6 # for Rule 2 gap between two ranges cannot be creater than this (normalized)
+
+    linesAll = context.lines()
+    return false unless linesAll? and linesAll instanceof Array
+    return false if linesAll.length is 1 or utility.visibleColumns(linesAll).length < 2
     
-  utility.shouldShowDualAxesFromExtent = (exe) =>
-    return false if context.lines().length is 1 or utility.visibleColumns(context.lines()).length < 2
-    min = parseFloat _.first(exe)
-    max = parseFloat _.last(exe)
-    if min is 0 or max is 0
-      return Math.abs(max - min) > context.dualLimit()*100
-    max / min > context.dualLimit()
-    
-    
+    # Rule 1
+    # Not interested in non visible lines
+    lines = []
+    for line in linesAll
+      lines.push line if line.visible()
+
+    last_line = lines.slice(lines.length-1,lines.length)
+    rest = lines.slice(0,lines.length-1)
+    exe1 = utility.getExtent(rest, start, end)
+    min1 = parseFloat _.first(exe1)
+    max1 = parseFloat _.last(exe1)
+    size1 = max1 - min1
+    exe2 = utility.getExtent(last_line, start, end)
+    min2 = parseFloat _.first(exe2)
+    max2 = parseFloat _.last(exe2)
+    size2 = max2 - min2
+    ratio = size1 / size2
+    ratio = 1 / ratio if ratio > 1
+    return true if ratio < kSIZE_RULE
+
+    # Rule 2
+    # If there is overlap, then no dual axis
+    if max1 > max2
+      return false if max2 > min1
+    else
+      return false if max1 > min2
+
+    # ok, there is no overlap.  so if they are close to each other then no dual, else dual
+    distance = 0 # scope
+    if max1 > max2
+      distance = min1 - max2
+    else
+      distance = min2 - max1
+    if distance / size1 > kDISTANCE_RULE or distance / size2 > kDISTANCE_RULE
+      return true
+    false
     
     
   utility

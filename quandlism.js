@@ -4,11 +4,11 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.9.1'
+    version: '0.9.2'
   };
 
   quandlism.context = function() {
-    var allowTooltip, args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, dualLimit, endDate, event, h, lines, options, padding, processes, startDate, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
+    var allowTooltip, args, attributes, callbacks, colorList, context, dom, dombrush, domlegend, domstage, domtooltip, endDate, event, h, lines, options, padding, processes, startDate, startPoint, title, types, w, yAxisDualMax, yAxisDualMin, yAxisMax, yAxisMin,
       _this = this;
     context = new QuandlismContext();
     w = null;
@@ -25,7 +25,6 @@
     title = null;
     padding = 10;
     startPoint = 0.70;
-    dualLimit = 80;
     allowTooltip = true;
     startDate = null;
     endDate = null;
@@ -331,13 +330,6 @@
         return callbacks;
       }
       callbacks = _;
-      return context;
-    };
-    context.dualLimit = function(_) {
-      if (_ == null) {
-        return dualLimit;
-      }
-      dualLimit = _;
       return context;
     };
     context.allowTooltip = function(_) {
@@ -781,12 +773,12 @@
         }
         exe = context.utility().getExtent(lines, indexStart, indexEnd);
         if (_.first(exe) === _.last(exe)) {
-          exe = context.utility().getExtent(lines, 0, lines.length());
+          exe = context.utility().getExtent(lines, 0, lines.length);
         }
         if (_.first(exe) === _.last(exe)) {
           exe = [Math.floor(exe[0] / 2), Math.floor(exe[0] * 2)];
         }
-        if (!context.utility().shouldShowDualAxesFromExtent(exe)) {
+        if (!context.utility().shouldShowDualAxes(indexStart, indexEnd)) {
           if (!extents[0].length) {
             extents[0] = exe;
           }
@@ -1794,27 +1786,59 @@
       return vis;
     };
     utility.shouldShowDualAxes = function(start, end) {
-      var lines;
-      lines = context.lines();
-      if (!((lines != null) && lines instanceof Array)) {
+      var distance, exe1, exe2, kDISTANCE_RULE, kSIZE_RULE, last_line, line, lines, linesAll, max1, max2, min1, min2, ratio, rest, size1, size2, _i, _len;
+      kSIZE_RULE = 0.6;
+      kDISTANCE_RULE = 0.6;
+      linesAll = context.lines();
+      if (!((linesAll != null) && linesAll instanceof Array)) {
         return false;
       }
-      if (lines.length === 1 || utility.visibleColumns(lines).length < 2) {
+      if (linesAll.length === 1 || utility.visibleColumns(linesAll).length < 2) {
         return false;
       }
-      return utility.shouldShowDualAxesFromExtent(utility.getExtent(lines, start, end));
-    };
-    utility.shouldShowDualAxesFromExtent = function(exe) {
-      var max, min;
-      if (context.lines().length === 1 || utility.visibleColumns(context.lines()).length < 2) {
-        return false;
+      lines = [];
+      for (_i = 0, _len = linesAll.length; _i < _len; _i++) {
+        line = linesAll[_i];
+        if (line.visible()) {
+          lines.push(line);
+        }
       }
-      min = parseFloat(_.first(exe));
-      max = parseFloat(_.last(exe));
-      if (min === 0 || max === 0) {
-        return Math.abs(max - min) > context.dualLimit() * 100;
+      last_line = lines.slice(lines.length - 1, lines.length);
+      rest = lines.slice(0, lines.length - 1);
+      exe1 = utility.getExtent(rest, start, end);
+      min1 = parseFloat(_.first(exe1));
+      max1 = parseFloat(_.last(exe1));
+      size1 = max1 - min1;
+      exe2 = utility.getExtent(last_line, start, end);
+      min2 = parseFloat(_.first(exe2));
+      max2 = parseFloat(_.last(exe2));
+      size2 = max2 - min2;
+      ratio = size1 / size2;
+      if (ratio > 1) {
+        ratio = 1 / ratio;
       }
-      return max / min > context.dualLimit();
+      if (ratio < kSIZE_RULE) {
+        return true;
+      }
+      if (max1 > max2) {
+        if (max2 > min1) {
+          return false;
+        }
+      } else {
+        if (max1 > min2) {
+          return false;
+        }
+      }
+      distance = 0;
+      if (max1 > max2) {
+        distance = min1 - max2;
+      } else {
+        distance = min2 - max1;
+      }
+      if (distance / size1 > kDISTANCE_RULE || distance / size2 > kDISTANCE_RULE) {
+        return true;
+      }
+      return false;
     };
     return utility;
   };
