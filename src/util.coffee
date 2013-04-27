@@ -219,7 +219,7 @@ QuandlismContext_.utility = () ->
   #      BUT min1=100000 and max1=100005 min2=0 max2=5
   
   utility.shouldShowDualAxes = (start, end) =>
-    kSIZE_RULE = 0.6 # for Rule 1
+    kSIZE_RULE = 0.1 # for Rule 1
     kDISTANCE_RULE = 0.6 # for Rule 2 gap between two ranges cannot be creater than this (normalized)
 
     linesAll = context.lines()

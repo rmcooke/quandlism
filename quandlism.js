@@ -1787,7 +1787,7 @@
     };
     utility.shouldShowDualAxes = function(start, end) {
       var distance, exe1, exe2, kDISTANCE_RULE, kSIZE_RULE, last_line, line, lines, linesAll, max1, max2, min1, min2, ratio, rest, size1, size2, _i, _len;
-      kSIZE_RULE = 0.6;
+      kSIZE_RULE = 0.1;
       kDISTANCE_RULE = 0.6;
       linesAll = context.lines();
       if (!((linesAll != null) && linesAll instanceof Array)) {
