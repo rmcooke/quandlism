@@ -1,3 +1,5 @@
+# Quandlism Change Log
+
 ## 0.9.3
 
 * Fix issue #63
