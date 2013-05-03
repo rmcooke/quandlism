@@ -225,12 +225,19 @@ QuandlismContext_.utility = () ->
     linesAll = context.lines()
     return false unless linesAll? and linesAll instanceof Array
     return false if linesAll.length is 1 or utility.visibleColumns(linesAll).length < 2
-    
-    # Rule 1
-    # Not interested in non visible lines
     lines = []
+
+    # Not interested in non visible lines
     for line in linesAll
       lines.push line if line.visible()
+
+    # Rule 0 (if this is normalized data, then no dual axis)
+    normalized = true
+    for line in lines
+      normalized = false if line.firstValue() != 100
+    return false if normalized
+
+    # Rule 1
 
     last_line = lines.slice(lines.length-1,lines.length)
     rest = lines.slice(0,lines.length-1)

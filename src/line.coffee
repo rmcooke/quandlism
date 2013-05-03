@@ -80,6 +80,14 @@ QuandlismContext_.line = (data) ->
   # Returns a string representing a date
   line.dateAt = (i) =>
     if dates[i]? then dates[i] else null
+
+  # Get the value of the first point
+  #
+  line.firstValue = () ->
+    i = 0
+    while i < @length()
+      if @valueAt(i) then return @valueAt(i) else i++
+    return null
     
     
   # Draws a the point on the canvas at the dataPoint corresponding to 'index', for this line

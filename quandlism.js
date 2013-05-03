@@ -535,6 +535,18 @@
         return null;
       }
     };
+    line.firstValue = function() {
+      var i;
+      i = 0;
+      while (i < this.length()) {
+        if (this.valueAt(i)) {
+          return this.valueAt(i);
+        } else {
+          i++;
+        }
+      }
+      return null;
+    };
     line.drawPointAtIndex = function(ctx, xS, yS, index, radius) {
       if (!this.visible()) {
         return;
@@ -1786,7 +1798,7 @@
       return vis;
     };
     utility.shouldShowDualAxes = function(start, end) {
-      var distance, exe1, exe2, kDISTANCE_RULE, kSIZE_RULE, last_line, line, lines, linesAll, max1, max2, min1, min2, ratio, rest, size1, size2, _i, _len;
+      var distance, exe1, exe2, kDISTANCE_RULE, kSIZE_RULE, last_line, line, lines, linesAll, max1, max2, min1, min2, normalized, ratio, rest, size1, size2, _i, _j, _len, _len1;
       kSIZE_RULE = 0.1;
       kDISTANCE_RULE = 0.6;
       linesAll = context.lines();
@@ -1802,6 +1814,16 @@
         if (line.visible()) {
           lines.push(line);
         }
+      }
+      normalized = true;
+      for (_j = 0, _len1 = lines.length; _j < _len1; _j++) {
+        line = lines[_j];
+        if (line.firstValue() !== 100) {
+          normalized = false;
+        }
+      }
+      if (normalized) {
+        return false;
       }
       last_line = lines.slice(lines.length - 1, lines.length);
       rest = lines.slice(0, lines.length - 1);
