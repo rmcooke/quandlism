@@ -94,10 +94,12 @@ QuandlismContext_.stage = () ->
 
       # Get extent of visible lines
       exe = context.utility().getExtent lines, indexStart, indexEnd
-      # If extents values are equal (flat line), check the extend of the entire line
+      
+      # If extents values are equal (flat line), check the extent of the entire dataset
       unless _.first(exe) isnt _.last(exe)
         exe = context.utility().getExtent lines, 0, _.first(lines).length()
-      # If extent is *still* a flat line, transform extent 
+        
+      # If extent is *still* a flat line, transform extent to place line in middle of plot
       unless _.first(exe) isnt _.last(exe)
         exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]  
       if !context.utility().shouldShowDualAxes indexStart, indexEnd
