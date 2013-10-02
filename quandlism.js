@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.9.3'
+    version: '0.9.4'
   };
 
   quandlism.context = function() {
@@ -785,7 +785,7 @@
         }
         exe = context.utility().getExtent(lines, indexStart, indexEnd);
         if (_.first(exe) === _.last(exe)) {
-          exe = context.utility().getExtent(lines, 0, lines.length);
+          exe = context.utility().getExtent(lines, 0, _.first(lines).length());
         }
         if (_.first(exe) === _.last(exe)) {
           exe = [Math.floor(exe[0] / 2), Math.floor(exe[0] * 2)];
@@ -839,7 +839,7 @@
         yAxes[axisIndex].tickSize(5, 3, 0);
         yAxes[axisIndex].tickFormat(function(d) {
           var n;
-          n = (d / unitsObj['divisor']).toFixed(2);
+          n = (d / unitsObj['divisor']).toFixed(3);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
           return "" + n + unitsObj['label'];
