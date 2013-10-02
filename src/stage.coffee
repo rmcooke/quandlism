@@ -91,11 +91,15 @@ QuandlismContext_.stage = () ->
         return
 
       # Calculate extents for all lines
-      # Recalculate and check for flat lines
+
+      # Get extent of visible lines
       exe = context.utility().getExtent lines, indexStart, indexEnd
-      exe = context.utility().getExtent lines, 0, lines.length  unless _.first(exe) isnt _.last exe
-      exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]    unless _.first(exe) isnt _.last exe
-    
+      # If extents values are equal (flat line), check the extend of the entire line
+      unless _.first(exe) isnt _.last(exe)
+        exe = context.utility().getExtent lines, 0, _.first(lines).length()
+      # If extent is *still* a flat line, transform extent 
+      unless _.first(exe) isnt _.last(exe)
+        exe = [ Math.floor(exe[0] / 2), Math.floor(exe[0] * 2) ]  
       if !context.utility().shouldShowDualAxes indexStart, indexEnd
         extents[0] = exe unless extents[0].length
       else
@@ -116,6 +120,7 @@ QuandlismContext_.stage = () ->
       if context.yAxisDualMin()? and context.yAxisDualMax()? and (context.yAxisDualMin() < context.yAxisDualMax())
         extents[1] = [context.yAxisDualMin(), context.yAxisDualMax()]
     
+    # Send the y Axis attributes to the context under stage key to expose them to end user
     setYAxisAttributesFromExtents = =>
       context.setAttribute 'stage', 'y_axis_min',       extents[0][0] ? null
       context.setAttribute 'stage', 'y_axis_max',       extents[0][1] ? null
