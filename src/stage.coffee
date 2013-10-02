@@ -108,6 +108,7 @@ QuandlismContext_.stage = () ->
         exe = context.utility().getMultiExtent(lines, indexStart, indexEnd)
         extents[0] = exe[0] unless extents[0].length
         extents[1] = exe[1] unless extents[1].length
+        
       
       # Update exposed values
       setYAxisAttributesFromExtents()
@@ -158,7 +159,7 @@ QuandlismContext_.stage = () ->
       yAxes[axisIndex].ticks Math.floor context.h()*quandlism_stage.h / 30
       yAxes[axisIndex].tickSize 5, 3, 0
       yAxes[axisIndex].tickFormat (d) =>
-        n = (d / unitsObj['divisor']).toFixed 2
+        n = (d / unitsObj['divisor']).toFixed 3
         n = n.replace(/0+$/, '')
         n = n.replace(/\.$/, '')
         "#{n}#{unitsObj['label']}"

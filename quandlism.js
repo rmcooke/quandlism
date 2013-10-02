@@ -839,7 +839,7 @@
         yAxes[axisIndex].tickSize(5, 3, 0);
         yAxes[axisIndex].tickFormat(function(d) {
           var n;
-          n = (d / unitsObj['divisor']).toFixed(2);
+          n = (d / unitsObj['divisor']).toFixed(3);
           n = n.replace(/0+$/, '');
           n = n.replace(/\.$/, '');
           return "" + n + unitsObj['label'];
