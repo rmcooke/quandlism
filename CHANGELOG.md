@@ -1,5 +1,10 @@
 # Quandlism Change Log
 
+## 0.9.4
+
+* Increase decimals allow in axis labels to 3, from 2
+* Fix extent re-calculation for flat line segments.
+
 ## 0.9.3
 
 * Fix issue #63
