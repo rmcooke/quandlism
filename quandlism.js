@@ -477,7 +477,7 @@
         return [min, max];
       }
       while (i <= n) {
-        val = this.valueAt(i);
+        val = parseFloat(this.valueAt(i));
         if (val == null) {
           i++;
           continue;
@@ -987,7 +987,10 @@
         var date, inTooltip, line_, tooltipText, value, w;
         line_ = hit.line;
         date = line_.dateAt(dataIndex);
-        value = line_.valueAt(dataIndex);
+        value = parseFloat(line_.valueAt(dataIndex));
+        if (_.isNaN(value)) {
+          return;
+        }
         draw(line_.id());
         if (extents[1][1] / extents[0][1] > 2 && Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[1][1]) < Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[0][1])) {
           line_.drawPointAtIndex(ctx, xScale, yScales[1], dataIndex, 3);

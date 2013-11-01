@@ -298,7 +298,8 @@ QuandlismContext_.stage = () ->
       # Draw the line with the point highlighted
       line_ = hit.line
       date  = line_.dateAt(dataIndex)
-      value = line_.valueAt(dataIndex)
+      value = parseFloat line_.valueAt(dataIndex)
+      return if _.isNaN(value)
       draw line_.id()
       if extents[1][1] / extents[0][1] > 2 and Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[1][1]) < Math.abs(line_.extent(indexStart, indexEnd)[1] - extents[0][1])
         line_.drawPointAtIndex ctx, xScale, yScales[1], dataIndex, 3
