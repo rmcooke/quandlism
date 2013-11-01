@@ -37,7 +37,7 @@ QuandlismContext_.line = (data) ->
     return [min, max] unless @visible()
 
     while i <= n
-      val = @valueAt i
+      val = parseFloat(@valueAt(i))
       if not val?
         i++
         continue
