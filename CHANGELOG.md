@@ -1,5 +1,10 @@
 # Quandlism Change Log
 
+## 0.9.5
+
+* Fix bug in line extent calculation.
+* Fix tooltip bug when trying to display NaN values.
+
 ## 0.9.4
 
 * Increase decimals allow in axis labels to 3, from 2
