@@ -4,7 +4,7 @@
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   quandlism = exports.quandlism = {
-    version: '0.9.5'
+    version: '0.9.6'
   };
 
   quandlism.context = function() {
@@ -761,6 +761,7 @@
       canvas.attr('height', height);
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
+      canvas.attr('title', context.title());
       canvas.attr('style', stageCanvasStyle());
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');
