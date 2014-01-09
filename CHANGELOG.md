@@ -1,5 +1,9 @@
 # Quandlism Change Log
 
+## 0.9.6
+
+* Stage sets title attribute of canvas element.
+
 ## 0.9.5
 
 * Fix bug in line extent calculation.
