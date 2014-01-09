@@ -761,6 +761,7 @@
       canvas.attr('height', height);
       canvas.attr('class', 'canvas-stage');
       canvas.attr('id', canvasId);
+      canvas.attr('title', context.title());
       canvas.attr('style', stageCanvasStyle());
       ctx = canvas.node().getContext('2d');
       xAxisDOM = selection.append('svg');

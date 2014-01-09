@@ -12,7 +12,7 @@ block content
   script(src="/javascripts/quandlism.js")
   
   script(type="text/javascript")
-    var chart = quandlism.context().chart($('[data-role=chart]')).withLegend($('[data-role=legend]'));
+    var chart = quandlism.context().chart($('[data-role=chart]')).withLegend($('[data-role=legend]')).title("Chart for #{locals.source_code}/#{locals.code}");
         
     $.getJSON("/api", {code: "#{locals.code}", source_code: "#{locals.source_code}"}).done(renderChart);
      function renderChart(apiData) {
