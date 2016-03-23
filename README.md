@@ -1,4 +1,9 @@
-# quandlism
+# DEPRECATED
+
+This project is not under active development. The repo will be closed on May 1st.
+
+
+## quandlism
 
 Canvas wrapper for displaying time series data with D3
 
